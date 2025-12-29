@@ -6,7 +6,6 @@ In Phase 1, we simply log the data to verify the pipeline works.
 """
 
 import socket
-import json
 import time
 from datetime import datetime
 
