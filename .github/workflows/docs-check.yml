@@ -28,6 +28,7 @@ jobs:
           **/*.md
           !**/node_modules/**
           !**/Game/cortex/src/**
+          !**/quakec/lib/**
 
   link-check:
     runs-on: ubuntu-latest
