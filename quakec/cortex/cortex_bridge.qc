@@ -9,6 +9,7 @@
 float cortex_socket;
 float cortex_retry_time;
 float cortex_enabled;
+float cortex_last_send;  // Last time we sent telemetry
 
 /*
 =================
@@ -23,7 +24,19 @@ void() Cortex_Init =
     cortex_retry_time = 0;
     cortex_enabled = 1;
 
-    bprint(PRINT_HIGH, "CORTEX: Initializing AI Bridge...\n");
+    bprint("CORTEX: Initializing AI Bridge...\n");
+
+    // Open telemetry file immediately (not in a loop)
+    cortex_socket = TCP_Connect("cortex_telemetry.txt");
+
+    if (cortex_socket >= 0)
+    {
+        bprint("CORTEX: Telemetry file opened!\n");
+    }
+    else
+    {
+        bprint("CORTEX: Warning - Could not open telemetry file\n");
+    }
 };
 
 /*
@@ -45,11 +58,11 @@ void() Cortex_Connect =
 
     if (cortex_socket >= 0)
     {
-        bprint(PRINT_HIGH, "CORTEX: Connected to Python Brain!\n");
+        bprint("CORTEX: Connected to Python Brain!\n");
     }
     else
     {
-        bprint(PRINT_HIGH, "CORTEX: Searching for Brain...\n");
+        bprint("CORTEX: Searching for Brain...\n");
     }
 };
 
@@ -65,15 +78,13 @@ void() Cortex_Think =
 {
     local string packet;
 
-    // Exit if disabled
+    // Exit if disabled or not connected
     if (!cortex_enabled) return;
+    if (cortex_socket < 0) return;  // File not open, skip
 
-    // Try to connect if not connected
-    if (cortex_socket < 0)
-    {
-        Cortex_Connect();
-        return;
-    }
+    // Throttle to 10 updates per second (every 0.1 seconds)
+    if (time < cortex_last_send + 0.1) return;
+    cortex_last_send = time;
 
     // Build and send sensor packet
     packet = Cortex_BuildSensorPacket();
@@ -96,6 +107,6 @@ void() Cortex_Shutdown =
     {
         TCP_Close(cortex_socket);
         cortex_socket = -1;
-        bprint(PRINT_HIGH, "CORTEX: Disconnected from Brain\n");
+        bprint("CORTEX: Disconnected from Brain\n");
     }
 };

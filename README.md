@@ -64,19 +64,28 @@ ProjectCortex/
 └── README.md                   # This file
 ```
 
-## Current Status: Phase 1 Complete ✓
+## Current Status: Phase 1 - IN PROGRESS ⚠️
 
 **What Works:**
-- ✅ TCP bridge between Quake and Python
-- ✅ Full sensor suite (position, velocity, health, raycasts)
-- ✅ Real-time data streaming @ 60Hz
-- ✅ Visual debugging tools
-- ✅ Clean, organized codebase
+- ✅ QuakeC code compiles successfully
+- ✅ Switched from QuakeWorld to single-player Quake source
+- ✅ File-based IPC system (replaced TCP due to FTEQW restrictions)
+- ✅ Full sensor suite code written (position, velocity, health, raycasts)
+- ✅ Python brain monitoring script ready
+- ✅ Automated test harness created
 
-**Next Phase:**
-- Phase 2A: Control input stream (Python → Quake)
-- Phase 2B: Movement policy neural network (PPO)
-- Phase 2C: Training environment
+**Current Blockers:**
+- ⚠️ Telemetry pipeline not reliably working
+- ⚠️ `sv_progsaccess` must be set manually in console (can't automate)
+- ⚠️ WASD controls require manual `exec default.cfg` in new mod
+- ⚠️ CORTEX initialization messages not consistently appearing
+
+**See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for detailed troubleshooting**
+
+**Next Steps:**
+- Debug why telemetry isn't flowing consistently
+- Get CORTEX initialization working reliably
+- Once Phase 1 works: Add control input stream (Python → Quake)
 
 ## Development Workflow
 

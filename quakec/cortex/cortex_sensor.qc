@@ -168,6 +168,17 @@ string() Cortex_BuildSensorPacket =
 {
     local string packet;
 
+    // PHASE 1: Send simple position data (compatible with Python parser)
+    // Format: POS: 'x y z'
+    packet = "POS: '";
+    packet = strcat(packet, ftos(self.origin_x), " ");
+    packet = strcat(packet, ftos(self.origin_y), " ");
+    packet = strcat(packet, ftos(self.origin_z));
+    packet = strcat(packet, "'\n");
+
+    return packet;
+
+    /* PHASE 2: Full JSON sensor data (commented out for now)
     packet = "{";
     packet = strcat(packet, "\"type\":\"sensor_update\"");
     packet = strcat(packet, ",\"time\":", ftos(time));
@@ -182,4 +193,5 @@ string() Cortex_BuildSensorPacket =
     packet = strcat(packet, "}\n");
 
     return packet;
+    */
 };
