@@ -1,99 +1,51 @@
-# Project Cortex - Quick Start Guide
+# Project Cortex - Quick Start (File IPC)
 
 ## 30-Second Setup
 
 ### Step 1: Build the Mod
-```bash
-build.bat
-```
+
+`scripts\\build.bat`
 
 ### Step 2: Start the Brain
-```bash
-python cortex_brain.py
-```
 
-Leave this running. You should see:
+`scripts\\run_brain.bat`
+
+You should see:
 ```
-[CORTEX BRAIN] Listening on 127.0.0.1:5000
-[CORTEX BRAIN] Waiting for Quake client to connect...
+[CORTEX BRAIN] Monitoring telemetry file: ...Game/cortex/data/cortex_telemetry.txt
+[CORTEX BRAIN] Waiting for Quake to write data...
 ```
 
 ### Step 3: Launch Quake
-```bash
-cd Game
-fteqw64.exe -game cortex +map dm4
+
+`scripts\\run_quake.bat`
+
+If Quake prints `CORTEX: Telemetry disabled...`, open the console and run:
+```
+sv_progsaccess 2
 ```
 
-### Step 4: Verify Connection
+### Step 4: Verify Telemetry
 
-In Quake's console, you should see:
-```
-CORTEX: Initializing AI Bridge...
-CORTEX: Connected to Python Brain!
-```
+- Quake console: `CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)`
+- Python: `[POS] X=... Y=... Z=...` while you move around
 
-In Python terminal, you should see data streaming:
-```
-[12:34:56.789] {"type":"sensor_update", "time":123.45, ...}
-```
+## Visual Debug Mode (Optional)
 
-**Success!** The data pipeline is working.
+`scripts\\run_visualizer.bat`
 
-## Visual Debug Mode
-
-For a prettier view, use the visualizer:
-
-```bash
-python cortex_visualizer.py
-```
-
-This shows:
-- Real-time position & velocity
-- Health/armor bars
-- Top-down raycast radar
-- Requires: `pip install pygame`
-
-## Testing Checklist
-
-Once connected, try these in Quake:
-
-- [ ] Walk around - watch position update in Python
-- [ ] Jump - see `grounded` flip to `false`
-- [ ] Take damage - see `health` decrease
-- [ ] Pick up items - see `ammo` or `armor` increase
-- [ ] Face different directions - watch `yaw` change
-- [ ] Bunny hop - see `velocity.speed` go above 320
+Requires:
+`pip install pygame`
 
 ## Common Issues
 
-**"ModuleNotFoundError: No module named 'pygame'"**
-```bash
-pip install pygame
-```
+**No `progs.dat` / mod doesn’t load**
+- Confirm `Game/cortex/progs.dat` exists and is recent
 
-**Quake says "Couldn't spawn server" or can't find maps**
-
-The game is looking for maps in `id1/maps/`. Standard Quake maps:
-- dm4 (The Bad Place)
-- dm6 (The Dark Zone)
-- e1m1 (The Slipgate Complex)
+**No telemetry file created**
+- Confirm you’re running `-game cortex`
+- Set `sv_progsaccess 2` in console
 
 **Python shows no data**
-
-1. Check Quake console for "CORTEX: Connected" message
-2. Make sure you're actually IN a map (not in menu)
-3. Try moving around
-
-**Compilation errors about "unknown builtin"**
-
-Make sure you're using FTEQW's `fteqcc`, not standard Quake compilers.
-
-## What's Next?
-
-Once you verify the data pipeline works, you're ready for **Phase 2**:
-
-1. Add control input stream (Python sends movement commands)
-2. Implement movement policy neural network
-3. Train the bot to bunny hop
-
-See [README.md](README.md) for the full roadmap.
+- Ensure you’re in a map: `map start`
+- Check `Game/cortex/data/cortex_telemetry.txt`

@@ -17,12 +17,17 @@ scripts\run_brain.bat
 scripts\run_quake.bat
 ```
 
-**Expected Result**: Quake console shows "CORTEX: Connected to Python Brain!" and sensor data streams to Python.
+**Expected Result**: Quake console shows `CORTEX: Telemetry file opened!` and Python prints `[POS] X=... Y=... Z=...`.
+
+Entrypoints: `cortex_brain.py` and `cortex_visualizer.py` in the repo root (the `python/` folder contains legacy TCP prototypes).
 
 ## Project Structure
 
 ```
 ProjectCortex/
+├── cortex_brain.py             # Brain (file-based telemetry tail)
+├── cortex_visualizer.py        # Visualizer (file-based telemetry)
+├── test_cortex_connection.py   # Guided end-to-end test
 │
 ├── 📁 docs/                    # Documentation
 │   ├── README.md              # Full technical documentation
@@ -30,15 +35,15 @@ ProjectCortex/
 │   └── STATUS.md              # Implementation status
 │
 ├── 📁 python/                  # Python AI Brain
-│   ├── cortex_brain.py        # Main brain server
-│   ├── cortex_visualizer.py   # Visual debugger
+│   ├── cortex_brain.py        # Legacy TCP prototype (unused)
+│   ├── cortex_visualizer.py   # Legacy TCP prototype (unused)
 │   └── requirements.txt       # Python dependencies
 │
 ├── 📁 quakec/                  # QuakeC Source Code
 │   ├── 📁 cortex/             # Cortex mod code
 │   │   ├── cortex_sensor.qc   # Sensor suite (raycasts, state)
-│   │   ├── cortex_bridge.qc   # TCP communication
-│   │   ├── cortex_tcp.qc      # TCP socket extensions
+│   │   ├── cortex_bridge.qc   # Telemetry driver (file IPC)
+│   │   ├── cortex_tcp.qc      # File I/O wrappers (FTEQW fopen)
 │   │   ├── cortex_config.qc   # Compiler configuration
 │   │   └── cortex_world.qc    # Game loop integration
 │   ├── 📁 lib/                # Third-party libraries
@@ -64,7 +69,7 @@ ProjectCortex/
 └── README.md                   # This file
 ```
 
-## Current Status: Phase 1 - IN PROGRESS ⚠️
+## Current Status: Phase 1 - Telemetry Pipeline (File IPC)
 
 **What Works:**
 - ✅ QuakeC code compiles successfully
@@ -75,16 +80,14 @@ ProjectCortex/
 - ✅ Automated test harness created
 
 **Current Blockers:**
-- ⚠️ Telemetry pipeline not reliably working
-- ⚠️ `sv_progsaccess` must be set manually in console (can't automate)
-- ⚠️ WASD controls require manual `exec default.cfg` in new mod
-- ⚠️ CORTEX initialization messages not consistently appearing
+- ⚠️ Verify telemetry end-to-end on a clean setup
+- ⚠️ `sv_progsaccess` may still require manual console entry on some FTEQW builds (we now attempt it via cfg/`+set`, and QuakeC retries file-open)
 
 **See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for detailed troubleshooting**
 
 **Next Steps:**
-- Debug why telemetry isn't flowing consistently
-- Get CORTEX initialization working reliably
+- Run `python test_cortex_connection.py` to validate the pipeline
+- If telemetry is missing, confirm the file exists at `Game/cortex/data/cortex_telemetry.txt`
 - Once Phase 1 works: Add control input stream (Python → Quake)
 
 ## Development Workflow
@@ -128,7 +131,7 @@ scripts\run_quake.bat      # Terminal 2
 
 ```
 ┌──────────────────┐         ┌──────────────────┐
-│   QUAKE CLIENT   │  TCP    │   PYTHON BRAIN   │
+│   QUAKE CLIENT   │  FILE   │   PYTHON BRAIN   │
 │   (The Body)     │ ◄────►  │   (The Mind)     │
 │                  │  JSON   │                  │
 │  • Raycasts      │         │  • Neural Nets   │
@@ -144,10 +147,10 @@ scripts\run_quake.bat      # Terminal 2
 
 | File | Purpose | Lines |
 |------|---------|-------|
-| [python/cortex_brain.py](python/cortex_brain.py) | Main Python server | ~150 |
-| [python/cortex_visualizer.py](python/cortex_visualizer.py) | Visual debugger | ~250 |
+| [cortex_brain.py](cortex_brain.py) | Brain (file-based telemetry) | ~120 |
+| [cortex_visualizer.py](cortex_visualizer.py) | Telemetry visualizer (file-based) | ~200 |
 | [quakec/cortex/cortex_sensor.qc](quakec/cortex/cortex_sensor.qc) | Sensor suite | ~180 |
-| [quakec/cortex/cortex_bridge.qc](quakec/cortex/cortex_bridge.qc) | TCP communication | ~100 |
+| [quakec/cortex/cortex_bridge.qc](quakec/cortex/cortex_bridge.qc) | Telemetry driver (file IPC) | ~120 |
 | [quakec/progs.src](quakec/progs.src) | Build manifest | ~35 |
 
 ## Documentation
@@ -178,10 +181,9 @@ scripts\run_quake.bat      # Terminal 2
 
 ## Troubleshooting
 
-**"CORTEX: Searching for Brain..." (never connects)**
-- Make sure Python is running FIRST
-- Check if port 5000 is blocked by firewall
-- Verify Python shows "Listening on 127.0.0.1:5000"
+**Quake shows `CORTEX: Telemetry disabled...`**
+- Open console and run `sv_progsaccess 2` (some builds don't honor cfg/`+set`)
+- Look for `CORTEX: Engine reports FRIK_FILE support` (if it says NO FRIK_FILE, file I/O won't work)
 
 **Build fails with "error" messages**
 - Check that `quakec/lib/Quake-master/` exists
@@ -189,9 +191,9 @@ scripts\run_quake.bat      # Terminal 2
 - See full error output in console
 
 **No sensor data in Python**
-- Make sure you're IN a map (not in menu)
+- Make sure you're IN a map (not in menu): `map start`
 - Try moving around in-game
-- Check Quake console for error messages
+- Confirm the telemetry file exists and is growing: `Game/cortex/data/cortex_telemetry.txt`
 
 ## Contributing
 
@@ -199,7 +201,7 @@ This is an experimental research project. The codebase is organized for clarity:
 
 - **Add new sensors**: Edit [quakec/cortex/cortex_sensor.qc](quakec/cortex/cortex_sensor.qc)
 - **Modify communication**: Edit [quakec/cortex/cortex_bridge.qc](quakec/cortex/cortex_bridge.qc)
-- **Add AI features**: Edit [python/cortex_brain.py](python/cortex_brain.py)
+- **Add AI features**: Edit [cortex_brain.py](cortex_brain.py)
 - **Update build process**: Edit [scripts/build.bat](scripts/build.bat)
 
 ## License
@@ -210,6 +212,6 @@ This is an experimental research project. The codebase is organized for clarity:
 
 ---
 
-**Status**: Phase 1 Complete - Data Pipeline Functional ✓
-**Last Updated**: 2025-12-29
+**Status**: Phase 1 - Telemetry Pipeline (File IPC) - Working (verify across FTEQW builds)
+**Last Updated**: 2025-12-30
 **Version**: 0.1.0

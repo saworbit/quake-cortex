@@ -11,7 +11,7 @@ This document tracks all the technical challenges encountered during Project Cor
 
 ### 1. Telemetry Pipeline Not Working Reliably
 
-**Status**: UNRESOLVED
+**Status**: FIXED IN CODE (NEEDS VERIFICATION)
 **Priority**: P0 - Blocks all further development
 **First Observed**: December 29, 2025
 
@@ -39,32 +39,41 @@ This document tracks all the technical challenges encountered during Project Cor
    - But sv_progsaccess may not take effect before worldspawn runs
    - Or the command is failing silently from config files
 
+4. **Telemetry File Location Mismatch**
+   - FTEQW writes QuakeC-created files into the mod's `data/` folder
+   - Telemetry file is typically: `Game/cortex/data/cortex_telemetry.txt`
+   - Earlier Python scripts were watching `Game/cortex/cortex_telemetry.txt` instead
+
+5. **Wrong Brain Entrypoint**
+   - `scripts/run_brain.bat` previously launched `python/python/cortex_brain.py` (TCP server)
+   - The QuakeC implementation was already file-based, so nothing ever connected
+
+6. **Telemetry Emission Disabled**
+   - `StartFrame` had the `Cortex_Think()` call commented out, so only the session header was written
+
 #### Attempted Solutions
 - ❌ Used `+sv_progsaccess 2` command line parameter → Doesn't work
 - ❌ Set in default.cfg → Doesn't seem to take effect
 - ⚠️ Manual console entry → Not yet fully tested
-- ⚠️ autoexec.cfg → Not yet tried
+- ✅ Added `Game/cortex/autoexec.cfg` to re-assert `sv_progsaccess 2`
 
 #### Current Workaround
-**Manual Console Commands** (must be done every time):
-1. Launch Quake: `fteqw64.exe -game cortex`
-2. Press Shift+Esc to open console
-3. Type: `sv_progsaccess 2`
-4. Type: `exec default.cfg`
-5. Press Esc, start new game
+Run the scripts:
+1. `scripts\\run_brain.bat`
+2. `scripts\\run_quake.bat`
+
+If you see `CORTEX: Telemetry disabled...`, open the Quake console and set `sv_progsaccess 2`.
 
 #### Next Steps to Try
-1. Verify manual console commands work
-2. Try creating `autoexec.cfg` (runs later than default.cfg)
-3. Research FTEQW documentation for proper cvar initialization
-4. Consider using a different FTEQW feature or configuration method
-5. Look for alternative file access methods that don't require sv_progsaccess
+1. Verify telemetry lines are appended to `Game/cortex/data/cortex_telemetry.txt`
+2. Confirm Quake console prints `CORTEX: Telemetry file opened!`
+3. If needed, try a different FTEQW build (stable vs dev) for sv_progsaccess behavior
 
 ---
 
 ### 2. WASD Controls Don't Work in New Mod
 
-**Status**: WORKAROUND EXISTS
+**Status**: RESOLVED
 **Priority**: P1 - Major usability issue
 **First Observed**: December 29, 2025
 
@@ -81,12 +90,7 @@ This document tracks all the technical challenges encountered during Project Cor
 - This is standard Quake behavior, not a bug
 
 #### Solution
-Run `exec default.cfg` in console to restore controls:
-```
-exec default.cfg
-```
-
-This executes the base Quake config file which includes all key bindings (W=forward, A=left, etc.)
+`Game/cortex/default.cfg` now includes minimal WASD/mouse bindings for fresh mod folders.
 
 #### Why This Happens
 From Raven67854's FTEQW setup guide:
@@ -231,12 +235,12 @@ When attempting to fix the telemetry pipeline, verify ALL of these:
 
 ### Launch Sequence
 - [ ] Start `cortex_brain.py` FIRST
-- [ ] Python shows "Monitoring telemetry file..."
-- [ ] Launch Quake: `fteqw64.exe -game cortex`
+- [ ] Python shows it is monitoring `Game/cortex/data/cortex_telemetry.txt`
+- [ ] Launch Quake: `scripts\\run_quake.bat` (or `fteqw64.exe -game cortex +map start`)
 - [ ] Open console (Shift+Esc)
 - [ ] Type: `sv_progsaccess 2` and press Enter
 - [ ] Verify no error message appears
-- [ ] Type: `exec default.cfg` and press Enter
+- [ ] Optional: `exec default.cfg` (re-applies default binds)
 - [ ] Close console (Esc)
 - [ ] Start new game: Single Player → New Game → Episode 1
 
@@ -245,7 +249,7 @@ When attempting to fix the telemetry pipeline, verify ALL of these:
 - [ ] Quake console shows: `CORTEX: Telemetry file opened!`
 - [ ] Can move with WASD keys
 - [ ] Can look around with mouse
-- [ ] Python shows: `Telemetry received: Player Location: (x, y, z)`
+- [ ] Python shows: `[POS] X=... Y=... Z=...`
 - [ ] Coordinates change when moving in-game
 
 ### Troubleshooting
@@ -256,7 +260,7 @@ If CORTEX messages don't appear:
 - [ ] Verify progs.dat loaded: type `version` (should mention FTEQW)
 
 If WASD doesn't work:
-- [ ] Run `exec default.cfg` again
+- [ ] Run `exec default.cfg` (re-applies default binds)
 - [ ] Check bindings: type `bind w` (should show `+forward`)
 - [ ] Manually bind: `bind w +forward`, `bind a +moveleft`, etc.
 

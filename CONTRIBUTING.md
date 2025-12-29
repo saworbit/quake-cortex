@@ -47,18 +47,17 @@ Feature requests are welcome! Please:
 scripts\build.bat
 
 # Test Python
-python python/cortex_brain.py
+python cortex_brain.py
 ```
 
 ### Testing
 
 ```bash
-# Run Python in test mode
-python python/cortex_visualizer.py
+# Run the telemetry visualizer (optional; requires pygame)
+python cortex_visualizer.py
 
 # Launch Quake and verify connection
-cd Game
-fteqw64.exe -game cortex +map dm4
+scripts\run_quake.bat
 ```
 
 ## Project Structure
@@ -66,6 +65,7 @@ fteqw64.exe -game cortex +map dm4
 ```
 quakec/cortex/     - Custom QuakeC modules (sensors, bridge, etc.)
 python/            - Python AI brain
+                 (legacy TCP prototypes; current entrypoints are in repo root)
 scripts/           - Build and run scripts
 docs/              - Documentation
 ```
@@ -93,7 +93,7 @@ Use conventional commits format:
 
 ```
 feat: Add new raycast sensor
-fix: Correct TCP connection timeout
+fix: Fix file telemetry tailing
 docs: Update quickstart guide
 refactor: Simplify sensor data encoding
 ```

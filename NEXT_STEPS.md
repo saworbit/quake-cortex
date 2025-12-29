@@ -9,35 +9,32 @@ This document outlines concrete actions to take when resuming development, organ
 
 ## 🎯 Immediate Priority: Fix Telemetry Pipeline
 
-### Step 1: Verify Manual Console Setup Works
+### Step 1: Verify the Pipeline Works
 
 **Goal**: Confirm that the system works when properly configured
 
 **Actions**:
 1. Start Python brain:
    ```bash
-   python cortex_brain.py
+   scripts\run_brain.bat
    ```
 
 2. Launch Quake:
    ```bash
-   cd Game
-   fteqw64.exe -game cortex
+   scripts\run_quake.bat
    ```
 
-3. In Quake console (Shift+Esc):
-   ```
-   sv_progsaccess 2
-   exec default.cfg
-   ```
+3. In Quake console (Shift+Esc), verify file access:
+   - Type `sv_progsaccess` (should show `2`)
+   - If not, set it: `sv_progsaccess 2`
 
-4. Start new game and move around
+4. Move around to generate telemetry (WASD bindings are provided by `Game/cortex/default.cfg`)
 
 **Success Criteria**:
 - Console shows: `CORTEX: Initializing AI Bridge...`
 - Console shows: `CORTEX: Telemetry file opened!`
-- Python shows: `Telemetry received: Player Location: (x, y, z)`
-- WASD controls work
+- Python shows: `[POS] X=... Y=... Z=...`
+- Telemetry file exists at `Game/cortex/data/cortex_telemetry.txt`
 
 **If This Works**: The code is correct, we just need to automate the setup
 **If This Fails**: There's a deeper issue with the QuakeC code or file I/O
@@ -83,7 +80,7 @@ This document outlines concrete actions to take when resuming development, organ
 
 **Goal**: Call Cortex_Init after config files have executed
 
-**Current Problem**: worldspawn() runs before default.cfg, so sv_progsaccess might not be set yet
+**Note**: This approach is now implemented (Cortex initializes from StartFrame and retries file-open until sv_progsaccess is enabled).
 
 **Approach A: Delay Init to StartFrame**
 
@@ -129,19 +126,9 @@ void() StartFrame =
 
 ---
 
-### Step 4: Create autoexec.cfg
+### Step 4: autoexec.cfg (Implemented)
 
-**Goal**: Try a config file that executes later in the startup sequence
-
-Create `Game/cortex/autoexec.cfg`:
-```
-// Auto-executed after default.cfg
-sv_progsaccess 2
-exec default.cfg
-echo "Cortex: autoexec.cfg loaded - sv_progsaccess should be set"
-```
-
-**Rationale**: autoexec.cfg runs AFTER default.cfg and might execute at a better time.
+`Game/cortex/autoexec.cfg` now exists and re-asserts `sv_progsaccess 2`. WASD/mouse bindings are provided by `Game/cortex/default.cfg`, so `exec default.cfg` is optional (only useful if user configs override binds).
 
 ---
 
@@ -215,11 +202,10 @@ And register it so you can type `cortex_test` in console to trigger it.
 
 ### Create Startup Script
 
-Once manual setup works, create `Game/cortex/startup.cfg`:
+Once manual setup works, you can optionally create `Game/cortex/startup.cfg`:
 ```
 // Cortex Startup Configuration
 sv_progsaccess 2
-exec default.cfg
 map start
 ```
 
