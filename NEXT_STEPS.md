@@ -1,6 +1,6 @@
 # Roadmap & Next Steps for Project Cortex
 
-Project Cortex uses a “Brain–Body” architecture:
+Project Cortex uses a "Brain–Body" architecture:
 - **Body (QuakeC/FTEQW)**: perception + actuation at game tick rate (must never block)
 - **Brain (Python)**: cognition + learning + memory (can use modern ML tooling)
 
@@ -11,12 +11,18 @@ This split is the foundation for embodied AI experimentation: Quake becomes a fa
 
 ---
 
+## Research Context
+
+This "Brain–Body" split is the standard move in modern embodied AI (separating simulator/embodiment from learning/cognition). It positions Project Cortex to evolve from classic scripted game AI into a reusable agent platform (similar in spirit to large-scale FPS research setups like Quake III CTF work).
+
+---
+
 ## Current State (Phase 1: Telemetry, File IPC)
 
 - **Telemetry path**: `Game/cortex/data/cortex_telemetry.txt`
 - **Entrypoints**: `cortex_brain.py` / `cortex_visualizer.py` (repo root)
 - **Startup**: `scripts\\build.bat`, `scripts\\run_brain.bat`, `scripts\\run_quake.bat`
-- **Important**: telemetry won’t appear until a map is loaded (`map start` / `map e1m1`) because menus don’t run QuakeC
+- **Important**: telemetry won't appear until a map is loaded (`map start` / `map e1m1`) because menus don't run QuakeC
 - **FTEQW file access**: some builds require manually setting `sv_progsaccess 2` in the console
 
 Success looks like:
@@ -27,9 +33,9 @@ Success looks like:
 
 ## Phase 2: Close the Feedback Loop (Brain → Body)
 
-### 2A. Identity Handshake (“The Soul in the File”)
+### 2A. Identity Handshake ("The Soul in the File")
 
-Problem: bots are “amnesiacs” today—no persistent identity between runs.
+Problem: bots are "amnesiacs" today—no persistent identity between runs.
 
 Goal: the Body introduces itself so the Brain can load a persistent profile:
 - Body → Brain: `HELLO name=<Reaper> session=<timestamp> map=<mapname>`
@@ -54,7 +60,16 @@ Plan:
 - Add `PacketType`, `ProtocolVersion`, `SequenceId` to every message
 - Keep parsing resilient (ignore partial lines / duplicates)
 - Upgrade to packed/binary formats only when engine extensions support it
-  - If/when moving back to sockets, evaluate UDP/shared-memory for latency
+  - If/when moving back to sockets, consider latency impacts (TCP acking/Nagle) and evaluate UDP/shared memory for fast-paced play
+
+### 2D. RL-Friendly API (Gym-like)
+
+Goal: make the Brain logic compatible with standard RL trainers (PPO/DQN/etc).
+
+Concrete steps:
+- Define an `env.step(action) -> (observation, reward, done, info)` loop in Python
+- Keep a clean separation between "data ingestion" and "policy"
+- Start with simple shaped rewards (survival/time moving/not stuck) before combat rewards
 
 ---
 
@@ -63,9 +78,14 @@ Plan:
 Goal: teach the agent to move reliably before it fights.
 
 Concrete steps:
-- Implement “wander + wall avoidance” using LiDAR-like rays
-- Add “stuck detection” + recovery
-- Time-slice sensors (don’t do full 360° scans every frame; build a scan over N frames)
+- Implement "wander + wall avoidance" using LiDAR-like rays
+- Add "stuck detection" + recovery
+- Time-slice sensors (don't do full 360° scans every frame; build a scan over N frames)
+- Standardize a "state tensor" (example fields):
+  - health/armor/ammo
+  - velocity/speed
+  - yaw/pitch
+  - LiDAR scan array (distances + semantic tags)
 
 Success metric:
 - survives and traverses for X seconds without sticking or freezing
@@ -85,14 +105,14 @@ Example: `brains/hive_v1.*`
 
 ### 4B. Ego (Personality Delta)
 
-Per-bot “delta” model:
+Per-bot "delta" model:
 - aggression vs caution
 - aim jitter / reaction delay
 - preferred weapons / risk tolerance
 
 Example: `brains/reaper.json` + `brains/reaper_weights.*`
 
-Suggested “DNA” format:
+Suggested "DNA" format:
 - JSON for metadata/traits + separate weights file
 
 ---
@@ -120,6 +140,14 @@ Upgrade sensors so the Brain can reason, not just react:
 - semantic LiDAR: distance + surface/material + entity type (enemy/item/hazard)
 - build a lightweight occupancy grid / top-down map (SLAM-like) in Python
 
+### Visualizer Upgrade (Debugging the Invisible)
+
+Enhance `cortex_visualizer.py` to render:
+- a point cloud / top-down ray plot for semantic LiDAR
+- an occupancy grid as it forms
+
+If the visualizer looks like a usable map, you know sensors + parsing are correct.
+
 ---
 
 ## Phase 8: Headless Training (Future)
@@ -137,6 +165,9 @@ Once stable:
 - Budget raycasts; time-slice sensors
 - Brain tick rate can be lower than game tick; Body holds last command
 - Prefer small, versioned packets over verbose text/JSON when throughput becomes a bottleneck
+- Consider separate trace modes for sensors:
+  - "navigation" traces (collisions/blocked movement)
+  - "vision" traces (ignore transparent volumes like water as needed)
 
 ---
 
@@ -146,4 +177,4 @@ Once stable:
 2. Add Brain → Body control channel (minimal action set)
 3. Add a versioned message header (`ProtocolVersion`, `SequenceId`)
 4. Add time-sliced sensor mode + stuck recovery
-5. Add persistence stubs (load/save “soul” at match start/end)
+5. Add persistence stubs (load/save "soul" at match start/end)
