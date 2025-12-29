@@ -191,7 +191,8 @@ scripts\run_quake.bat      # Terminal 2
 - See full error output in console
 
 **No sensor data in Python**
-- Make sure you're IN a map (not in menu): `map start`
+- QuakeC (and telemetry) only runs once a map is loaded (menus won’t emit telemetry)
+- Make sure you're IN a map (not in menu): `map start` or `map e1m1`
 - Try moving around in-game
 - Confirm the telemetry file exists and is growing: `Game/cortex/data/cortex_telemetry.txt`
 

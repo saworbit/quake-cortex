@@ -55,7 +55,7 @@ Expected Python output:
 
 ### Python shows no data
 
-- Ensure you’re actually in a map: `map start`
+- Ensure you’re actually in a map (menus don’t run QuakeC): `map start` or `map e1m1`
 - Verify the file exists and changes: `Game/cortex/data/cortex_telemetry.txt`
 
 ## Legacy TCP Prototype

@@ -30,6 +30,8 @@ sv_progsaccess 2
 - Quake console: `CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)`
 - Python: `[POS] X=... Y=... Z=...` while you move around
 
+Note: telemetry won’t appear until you’re in an actual map (menus don’t run QuakeC). Use `map start`/`map e1m1` if needed.
+
 ## Visual Debug Mode (Optional)
 
 `scripts\\run_visualizer.bat`

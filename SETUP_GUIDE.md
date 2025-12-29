@@ -35,6 +35,7 @@ WASD bindings are now provided by `Game/cortex/default.cfg`, so you typically do
 - Click: **Single Player** → **New Game**
 - Select any episode (e1m1 recommended for testing)
   - Or just use `map start` from the console
+  - Note: telemetry won't appear until you're actually in a map (menus don't run QuakeC)
 
 ### 6. Test Movement
 - **WASD**: Move around
