@@ -1,6 +1,6 @@
 # Roadmap & Next Steps for Project Cortex
 
-Project Cortex uses a "Brain–Body" architecture:
+Project Cortex uses a "Brain-Body" architecture:
 - **Body (QuakeC/FTEQW)**: perception + actuation at game tick rate (must never block)
 - **Brain (Python)**: cognition + learning + memory (can use modern ML tooling)
 
@@ -13,7 +13,7 @@ This split is the foundation for embodied AI experimentation: Quake becomes a fa
 
 ## Research Context
 
-This "Brain–Body" split is the standard move in modern embodied AI (separating simulator/embodiment from learning/cognition). It positions Project Cortex to evolve from classic scripted game AI into a reusable agent platform (similar in spirit to large-scale FPS research setups like Quake III CTF work).
+This "Brain-Body" split is the standard move in modern embodied AI (separating simulator/embodiment from learning/cognition). It positions Project Cortex to evolve from classic scripted game AI into a reusable agent platform (similar in spirit to large-scale FPS research setups like Quake III CTF work).
 
 ---
 
@@ -31,14 +31,14 @@ Success looks like:
 
 ---
 
-## Phase 2: Close the Feedback Loop (Brain → Body)
+## Phase 2: Close the Feedback Loop (Brain -> Body)
 
 ### 2A. Identity Handshake ("The Soul in the File")
 
-Problem: bots are "amnesiacs" today—no persistent identity between runs.
+Problem: bots are "amnesiacs" today - no persistent identity between runs.
 
 Goal: the Body introduces itself so the Brain can load a persistent profile:
-- Body → Brain: `HELLO name=<Reaper> session=<timestamp> map=<mapname>`
+- Body -> Brain: `HELLO name=<Reaper> session=<timestamp> map=<mapname>`
 - Brain behavior:
   - If `brains/reaper.*` exists: load it
   - Else: load a shared baseline and start a new profile
@@ -49,10 +49,10 @@ Design rule: **the Body executes the last known command until a new one arrives*
 
 Concrete steps:
 - Define a minimal action set: move/strafe/turn/fire/jump
-- Send control outputs at a fixed lower rate (e.g., 10–20Hz)
+- Send control outputs at a fixed lower rate (e.g., 10-20Hz)
 - Apply commands smoothly (hold durations, deadzones, clamp values)
 
-### 2C. Protocol Standardization (Start Debuggable → Get Efficient)
+### 2C. Protocol Standardization (Start Debuggable -> Get Efficient)
 
 Text is fine for bring-up, but long-term throughput matters.
 
@@ -80,7 +80,7 @@ Goal: teach the agent to move reliably before it fights.
 Concrete steps:
 - Implement "wander + wall avoidance" using LiDAR-like rays
 - Add "stuck detection" + recovery
-- Time-slice sensors (don't do full 360° scans every frame; build a scan over N frames)
+- Time-slice sensors (don't do full 360 degree scans every frame; build a scan over N frames)
 - Standardize a "state tensor" (example fields):
   - health/armor/ammo
   - velocity/speed
@@ -174,7 +174,7 @@ Once stable:
 ## Immediate Next PRs (Suggested)
 
 1. Add identity handshake + `brains/` directory conventions
-2. Add Brain → Body control channel (minimal action set)
+2. Add Brain -> Body control channel (minimal action set)
 3. Add a versioned message header (`ProtocolVersion`, `SequenceId`)
 4. Add time-sliced sensor mode + stuck recovery
 5. Add persistence stubs (load/save "soul" at match start/end)
