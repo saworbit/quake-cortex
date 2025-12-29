@@ -1,4 +1,5 @@
 @echo off
+setlocal
 echo ========================================
 echo PROJECT CORTEX - Visualizer Mode
 echo ========================================
@@ -12,5 +13,12 @@ echo.
 echo ========================================
 echo.
 
-cd ..
+pushd "%~dp0\.." >nul 2>&1
+if errorlevel 1 (
+    echo ERROR: Unable to cd to repository root.
+    exit /b 1
+)
 python cortex_visualizer.py
+set EXITCODE=%ERRORLEVEL%
+popd >nul 2>&1
+exit /b %EXITCODE%
