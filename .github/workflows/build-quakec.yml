@@ -1,0 +1,56 @@
+name: Build QuakeC
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'quakec/**'
+      - 'Game/cortex/src/**'
+      - '.github/workflows/build-quakec.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'quakec/**'
+      - 'Game/cortex/src/**'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check if compiler exists
+      run: |
+        if (Test-Path "quakec/fteqcc64.exe") {
+          Write-Host "✓ FTEQW compiler found"
+        } else {
+          Write-Error "✗ Compiler not found at quakec/fteqcc64.exe"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Compile QuakeC mod
+      run: |
+        cd quakec
+        ./fteqcc64.exe
+      shell: pwsh
+
+    - name: Verify output
+      run: |
+        if (Test-Path "Game/cortex/progs.dat") {
+          $size = (Get-Item "Game/cortex/progs.dat").Length
+          Write-Host "✓ Build successful! progs.dat created ($size bytes)"
+        } else {
+          Write-Error "✗ Build failed - progs.dat not found"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: progs-dat
+        path: Game/cortex/progs.dat
+        retention-days: 30

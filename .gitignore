@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+env/
+
+# QuakeC
+*.dat.bak
+*.lno
+*.qc~
+
+# Compiled output
+Game/cortex/progs.dat
+
+# Quake runtime files (engine-generated)
+Game/conhistory.txt
+Game/*.cfg
+Game/qconsole.log
+
+# Quake game data (NOT distributable - users must provide their own)
+Game/id1/*.PAK
+Game/id1/*.pak
+Game/id1/maps/
+Game/id1/sound/
+Game/id1/progs/
+
+# Quake engine binaries (users should download from official sources)
+Game/*.exe
+Game/*.dll
+Game/*.db
+Game/*.so
+
+# IDE
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
