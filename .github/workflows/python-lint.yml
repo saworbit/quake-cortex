@@ -5,11 +5,14 @@ on:
     branches: [ main ]
     paths:
       - 'python/**/*.py'
+      - '*.py'
       - '.github/workflows/python-lint.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'python/**/*.py'
+      - '*.py'
+      - '.github/workflows/python-lint.yml'
 
 jobs:
   lint:
@@ -36,3 +39,7 @@ jobs:
     - name: Run Ruff formatter check
       run: |
         ruff format python/ --check
+
+    - name: Python syntax check (repo root scripts)
+      run: |
+        python -m py_compile cortex_brain.py cortex_visualizer.py test_cortex_connection.py
