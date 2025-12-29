@@ -152,7 +152,7 @@ If using the visualizer, you'll see a real-time display of:
 
 **Problem:** JSON packets don't include `raycasts` field.
 
-**Explanation:** Raycasts are expensive and only sent every 3rd frame (see [cortex_sensor.qc:148](Game/cortex/src/cortex_sensor.qc#L148)).
+**Explanation:** Raycasts are expensive and only sent every 3rd frame (see [cortex_sensor.qc:148](../quakec/cortex/cortex_sensor.qc#L148)).
 
 ### Performance Issues
 
@@ -160,7 +160,7 @@ If using the visualizer, you'll see a real-time display of:
 
 **Current Status:** Known issue. We're sending 32 raycasts @ 20Hz + full state @ 60Hz.
 
-**Temporary Fix:** Reduce `RAYCAST_COUNT` in [cortex_sensor.qc:10](Game/cortex/src/cortex_sensor.qc#L10).
+**Temporary Fix:** Reduce `RAYCAST_COUNT` in [cortex_sensor.qc:10](../quakec/cortex/cortex_sensor.qc#L10).
 
 ## Technical Details
 
@@ -200,7 +200,7 @@ Running on a typical setup:
 
 ## Next Steps
 
-See the [full design spec](PROJECT_SPEC.md) for the complete roadmap. Immediate next tasks:
+Immediate next tasks for Phase 2:
 
 1. **Phase 2A: Control Input Stream**
    - Add `TCP_Recv()` to read Python's commands
