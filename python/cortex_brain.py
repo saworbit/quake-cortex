@@ -11,7 +11,7 @@ from datetime import datetime
 
 
 class CortexBrain:
-    def __init__(self, host='127.0.0.1', port=5000):
+    def __init__(self, host="127.0.0.1", port=5000):
         self.host = host
         self.port = port
         self.socket = None
@@ -57,7 +57,7 @@ class CortexBrain:
         while self.running:
             try:
                 # Receive data in chunks
-                data = self.client_socket.recv(4096).decode('utf-8')
+                data = self.client_socket.recv(4096).decode("utf-8")
 
                 if not data:
                     print("[CORTEX BRAIN] Client disconnected")
@@ -65,7 +65,7 @@ class CortexBrain:
 
                 # Add to buffer and process line by line
                 buffer += data
-                lines = buffer.split('\n')
+                lines = buffer.split("\n")
                 buffer = lines[-1]  # Keep incomplete line in buffer
 
                 for line in lines[:-1]:

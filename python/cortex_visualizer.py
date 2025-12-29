@@ -13,6 +13,7 @@ from datetime import datetime
 
 try:
     import pygame
+
     PYGAME_AVAILABLE = True
 except ImportError:
     PYGAME_AVAILABLE = False
@@ -21,7 +22,7 @@ except ImportError:
 
 
 class CortexVisualizer:
-    def __init__(self, host='127.0.0.1', port=5000):
+    def __init__(self, host="127.0.0.1", port=5000):
         self.host = host
         self.port = port
         self.socket = None
@@ -83,13 +84,13 @@ class CortexVisualizer:
                             return
 
                 # Receive data
-                data = self.client_socket.recv(4096).decode('utf-8')
+                data = self.client_socket.recv(4096).decode("utf-8")
                 if not data:
                     print("[VISUALIZER] Client disconnected")
                     break
 
                 buffer += data
-                lines = buffer.split('\n')
+                lines = buffer.split("\n")
                 buffer = lines[-1]
 
                 for line in lines[:-1]:
@@ -126,20 +127,20 @@ class CortexVisualizer:
 
     def print_text_visualization(self, data):
         """Print text-based visualization"""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print(f"TIME: {data.get('time', 0):.2f}s")
 
-        if 'position' in data:
-            pos = data['position']
+        if "position" in data:
+            pos = data["position"]
             print(f"POSITION: ({pos['x']:.1f}, {pos['y']:.1f}, {pos['z']:.1f})")
             print(f"ANGLES: Pitch={pos['pitch']:.1f}° Yaw={pos['yaw']:.1f}°")
 
-        if 'velocity' in data:
-            vel = data['velocity']
+        if "velocity" in data:
+            vel = data["velocity"]
             print(f"VELOCITY: Speed={vel['speed']:.1f} u/s")
 
-        if 'state' in data:
-            state = data['state']
+        if "state" in data:
+            state = data["state"]
             print(f"HEALTH: {state['health']:.0f}  ARMOR: {state['armor']:.0f}")
             print(f"WEAPON: {state['weapon']:.0f}  AMMO: {state['ammo']:.0f}")
             print(f"GROUNDED: {bool(state['grounded'])}")
@@ -167,52 +168,88 @@ class CortexVisualizer:
         y_offset += 30
 
         # Position
-        if 'position' in self.last_data:
-            pos = self.last_data['position']
+        if "position" in self.last_data:
+            pos = self.last_data["position"]
             self.draw_text("POSITION:", 10, y_offset, (100, 200, 255))
             y_offset += 25
-            self.draw_text(f"  X: {pos['x']:.1f}", 10, y_offset, (200, 200, 200), self.small_font)
+            self.draw_text(
+                f"  X: {pos['x']:.1f}", 10, y_offset, (200, 200, 200), self.small_font
+            )
             y_offset += 20
-            self.draw_text(f"  Y: {pos['y']:.1f}", 10, y_offset, (200, 200, 200), self.small_font)
+            self.draw_text(
+                f"  Y: {pos['y']:.1f}", 10, y_offset, (200, 200, 200), self.small_font
+            )
             y_offset += 20
-            self.draw_text(f"  Z: {pos['z']:.1f}", 10, y_offset, (200, 200, 200), self.small_font)
+            self.draw_text(
+                f"  Z: {pos['z']:.1f}", 10, y_offset, (200, 200, 200), self.small_font
+            )
             y_offset += 25
-            self.draw_text(f"  Yaw: {pos['yaw']:.1f}°", 10, y_offset, (200, 200, 200), self.small_font)
+            self.draw_text(
+                f"  Yaw: {pos['yaw']:.1f}°",
+                10,
+                y_offset,
+                (200, 200, 200),
+                self.small_font,
+            )
             y_offset += 30
 
         # Velocity
-        if 'velocity' in self.last_data:
-            vel = self.last_data['velocity']
-            speed = vel['speed']
+        if "velocity" in self.last_data:
+            vel = self.last_data["velocity"]
+            speed = vel["speed"]
             color = (100, 255, 100) if speed > 320 else (200, 200, 200)
             self.draw_text("VELOCITY:", 10, y_offset, (100, 200, 255))
             y_offset += 25
-            self.draw_text(f"  Speed: {speed:.1f} u/s", 10, y_offset, color, self.small_font)
+            self.draw_text(
+                f"  Speed: {speed:.1f} u/s", 10, y_offset, color, self.small_font
+            )
             y_offset += 30
 
         # State
-        if 'state' in self.last_data:
-            state = self.last_data['state']
+        if "state" in self.last_data:
+            state = self.last_data["state"]
             self.draw_text("STATE:", 10, y_offset, (100, 200, 255))
             y_offset += 25
 
             # Health bar
-            health = state['health']
+            health = state["health"]
             health_color = (100, 255, 100) if health > 50 else (255, 100, 100)
-            self.draw_text(f"  Health: {health:.0f}", 10, y_offset, health_color, self.small_font)
-            pygame.draw.rect(self.screen, health_color, (120, y_offset, int(health * 2), 15))
+            self.draw_text(
+                f"  Health: {health:.0f}", 10, y_offset, health_color, self.small_font
+            )
+            pygame.draw.rect(
+                self.screen, health_color, (120, y_offset, int(health * 2), 15)
+            )
             y_offset += 20
 
-            self.draw_text(f"  Armor: {state['armor']:.0f}", 10, y_offset, (200, 200, 200), self.small_font)
+            self.draw_text(
+                f"  Armor: {state['armor']:.0f}",
+                10,
+                y_offset,
+                (200, 200, 200),
+                self.small_font,
+            )
             y_offset += 20
-            self.draw_text(f"  Ammo: {state['ammo']:.0f}", 10, y_offset, (200, 200, 200), self.small_font)
+            self.draw_text(
+                f"  Ammo: {state['ammo']:.0f}",
+                10,
+                y_offset,
+                (200, 200, 200),
+                self.small_font,
+            )
             y_offset += 20
-            grounded = "YES" if state['grounded'] else "NO"
-            self.draw_text(f"  Grounded: {grounded}", 10, y_offset, (200, 200, 200), self.small_font)
+            grounded = "YES" if state["grounded"] else "NO"
+            self.draw_text(
+                f"  Grounded: {grounded}",
+                10,
+                y_offset,
+                (200, 200, 200),
+                self.small_font,
+            )
             y_offset += 30
 
         # Raycasts visualization (top-down view)
-        if 'raycasts' in self.last_data:
+        if "raycasts" in self.last_data:
             self.draw_raycasts(500, 300, 200)
 
         pygame.display.flip()
@@ -226,18 +263,18 @@ class CortexVisualizer:
 
     def draw_raycasts(self, cx, cy, radius):
         """Draw top-down raycast visualization"""
-        if 'raycasts' not in self.last_data:
+        if "raycasts" not in self.last_data:
             return
 
-        raycasts = self.last_data['raycasts']
+        raycasts = self.last_data["raycasts"]
 
         # Draw circle border
         pygame.draw.circle(self.screen, (50, 50, 50), (cx, cy), radius, 2)
 
         # Draw rays
         for i, ray in enumerate(raycasts):
-            dist = ray['dist']
-            hit = ray['hit']
+            dist = ray["dist"]
+            hit = ray["hit"]
 
             # Calculate angle (evenly distributed)
             angle = (i / len(raycasts)) * 2 * math.pi
@@ -253,12 +290,12 @@ class CortexVisualizer:
             # Color based on surface type
             color = (100, 100, 100)
             if hit:
-                surface = ray.get('surface', 'solid')
-                if surface == 'lava':
+                surface = ray.get("surface", "solid")
+                if surface == "lava":
                     color = (255, 100, 0)
-                elif surface == 'slime':
+                elif surface == "slime":
                     color = (100, 255, 0)
-                elif surface == 'water':
+                elif surface == "water":
                     color = (0, 100, 255)
                 else:
                     color = (150, 150, 150)
@@ -270,7 +307,9 @@ class CortexVisualizer:
         pygame.draw.circle(self.screen, (255, 255, 255), (cx, cy), 3)
 
         # Label
-        self.draw_text("RAYCASTS (Top-Down)", cx - 80, cy - radius - 20, (100, 200, 255))
+        self.draw_text(
+            "RAYCASTS (Top-Down)", cx - 80, cy - radius - 20, (100, 200, 255)
+        )
 
     def cleanup(self):
         """Clean shutdown"""
