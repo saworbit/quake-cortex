@@ -146,7 +146,7 @@ scripts\run_quake.bat      # Terminal 2
 ## Key Files
 
 | File | Purpose | Lines |
-|------|---------|-------|
+| --- | --- | --- |
 | [cortex_brain.py](cortex_brain.py) | Brain (file-based telemetry) | ~120 |
 | [cortex_visualizer.py](cortex_visualizer.py) | Telemetry visualizer (file-based) | ~200 |
 | [quakec/cortex/cortex_sensor.qc](quakec/cortex/cortex_sensor.qc) | Sensor suite | ~180 |

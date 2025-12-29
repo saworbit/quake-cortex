@@ -15,7 +15,7 @@ This document tracks all the technical challenges encountered during Project Cor
 **Priority**: P0 - Blocks all further development
 **First Observed**: December 29, 2025
 
-#### Symptoms
+#### Symptoms (WASD Controls)
 - Python brain runs but receives no telemetry data
 - `cortex_telemetry.txt` file may not be created
 - No "CORTEX: Initializing AI Bridge..." message in Quake console
@@ -83,13 +83,13 @@ If you see `CORTEX: Telemetry disabled...`, open the Quake console and set `sv_p
 - Jump/attack keys also don't work
 - Only affects `cortex` mod, vanilla Quake works fine
 
-#### Root Cause
+#### Root Cause (WASD Controls)
 - **New mod folders don't inherit keybindings from base game**
 - Each mod has isolated configuration
 - FTEQW doesn't copy `config.cfg` from `id1/` to `cortex/`
 - This is standard Quake behavior, not a bug
 
-#### Solution
+#### Solution (WASD Controls)
 `Game/cortex/default.cfg` now includes minimal WASD/mouse bindings for fresh mod folders.
 
 #### Why This Happens
@@ -110,30 +110,30 @@ Could create a custom `config.cfg` in `cortex/` folder with all bindings pre-con
 **First Observed**: December 28, 2025
 **Resolved**: December 29, 2025
 
-#### Problem
+#### Problem (QuakeWorld vs Single-Player)
 - Initial implementation used QuakeWorld (multiplayer) source code
 - WASD input didn't work at all in single-player mode
 - Mouse look worked, but player couldn't move
 
-#### Root Cause
+#### Root Cause (QuakeWorld vs Single-Player)
 QuakeWorld source (`lib/Quake-master/QW/progs/`) is designed for multiplayer:
 - Uses different client/server architecture
 - Input handling optimized for network play
 - Single-player movement code is stubbed out or different
 
-#### Solution
+#### Solution (QuakeWorld vs Single-Player)
 Switched to official single-player Quake source:
 - Downloaded from [maddes-b/QuakeC-releases](https://github.com/maddes-b/QuakeC-releases/)
 - Updated `progs.src` to use `lib/QuakeC-releases/progs/*` files
 - Rewrote `cortex_world.qc` to match single-player world.qc structure
 - Fixed compilation errors (PRINT_HIGH, InitBodyQueue vs InitBodyQue)
 
-#### Files Changed
+#### Files Changed (QuakeWorld vs Single-Player)
 - [quakec/progs.src](quakec/progs.src) - Updated all source file paths
 - [quakec/cortex/cortex_world.qc](quakec/cortex/cortex_world.qc) - Completely rewritten
 - [quakec/cortex/cortex_bridge.qc](quakec/cortex/cortex_bridge.qc) - Removed PRINT_HIGH
 
-#### Result
+#### Result (QuakeWorld vs Single-Player)
 - Compiles successfully: `progs.dat` is 350KB
 - Should work with single-player input (pending testing)
 
@@ -145,19 +145,19 @@ Switched to official single-player Quake source:
 **Priority**: P2 - Compilation error
 **Resolved**: December 29, 2025
 
-#### Problem
+#### Problem (PRINT_HIGH)
 Compilation errors:
 ```
 cortex_bridge.qc:27: error: Unknown value 'PRINT_HIGH'
 ```
 
-#### Root Cause
+#### Root Cause (PRINT_HIGH)
 - `PRINT_HIGH` is a QuakeWorld-specific constant
 - Used for `bprint(PRINT_HIGH, "message")` to control message visibility
 - Single-player Quake doesn't have print level constants
 - Single-player `bprint()` only takes one string parameter
 
-#### Solution
+#### Solution (PRINT_HIGH)
 Removed PRINT_HIGH from all bprint() calls:
 ```c
 // Before (QuakeWorld)
@@ -167,7 +167,7 @@ bprint(PRINT_HIGH, "CORTEX: Initializing...\n");
 bprint("CORTEX: Initializing...\n");
 ```
 
-#### Files Changed
+#### Files Changed (PRINT_HIGH)
 - [quakec/cortex/cortex_bridge.qc](quakec/cortex/cortex_bridge.qc) - Lines 27, 34, 38, 61, 65, 110
 
 ---
@@ -178,18 +178,18 @@ bprint("CORTEX: Initializing...\n");
 **Priority**: P2 - Compilation error
 **Resolved**: December 29, 2025
 
-#### Problem
+#### Problem (InitBodyQueue Naming)
 Compilation error:
 ```
 cortex_world.qc:182: error: Unknown value 'InitBodyQue'
 ```
 
-#### Root Cause
+#### Root Cause (InitBodyQueue Naming)
 - QuakeWorld uses abbreviated name: `InitBodyQue()`
 - Single-player uses full name: `InitBodyQueue()`
 - We used the QuakeWorld variant when writing cortex_world.qc
 
-#### Solution
+#### Solution (InitBodyQueue Naming)
 Changed function call to match single-player naming:
 ```c
 // Before
@@ -199,7 +199,7 @@ InitBodyQue();
 InitBodyQueue();
 ```
 
-#### Files Changed
+#### Files Changed (InitBodyQueue Naming)
 - [quakec/cortex/cortex_world.qc](quakec/cortex/cortex_world.qc:182)
 
 ---

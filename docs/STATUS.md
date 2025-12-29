@@ -27,7 +27,7 @@
 ## File Manifest (Current)
 
 | Path | Purpose |
-|------|---------|
+| --- | --- |
 | `cortex_brain.py` | File telemetry brain (tail + parse) |
 | `cortex_visualizer.py` | File telemetry visualizer (pygame/text) |
 | `quakec/cortex/cortex_bridge.qc` | Telemetry driver / init + retry |
