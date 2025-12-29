@@ -15,6 +15,10 @@ env/
 *.lno
 *.qc~
 
+# Third-party libraries (users should download separately)
+quakec/lib/QuakeC-releases/
+quakec/fteqcc64.exe
+
 # Compiled output
 Game/cortex/progs.dat
 
@@ -22,6 +26,9 @@ Game/cortex/progs.dat
 Game/conhistory.txt
 Game/*.cfg
 Game/qconsole.log
+Game/maptimes.txt
+Game/cortex/data/
+conhistory.txt
 
 # Quake game data (NOT distributable - users must provide their own)
 Game/id1/*.PAK
