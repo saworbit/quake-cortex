@@ -90,6 +90,7 @@ ProjectCortex/
 **See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for detailed troubleshooting**
 
 **Next Steps:**
+- See the roadmap in [NEXT_STEPS.md](NEXT_STEPS.md)
 - Run `python test_cortex_connection.py` to validate the pipeline
 - If telemetry is missing, confirm the file exists at `Game/cortex/data/cortex_telemetry.txt`
 - Once Phase 1 works: Add control input stream (Python → Quake)
