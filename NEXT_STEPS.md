@@ -52,6 +52,20 @@ Concrete steps:
 - Send control outputs at a fixed lower rate (e.g., 10-20Hz)
 - Apply commands smoothly (hold durations, deadzones, clamp values)
 
+### 2B.1. "Cerebellum" Smoothing (Motor Control in the Body)
+
+Goal: pass the "movement Turing Test" - does the agent move like a machine or a master?
+
+Problem: if the Brain runs at 10Hz and the game runs at 60Hz, direct per-update snaps (especially view angles) will look like a strobe: snap, hold for ~6 frames, snap again.
+
+Approach: keep high-level intent in Python ("turn toward X", "move forward"), but do *smoothing and rate limiting in QuakeC* so the game tick stays fluid.
+
+Concrete steps:
+- Body accepts targets, not hard-set state (for example: `cortex_target_yaw`, `cortex_target_pitch`, `cortex_target_move`)
+- Slew-rate limit rotation (cap degrees-per-frame) and normalize wrap-around (0-360)
+- Interpolate/extrapolate between Brain updates: continue last command until replaced; avoid "stop dead" when packets/files are late
+- Keep Brain faster when possible (try 20Hz+), but treat smoothing as mandatory even at higher rates
+
 ### 2C. Protocol Standardization (Start Debuggable -> Get Efficient)
 
 Text is fine for bring-up, but long-term throughput matters.
@@ -89,6 +103,17 @@ Concrete steps:
 
 Success metric:
 - survives and traverses for X seconds without sticking or freezing
+
+---
+
+## Spectator / Observer Mode (Cinematic Debugging)
+
+Goal: make it easy to watch bots and diagnose behavior without playing yourself.
+
+Concrete ideas:
+- Provide a dedicated "observer" setup (spectator slot / config) so you can direct the action
+- Add an auto-director that switches view to "most interesting" bot (low health, near enemy, currently fighting)
+- Option: allow the Python Brain to also steer the spectator camera (for example: "track bot_a" when a fight is about to happen)
 
 ---
 
