@@ -346,8 +346,7 @@ void() worldspawn =
     // 63 testing
     lightstyle(63, "a");
 
-    // CORTEX: Initialize AI bridge
-    Cortex_Init();
+    // CORTEX: Initialization happens in StartFrame so config files have run first.
 };
 
 /*
@@ -364,16 +363,8 @@ void() StartFrame =
     skill = cvar("skill");
     framecount = framecount + 1;
 
-    // CORTEX: Run AI brain update
-    // DISABLED FOR TESTING - Re-enable once we verify basic input works
-    /*
-    local entity old_self;
-    old_self = self;
-    self = find(world, classname, "player");
-    if (self)
-        Cortex_Think();
-    self = old_self;
-    */
+    // CORTEX: Emit telemetry (safe to call every frame; internally throttled).
+    Cortex_Frame();
 };
 
 /*

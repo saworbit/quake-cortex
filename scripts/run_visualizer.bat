@@ -13,4 +13,4 @@ echo ========================================
 echo.
 
 cd ..
-python python/cortex_visualizer.py
+python cortex_visualizer.py

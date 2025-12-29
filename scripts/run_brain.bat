@@ -13,4 +13,4 @@ echo ========================================
 echo.
 
 cd ..
-python python/cortex_brain.py
+python cortex_brain.py

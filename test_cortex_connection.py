@@ -154,13 +154,13 @@ class CortexTestHarness:
                 if not line:
                     continue
 
-                # Detect file-based connection (telemetry file detected)
-                if "Telemetry file detected" in line or "SESSION START" in line:
+                # Detect file-based connection (Quake started writing)
+                if "SESSION START" in line:
                     self.connection_established = True
                     self.print_success("Quake is writing telemetry!")
 
                 # Count telemetry packets
-                elif "Player Location" in line:
+                elif line.startswith("[POS]"):
                     self.telemetry_count += 1
                     if self.telemetry_count % 10 == 0:  # Print every 10th packet
                         self.print_telemetry(line)
@@ -201,10 +201,11 @@ class CortexTestHarness:
 
             quake_exe = str(quake_exe_path)
 
-            # Launch Quake with cortex mod
-            # Note: sv_progsaccess cannot be set via command line, must be done in console
+            # Launch Quake with cortex mod.
+            # `+set sv_progsaccess 2` may or may not take effect depending on engine build,
+            # but it's harmless and reduces manual setup when supported.
             self.quake_process = subprocess.Popen(
-                [quake_exe, "-game", "cortex"],
+                [quake_exe, "-game", "cortex", "+set", "sv_progsaccess", "2", "+map", "start"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
             )

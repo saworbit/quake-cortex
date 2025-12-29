@@ -12,9 +12,10 @@ string TELEMETRY_PATH = "cortex_telemetry.txt";
 // Wrapper functions using file I/O
 float(string hostname) TCP_Connect =
 {
-    // Open file for writing telemetry
-    // Use FILE_APPEND to keep adding data
-    telemetry_file = fopen(TELEMETRY_PATH, FILE_WRITE);
+    // Open file for writing telemetry.
+    // Note: FTEQW restricts QuakeC file writes to the mod's `data/` folder.
+    // So this typically ends up at: `Game/cortex/data/cortex_telemetry.txt`
+    telemetry_file = fopen(TELEMETRY_PATH, FILE_APPEND);
 
     if (telemetry_file >= 0)
     {

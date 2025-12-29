@@ -9,4 +9,4 @@ echo Launching FTEQW with Cortex mod...
 echo.
 
 cd ..\Game
-fteqw64.exe -game cortex +map dm4
+fteqw64.exe -game cortex +set sv_progsaccess 2 +map start

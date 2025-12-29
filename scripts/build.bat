@@ -26,8 +26,8 @@ if %ERRORLEVEL% EQU 0 (
     echo Output: Game\cortex\progs.dat
     echo.
     echo To run:
-    echo 1. Start Python: python python\cortex_brain.py
-    echo 2. Launch Quake: cd Game ^&^& fteqw64.exe -game cortex +map dm4
+    echo 1. Start Python: scripts\run_brain.bat
+    echo 2. Launch Quake: scripts\run_quake.bat
     echo.
 ) else (
     echo.

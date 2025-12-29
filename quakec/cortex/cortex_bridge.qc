@@ -10,6 +10,13 @@ float cortex_socket;
 float cortex_retry_time;
 float cortex_enabled;
 float cortex_last_send;  // Last time we sent telemetry
+float cortex_initialized;
+float cortex_warn_time;  // Avoid spamming setup hints
+float cortex_ext_checked;
+
+void() Cortex_Frame;
+void() Cortex_EnsureTelemetryOpen;
+void() Cortex_PrintFileSupportStatus;
 
 /*
 =================
@@ -21,21 +28,81 @@ Called when the map loads. Sets up initial state.
 void() Cortex_Init =
 {
     cortex_socket = -1;
-    cortex_retry_time = 0;
+    cortex_retry_time = 0;  // Reused for file open retry throttle
     cortex_enabled = 1;
+    cortex_warn_time = 0;
+    cortex_last_send = -9999;
+    cortex_ext_checked = 0;
 
     bprint("CORTEX: Initializing AI Bridge...\n");
 
-    // Open telemetry file immediately (not in a loop)
+    // Don't assume sv_progsaccess is already enabled; we'll retry from StartFrame.
+    Cortex_EnsureTelemetryOpen();
+};
+
+/*
+=================
+Cortex_PrintFileSupportStatus
+
+Prints engine capability hints for file I/O (FRIK_FILE/checkextension).
+Runs at most once per map to avoid spamming.
+=================
+*/
+void() Cortex_PrintFileSupportStatus =
+{
+    local float has_checkextension;
+    local float has_frik_file;
+
+    if (cortex_ext_checked) return;
+    cortex_ext_checked = 1;
+
+    // FTE exposes a read-only cvar that indicates whether checkextension builtin exists.
+    has_checkextension = cvar("pr_checkextension");
+
+    if (!has_checkextension)
+    {
+        bprint("CORTEX: Note: checkextension unavailable (cvar pr_checkextension = 0)\n");
+        return;
+    }
+
+    has_frik_file = checkextension("FRIK_FILE");
+    if (has_frik_file)
+        bprint("CORTEX: Engine reports FRIK_FILE support (fopen/fputs/fclose should exist)\n");
+    else
+        bprint("CORTEX: Engine reports NO FRIK_FILE support (file I/O will not work)\n");
+};
+
+/*
+=================
+Cortex_EnsureTelemetryOpen
+
+Opens the telemetry file once file access is available.
+Retries periodically so the user can set sv_progsaccess without restarting the map.
+=================
+*/
+void() Cortex_EnsureTelemetryOpen =
+{
+    if (cortex_socket >= 0) return;
+
+    // Retry at most once per second.
+    if (time < cortex_retry_time) return;
+    cortex_retry_time = time + 1;
+
+    Cortex_PrintFileSupportStatus();
+
     cortex_socket = TCP_Connect("cortex_telemetry.txt");
 
     if (cortex_socket >= 0)
     {
-        bprint("CORTEX: Telemetry file opened!\n");
+        bprint("CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)\n");
+        return;
     }
-    else
+
+    // Helpful hint, but don't spam.
+    if (time >= cortex_warn_time)
     {
-        bprint("CORTEX: Warning - Could not open telemetry file\n");
+        cortex_warn_time = time + 5;
+        bprint("CORTEX: Telemetry disabled (try `sv_progsaccess 2` in console)\n");
     }
 };
 
@@ -80,7 +147,10 @@ void() Cortex_Think =
 
     // Exit if disabled or not connected
     if (!cortex_enabled) return;
-    if (cortex_socket < 0) return;  // File not open, skip
+
+    // File not open yet (eg sv_progsaccess not set); retry until it works.
+    Cortex_EnsureTelemetryOpen();
+    if (cortex_socket < 0) return;
 
     // Throttle to 10 updates per second (every 0.1 seconds)
     if (time < cortex_last_send + 0.1) return;
@@ -109,4 +179,35 @@ void() Cortex_Shutdown =
         cortex_socket = -1;
         bprint("CORTEX: Disconnected from Brain\n");
     }
+};
+
+/*
+=================
+Cortex_Frame
+
+Entry point called from StartFrame to initialize and emit telemetry.
+=================
+*/
+void() Cortex_Frame =
+{
+    local entity old_self;
+
+    if (!cortex_initialized)
+    {
+        cortex_initialized = 1;
+        Cortex_Init();
+    }
+
+    // If file access isn't available yet, don't waste time searching entities.
+    Cortex_EnsureTelemetryOpen();
+    if (cortex_socket < 0) return;
+
+    // Avoid the per-frame entity lookup if we won't send yet.
+    if (time < cortex_last_send + 0.1) return;
+
+    old_self = self;
+    self = find(world, classname, "player");
+    if (self)
+        Cortex_Think();
+    self = old_self;
 };
