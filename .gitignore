@@ -16,7 +16,10 @@ env/
 *.qc~
 
 # Third-party libraries (users should download separately)
-quakec/lib/QuakeC-releases/
+# NOTE: `quakec/lib/QuakeC-releases/progs/*.qc` is vendored because `quakec/progs.src`
+# depends on it during CI builds. We still ignore the nested git metadata if present.
+quakec/lib/QuakeC-releases/.git/
+quakec/lib/QuakeC-releases/.vscode/
 quakec/fteqcc64.exe
 
 # Compiled output
