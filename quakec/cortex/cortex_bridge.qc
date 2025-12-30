@@ -52,6 +52,7 @@ void() Cortex_Init =
     cortex_ext_checked = 0;
 
     bprint("CORTEX: Initializing AI Bridge...\n");
+    CortexLog(LOG_info, "BRIDGE", "init");
 
     // Don't assume sv_progsaccess is already enabled; we'll retry from StartFrame.
     Cortex_EnsureTelemetryOpen();
@@ -79,14 +80,21 @@ void() Cortex_PrintFileSupportStatus =
     if (!has_checkextension)
     {
         bprint("CORTEX: Note: checkextension unavailable (cvar pr_checkextension = 0)\n");
+        CortexLog(LOG_warning, "CAPS", "checkextension_unavailable");
         return;
     }
 
     has_frik_file = checkextension("FRIK_FILE");
     if (has_frik_file)
+    {
         bprint("CORTEX: Engine reports FRIK_FILE support (fopen/fputs/fclose should exist)\n");
+        CortexLog(LOG_info, "CAPS", "frik_file_available");
+    }
     else
+    {
         bprint("CORTEX: Engine reports NO FRIK_FILE support (file I/O will not work)\n");
+        CortexLog(LOG_error, "CAPS", "frik_file_missing");
+    }
 };
 
 /*
@@ -103,6 +111,7 @@ void() Cortex_PrintStreamSupportStatus =
     {
         cortex_warned_uriget_disabled = 1;
         bprint("CORTEX: Note: URI streams disabled (set `pr_enable_uriget 1` to allow tcp://)\n");
+        CortexLog(LOG_warning, "CAPS", "uriget_disabled");
     }
 
     if (!cortex_stream_ext_checked)
@@ -116,12 +125,14 @@ void() Cortex_PrintStreamSupportStatus =
     {
         cortex_warned_missing_cvar_string = 1;
         bprint("CORTEX: Note: DP_QC_CVAR_STRING missing (TCP URI cvar overrides disabled)\n");
+        CortexLog(LOG_warning, "CAPS", "dp_qc_cvar_string_missing");
     }
 
     if (!cortex_has_strings && !cortex_warned_missing_strings)
     {
         cortex_warned_missing_strings = 1;
         bprint("CORTEX: Note: FTE_STRINGS missing (Brain->Body control parsing disabled)\n");
+        CortexLog(LOG_warning, "CAPS", "fte_strings_missing");
     }
 };
 
@@ -181,6 +192,13 @@ void() Cortex_EnsureTelemetryOpen =
             bprint("CORTEX: Connected Cortex stream (tcp://)\n");
         else
             bprint("CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)\n");
+
+        CortexLogData(
+            LOG_info,
+            "IO",
+            use_tcp ? "telemetry_stream_connected" : "telemetry_file_opened",
+            strcat("{\"target\":\"", target, "\"}")
+        );
         return;
     }
 
@@ -189,9 +207,15 @@ void() Cortex_EnsureTelemetryOpen =
     {
         cortex_warn_time = time + 5;
         if (use_tcp)
+        {
             bprint("CORTEX: Stream connect failed (check Python server + `pr_enable_uriget 1`)\n");
+            CortexLogData(LOG_error, "IO", "telemetry_stream_connect_failed", strcat("{\"target\":\"", target, "\"}"));
+        }
         else
+        {
             bprint("CORTEX: Telemetry disabled (try `sv_progsaccess 2` in console)\n");
+            CortexLogData(LOG_error, "IO", "telemetry_file_open_failed", strcat("{\"target\":\"", target, "\"}"));
+        }
     }
 };
 

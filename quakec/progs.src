@@ -10,6 +10,9 @@ lib/Quake-master/fteextensions.qc
 // Must come AFTER fteextensions to override its strict mode
 cortex/cortex_config.qc
 
+// Cortex structured logging (console black box)
+cortex/cortex_logging.qc
+
 // Custom file-based communication (FTEQW-specific)
 cortex/cortex_tcp.qc
 

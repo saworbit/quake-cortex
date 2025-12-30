@@ -61,8 +61,8 @@ CORTEX: Telemetry file opened!
 
 ### In Python Brain Window
 ```
-[CORTEX BRAIN] Monitoring telemetry file: ...Game/cortex/data/cortex_telemetry.txt
-[POS] X=... Y=... Z=...
+[BRAIN] BOOT | logger_initialized | {"log_file":"...\\cortex_brain_<timestamp>.log"}
+[BRAIN] IO | monitoring_telemetry_file | {"path":"...\\Game\\cortex\\data\\cortex_telemetry.txt",...}
 ```
 
 ---
@@ -93,6 +93,8 @@ CORTEX: Telemetry file opened!
 ## Mode B: TCP Stream + Control Input (Experimental)
 
 Use this for RL training and bidirectional control.
+
+Full guide: `docs/TCP_MODE.md`
 
 ### 1. Install Python deps
 

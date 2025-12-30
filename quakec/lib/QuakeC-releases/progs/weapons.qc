@@ -1350,6 +1350,8 @@ void() QuadCheat =
 ImpulseCommands
 ============
 */
+void() Cortex_DumpState;
+
 void() ImpulseCommands =
 {
     if (self.impulse >= 1 && self.impulse <= 8)
@@ -1371,6 +1373,10 @@ void() ImpulseCommands =
     else if (self.impulse == 12)
     {
         CycleWeaponReverseCommand();
+    }
+    else if (self.impulse == 199)
+    {
+        Cortex_DumpState();
     }
     else if (self.impulse == 255)
     {

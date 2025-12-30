@@ -31,6 +31,7 @@ Game/*.cfg
 Game/qconsole.log
 Game/maptimes.txt
 Game/cortex/data/
+Game/cortex/cortex_telemetry.txt
 conhistory.txt
 
 # Quake game data (NOT distributable - users must provide their own)

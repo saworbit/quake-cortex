@@ -7,7 +7,7 @@
 
 ### Sidecar Architecture
 - [x] QuakeC emits telemetry to a file (FTEQW `FRIK_FILE` builtins)
-- [x] Python tails telemetry and prints parsed position lines
+- [x] Python tails telemetry and writes structured logs (Brain timeline)
 - [x] Optional pygame visualizer
 
 ### Sensor Suite (Current Output)

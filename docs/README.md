@@ -51,8 +51,10 @@ Expected Quake console messages:
 - `CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)`
 
 Expected Python output:
-- `[CORTEX] --- CORTEX SESSION START ---`
-- `[POS] X=... Y=... Z=...`
+- `[BRAIN] BOOT | logger_initialized | {"log_file":"...\\cortex_brain_<timestamp>.log"}`
+- `[BRAIN] IO | monitoring_telemetry_file | {"path":"...\\Game\\cortex\\data\\cortex_telemetry.txt",...}`
+
+For high-volume timelines (telemetry packets, decisions), read the generated `cortex_brain_<timestamp>.log`.
 
 ## Troubleshooting
 
@@ -74,3 +76,5 @@ The repo-root entrypoints are `cortex_brain.py` and `cortex_visualizer.py`. The 
 ## Archive
 
 - Development notes: `docs/archive/SESSION_SUMMARY_2025-12-29.md`
+- TCP stream mode guide: `docs/TCP_MODE.md`
+- Cortex Black Box logging: `docs/LOGGING.md`

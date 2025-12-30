@@ -12,8 +12,9 @@
 
 You should see:
 ```
-[CORTEX BRAIN] Monitoring telemetry file: ...Game/cortex/data/cortex_telemetry.txt
-[CORTEX BRAIN] Waiting for Quake to write data...
+[BRAIN] BOOT | logger_initialized | {"log_file":"...\\cortex_brain_<timestamp>.log"}
+[BRAIN] IO | monitoring_telemetry_file | {"path":"...\\Game\\cortex\\data\\cortex_telemetry.txt",...}
+[BRAIN] IO | waiting_for_quake
 ```
 
 ### Step 3: Launch Quake
@@ -28,7 +29,7 @@ sv_progsaccess 2
 ### Step 4: Verify Telemetry
 
 - Quake console: `CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)`
-- Python: `[POS] X=... Y=... Z=...` while you move around
+- Python: check the generated `cortex_brain_<timestamp>.log` for NDJSON packets / parsed telemetry
 
 Note: telemetry won’t appear until you’re in an actual map (menus don’t run QuakeC). Use `map start`/`map e1m1` if needed.
 
@@ -39,6 +40,8 @@ Telemetry format: newline-delimited JSON (NDJSON). The tools also accept the old
 1. Install deps: `pip install -r python/requirements.txt`
 2. Launch Quake: `scripts\\run_quake_tcp.bat`
 3. Train: `python train_cortex.py`
+
+Guide: `docs/TCP_MODE.md`
 
 ## Visual Debug Mode (Optional)
 

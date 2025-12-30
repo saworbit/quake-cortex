@@ -21,7 +21,7 @@ scripts\run_brain.bat
 scripts\run_quake.bat
 ```
 
-**Expected Result**: Quake console shows `CORTEX: Telemetry file opened!` and Python prints `[POS] X=... Y=... Z=...`.
+**Expected Result**: Quake console shows `CORTEX: Telemetry file opened!` and Python creates `cortex_brain_<timestamp>.log` in the repo root (via `scripts\\run_brain.bat`).
 
 Telemetry format: newline-delimited JSON (NDJSON). The tools also accept the older `POS: 'x y z'` format.
 
@@ -40,6 +40,7 @@ python train_cortex.py
 Notes:
 - Requires `pr_enable_uriget 1` (see `scripts/run_quake_tcp.bat`).
 - For a simple TCP logger (no training), use `scripts\\run_brain_tcp.bat`.
+- Guide: `docs/TCP_MODE.md`
 
 ## Project Structure
 
@@ -223,6 +224,12 @@ scripts\run_quake.bat      # Terminal 2
 - Make sure you're IN a map (not in menu): `map start` or `map e1m1`
 - Try moving around in-game
 - Confirm the telemetry file exists and is growing: `Game/cortex/data/cortex_telemetry.txt`
+
+## Cortex Black Box Logs
+
+- Brain (Python): `cortex_brain_<unix_ts>.log` (DEBUG, created in the working directory)
+- Body (Quake): `Game\\qconsole.log` (enable `condebug 1`, already set in `scripts\\run_quake.bat`)
+- Guide: `docs/LOGGING.md`
 
 ## Contributing
 
