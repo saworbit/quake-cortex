@@ -25,7 +25,7 @@ if errorlevel 1 (
     echo ERROR: Unable to cd to repository root.
     exit /b 1
 )
-python python\cortex_brain.py
+python -m python.fteqw_stream.brain_tcp
 set EXITCODE=%ERRORLEVEL%
 popd >nul 2>&1
 exit /b %EXITCODE%

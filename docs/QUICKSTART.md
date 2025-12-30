@@ -1,5 +1,12 @@
 # Project Cortex - Quick Start
 
+## Pure QuakeC Bot (No Python)
+
+1. Build: `scripts\\build.bat`
+2. Run: `scripts\\run_pure_qc.bat` (defaults to `deathmatch 1` + `map dm3`)
+
+Tip: the internal bot is toggled by `cortex_bot_enable 1`.
+
 ## 30-Second Setup (File IPC)
 
 ### Step 1: Build the Mod
@@ -69,3 +76,18 @@ If installs fail (common on very new Python versions that don't have wheels yet)
 **Python shows no data**
 - Ensure you're in a map: `map start`
 - Check `Game/cortex/data/cortex_telemetry.txt`
+
+## DarkPlaces + RCON (Experimental)
+
+This mode uses DarkPlaces RCON (UDP) for a low-latency control loop, and `prvm_edicts sv` for state reads.
+
+1. Build QuakeC: `scripts\\build.bat`
+2. Launch DarkPlaces: `scripts\\run_darkplaces.bat` (requires `Game\\darkplaces.exe`)
+3. Start the RCON brain loop: `scripts\\run_brain_rcon.bat`
+
+Details: `docs/DARKPLACES_PIVOT.md`
+
+## Bonus: Multiplayer Hosting
+
+Need to let friends join your bot lobby? Follow `docs/MULTI_SERVER.md` for one-click BAT files, console helpers, port forwarding, and multiplayer-friendly Cortex commands.
+Want full bot carnage? See `docs/ARENA.md` for a dedicated arena server + chase-cam spectator setup with 16 bots, auto map rotation, and live stats.

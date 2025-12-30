@@ -1,15 +1,27 @@
 # Project Cortex - Quick Setup Guide
 
-Project Cortex supports two modes:
-- **File IPC (default)**: QuakeC appends telemetry to `data/cortex_telemetry.txt`, Python tails it.
-- **TCP Stream (experimental)**: QuakeC connects to `tcp://127.0.0.1:26000` and exchanges NDJSON for telemetry + controls.
+Project Cortex supports multiple modes:
+- **Pure QuakeC bot**: no Python, enable `cortex_bot_enable 1` (see `scripts/run_pure_qc.bat`)
+- **File IPC (default)**: QuakeC appends telemetry to `data/cortex_telemetry.txt`, Python tails it
+- **TCP Stream (experimental)**: QuakeC connects to `ws://127.0.0.1:26000/` and exchanges NDJSON for telemetry + controls
+- **DarkPlaces RCON (experimental)**: Python drives a server-side bot via UDP RCON
 
-📚 **See Also**:
+**See Also**:
 - [README.md](README.md) - Project overview and current status
+- [docs/MODES.md](docs/MODES.md) - mode chooser + repo layout
 - [KNOWN_ISSUES.md](KNOWN_ISSUES.md) - Detailed troubleshooting
 - [NEXT_STEPS.md](NEXT_STEPS.md) - What to try next
 
 ---
+
+## Mode 0: Pure QuakeC Bot (No Python)
+
+Recommended launch:
+- `scripts/build.bat`
+- `scripts/run_pure_qc.bat`
+
+This mode runs the internal bot AI inside QuakeC (no external IPC).
+
 
 ## Mode A: File IPC (Recommended)
 

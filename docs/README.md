@@ -1,86 +1,31 @@
 # PROJECT CORTEX
 
-Project Cortex is an experimental “sidecar” AI architecture for Quake 1:
-- QuakeC emits telemetry (sensor data)
-- Python tails a telemetry file and prints/visualizes it
+Project Cortex is an experimental AI sandbox for Quake 1.
 
-Default mode is **file-based** IPC because QuakeC networking is often restricted in FTEQW. An experimental TCP stream mode is also supported for RL training/control loops.
+It supports three tracks (all share the same QuakeC mod):
+- **Pure QuakeC bot**: decisions inside QuakeC (no Python)
+- **Hybrid FTEQW + Python**: file IPC (default) or stream mode (experimental)
+- **Hybrid DarkPlaces + Python**: UDP RCON control loop (experimental)
 
-## Architecture
+Start here: `docs/MODES.md`
 
-```
-┌───────────────┐          appends lines          ┌────────────────────┐
-│   QUAKE/FTEQW  │ ─────────────────────────────▶ │       PYTHON        │
-│ (QuakeC progs) │   Game/cortex/data/*.txt       │ (brain/visualizer)  │
-└───────────────┘                                 └────────────────────┘
-```
+## Primary Docs
 
-Telemetry file (expected):
-- `Game/cortex/data/cortex_telemetry.txt`
+- `docs/MULTI_SERVER.md` - Multiplayer server hosting primer
+- `docs/ARENA.md` - Bot-vs-bot spectator arena
+- `docs/QUICKSTART.md` - fast start (hybrid + experimental modes)
+- `docs/TCP_MODE.md` - FTEQW stream mode (ws:// / tcp://)
+- `docs/DARKPLACES_PIVOT.md` - DarkPlaces RCON mode
+- `docs/LOGGING.md` - logs and debugging
+- `docs/COMPATIBILITY.md` - engine quirks / compatibility notes
 
-TCP stream (experimental):
-- QuakeC connects to `ws://127.0.0.1:26000/` (default; requires `pr_enable_uriget 1`)
-- Python runs a local server (`python train_cortex.py` or `scripts\\run_brain_tcp.bat`)
-- Some engine builds initiate a TLS handshake on `tcp://` and fail cert verification; prefer `ws://` unless your engine build is known-good.
+## Code Locations
 
-Note: FTEQW typically restricts QuakeC file writes to the mod’s `data/` folder, even if QuakeC opens `"cortex_telemetry.txt"` directly.
-
-## How to Run
-
-### 1) Build QuakeC
-
-`scripts\\build.bat`
-
-This produces `Game/cortex/progs.dat`.
-
-### 2) Start Python (choose one)
-
-- Logger: `scripts\\run_brain.bat`
-- Visualizer: `scripts\\run_visualizer.bat` (requires `pip install -r python/requirements-visualizer.txt`, or use `python cortex_visualizer.py --text`)
-- TCP logger (experimental): `scripts\\run_brain_tcp.bat`
-
-### 3) Launch Quake
-
-`scripts\\run_quake.bat`
-
-Or TCP stream mode:
-
-`scripts\\run_quake_tcp.bat`
-
-Idiot-proof TCP launchers:
-- Debug logger: `scripts\\run_mode_b_debug.bat`
-- Training: `scripts\\run_mode_b_train.bat`
-
-Expected Quake console messages:
-- `CORTEX: Initializing AI Bridge...`
-- `CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)`
-
-Expected Python output:
-- `[BRAIN] BOOT | logger_initialized | {"log_file":"...\\.cortex\\logs\\cortex_brain_<timestamp>.log"}`
-- `[BRAIN] IO | monitoring_telemetry_file | {"path":"...\\Game\\cortex\\data\\cortex_telemetry.txt",...}`
-
-For high-volume timelines (telemetry packets, decisions), read the generated `.cortex\\logs\\cortex_brain_<timestamp>.log`.
-
-## Troubleshooting
-
-### `CORTEX: Telemetry disabled...`
-
-- Open the Quake console and run `sv_progsaccess 2`
-  - Some FTEQW builds do not honor cfg/`+set` for this cvar
-- If Quake prints `CORTEX: Engine reports NO FRIK_FILE support`, that engine build won’t allow QuakeC file I/O
-
-### Python shows no data
-
-- Ensure you’re actually in a map (menus don’t run QuakeC): `map start` or `map e1m1`
-- Verify the file exists and changes: `Game/cortex/data/cortex_telemetry.txt`
-
-## Python Modules
-
-The repo-root entrypoints are `cortex_brain.py` and `cortex_visualizer.py`. The `python/` package contains RL/training modules (including `python/cortex_env.py`) and a simple TCP debug server (`python/cortex_brain.py`).
-
-## Archive
-
-- Development notes: `docs/archive/SESSION_SUMMARY_2025-12-29.md`
-- TCP stream mode guide: `docs/TCP_MODE.md`
-- Cortex Black Box logging: `docs/LOGGING.md`
-- QuakeC ↔ Python compatibility notes: `docs/COMPATIBILITY.md`
+- QuakeC:
+  - `quakec/cortex/common/` (sensors + world integration)
+  - `quakec/cortex/hybrid/` (file/stream IPC driver)
+  - `quakec/cortex/bot/` (pure-QuakeC bot AI stack)
+- Python:
+  - `python/file_ipc/` (file tail + visualizer)
+  - `python/fteqw_stream/` (ws/tcp stream + Gymnasium env)
+  - `python/darkplaces_rcon/` (DarkPlaces RCON loop)

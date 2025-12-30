@@ -141,6 +141,10 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
         return;
     }
 
+    // CORTEX: opponent modeling hooks (only does work when targ/attacker involve cortex_bot).
+    // Defined in cortex/cortex_opponent_model.qc (loaded early via progs.src).
+    Cortex_Opp_OnDamage(cortex_bot, targ, attacker, damage);
+
     // used by buttons and triggers to set activator for target firing
     damage_attacker = attacker;
 

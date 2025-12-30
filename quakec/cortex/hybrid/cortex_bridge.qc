@@ -36,6 +36,8 @@ void() Cortex_PrintFileSupportStatus;
 void() Cortex_PrintStreamSupportStatus;
 void() Cortex_PollControls;
 void() Cortex_ApplyControls;
+void() Cortex_BotInitCvars;
+void() Cortex_BotEnsureSpawned;
 
 /*
 =================
@@ -57,6 +59,10 @@ void() Cortex_Init =
     bprint("CORTEX: Initializing AI Bridge...\n");
     CortexLog(LOG_info, "BRIDGE", "init");
 
+    // Initialize control cvars + spawn optional server-side bot (used for RCON control).
+    Cortex_BotInitCvars();
+    Cortex_BotEnsureSpawned();
+
     // Don't assume sv_progsaccess is already enabled; we'll retry from StartFrame.
     Cortex_EnsureTelemetryOpen();
 };
@@ -73,6 +79,7 @@ void() Cortex_PrintFileSupportStatus =
 {
     local float has_checkextension;
     local float has_frik_file;
+    local float has_dp_qc_fs;
 
     if (cortex_ext_checked) return;
     cortex_ext_checked = 1;
@@ -87,15 +94,22 @@ void() Cortex_PrintFileSupportStatus =
         return;
     }
 
+    has_dp_qc_fs = checkextension("DP_QC_FS");
     has_frik_file = checkextension("FRIK_FILE");
-    if (has_frik_file)
+
+    if (has_dp_qc_fs)
+    {
+        bprint("CORTEX: Engine reports DP_QC_FS support (fopen/fputs/fclose should exist)\n");
+        CortexLog(LOG_info, "CAPS", "dp_qc_fs_available");
+    }
+    else if (has_frik_file)
     {
         bprint("CORTEX: Engine reports FRIK_FILE support (fopen/fputs/fclose should exist)\n");
         CortexLog(LOG_info, "CAPS", "frik_file_available");
     }
     else
     {
-        bprint("CORTEX: Engine reports NO FRIK_FILE support (file I/O will not work)\n");
+        bprint("CORTEX: Engine reports NO DP_QC_FS/FRIK_FILE support (file I/O will not work)\n");
         CortexLog(LOG_error, "CAPS", "frik_file_missing");
     }
 };
@@ -526,6 +540,7 @@ Entry point called from StartFrame to initialize and emit telemetry.
 void() Cortex_Frame =
 {
     local entity old_self;
+    local entity target;
     local float interval;
 
     if (!cortex_initialized)
@@ -533,6 +548,9 @@ void() Cortex_Frame =
         cortex_initialized = 1;
         Cortex_Init();
     }
+
+    // Allow toggling cortex_spawn_bot without restarting the map.
+    Cortex_BotEnsureSpawned();
 
     // If file access isn't available yet, don't waste time searching entities.
     Cortex_EnsureTelemetryOpen();
@@ -547,8 +565,21 @@ void() Cortex_Frame =
     if (time < cortex_last_send + interval) return;
 
     old_self = self;
-    self = find(world, classname, "player");
+
+    // Telemetry source selection:
+    // - default: first "player" entity
+    // - optional: server-side "cortex_bot" (useful when driving via RCON/cvars)
+    if (cvar("cortex_track_bot"))
+        target = find(world, classname, "cortex_bot");
+    else
+        target = world;
+
+    if (!target)
+        target = find(world, classname, "player");
+
+    self = target;
     if (self)
         Cortex_Think();
+
     self = old_self;
 };

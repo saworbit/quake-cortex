@@ -3,22 +3,34 @@
 // Base single-player Quake definitions MUST come first
 lib/QuakeC-releases/progs/defs.qc
 
-// FTE Extensions (official file with all builtins including strcat, etc)
-lib/Quake-master/fteextensions.qc
+// DarkPlaces extension definitions (also used by other engines via checkextension)
+lib/dpextensions.qc
 
-// Cortex compiler configuration (disable strict warnings from base code)
-// Must come AFTER fteextensions to override its strict mode
-cortex/cortex_config.qc
+// Cortex common headers + engine feature probes
+// (Must come AFTER extension headers to override their strict mode)
+cortex/common/cortex_config.qc
 
 // Cortex structured logging (console black box)
-cortex/cortex_logging.qc
+cortex/common/cortex_logging.qc
 
-// Custom file-based communication (FTEQW-specific)
-cortex/cortex_tcp.qc
+// Cortex Hybrid IPC (FTEQW file + optional stream)
+cortex/hybrid/cortex_tcp.qc
 
-// Cortex Core
-cortex/cortex_sensor.qc
-cortex/cortex_bridge.qc
+// Cortex Common Sensors + Hybrid Driver
+cortex/common/cortex_sensor.qc
+cortex/hybrid/cortex_bridge.qc
+
+// Cortex Pure-QuakeC Bot (AI stack)
+cortex/bot/cortex_pathfinding.qc
+cortex/bot/cortex_perception.qc
+cortex/bot/cortex_tactics.qc
+cortex/bot/cortex_combat.qc
+cortex/bot/cortex_resource.qc
+cortex/bot/cortex_team.qc
+cortex/bot/cortex_opponent_model.qc
+cortex/bot/cortex_memory.qc
+cortex/bot/cortex_mcts.qc
+cortex/bot/cortex_bot.qc
 
 // Base single-player Quake source files
 lib/QuakeC-releases/progs/subs.qc
@@ -27,7 +39,7 @@ lib/QuakeC-releases/progs/ai.qc
 lib/QuakeC-releases/progs/combat.qc
 lib/QuakeC-releases/progs/items.qc
 lib/QuakeC-releases/progs/weapons.qc
-cortex/cortex_world.qc
+cortex/common/cortex_world.qc
 lib/QuakeC-releases/progs/client.qc
 lib/QuakeC-releases/progs/player.qc
 lib/QuakeC-releases/progs/monsters.qc

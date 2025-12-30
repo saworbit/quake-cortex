@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .fteqw_stream.brain_tcp import main
+from .darkplaces_rcon.brain_rcon import main
 
 if __name__ == "__main__":
     main()

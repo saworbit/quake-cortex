@@ -192,6 +192,9 @@ void() worldspawn =
 // player precaches
     W_Precache ();                  // get weapon precaches
 
+    // CORTEX: ensure this model is available for the server-side cortex_bot entity.
+    precache_model("progs/player.mdl");
+
 // sounds used from C physics code
     precache_sound ("demon/dland2.wav");            // landing thud
     precache_sound ("misc/h2ohit1.wav");            // landing splash

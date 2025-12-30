@@ -407,6 +407,7 @@ void() respawn =
         setspawnparms(self);
         // respawn
         PutClientInServer();
+        Cortex_BotOnRespawn();
     }
     else if (deathmatch)
     {
@@ -416,6 +417,7 @@ void() respawn =
         SetNewParms();
         // respawn
         PutClientInServer();
+        Cortex_BotOnRespawn();
     }
     else
     {
@@ -1347,6 +1349,9 @@ void(entity targ, entity attacker) ClientObituary =
     local string deathstring, deathstring2;
 
     rnum = random();
+
+    // CORTEX: let the bot track recent kills/deaths for simulated adaptation.
+    Cortex_BotOnObituary(targ, attacker);
 
     if (targ.classname == "player")
     {

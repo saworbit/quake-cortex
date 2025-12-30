@@ -5,6 +5,9 @@
 
 ## What Works
 
+### Pure QuakeC Bot
+- [x] Internal bot AI (utility + lightweight planning) behind `cortex_bot_enable 1`
+
 ### Sidecar Architecture
 - [x] QuakeC emits telemetry to a file (FTEQW `FRIK_FILE` builtins)
 - [x] Python tails telemetry and writes structured logs (Brain timeline)
@@ -35,10 +38,11 @@
 | `cortex_visualizer.py` | File telemetry visualizer (pygame/text) |
 | `cortex_env.py` | Gymnasium environment wrapper (TCP server) |
 | `train_cortex.py` | PPO training entrypoint (SB3) |
-| `quakec/cortex/cortex_bridge.qc` | Telemetry driver / init + retry |
-| `quakec/cortex/cortex_tcp.qc` | File/TCP stream wrappers (FTE `fopen`) |
-| `quakec/cortex/cortex_sensor.qc` | Sensors (emits NDJSON) |
-| `quakec/cortex/cortex_world.qc` | Hooks StartFrame to emit telemetry |
+| `quakec/cortex/hybrid/cortex_bridge.qc` | Telemetry driver / init + retry |
+| `quakec/cortex/hybrid/cortex_tcp.qc` | File/TCP stream wrappers (FTE `fopen`) |
+| `quakec/cortex/common/cortex_sensor.qc` | Sensors (emits NDJSON) |
+| `quakec/cortex/common/cortex_world.qc` | Hooks StartFrame to emit telemetry |
+| `quakec/cortex/bot/cortex_bot.qc` | Pure QuakeC bot (optional) |
 | `Game/cortex/default.cfg` | Default binds + sv_progsaccess |
 | `Game/cortex/autoexec.cfg` | Post-config overrides (sv_progsaccess) |
 | `scripts/build.bat` | Compile QuakeC (`progs.dat`) |

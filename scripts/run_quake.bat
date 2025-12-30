@@ -4,7 +4,10 @@ echo ========================================
 echo PROJECT CORTEX - Launch Quake
 echo ========================================
 echo.
-echo Make sure Python brain is running first!
+echo Modes:
+echo - Pure QuakeC bot (no Python): pass +cortex_bot_enable 1
+echo - Hybrid (Python brain): run scripts\run_brain.bat first (file IPC)
+echo - Hybrid (TCP stream): use scripts\run_quake_tcp.bat instead
 echo.
 echo Launching FTEQW with Cortex mod...
 echo.
@@ -20,12 +23,15 @@ if not exist fteqw64.exe (
     popd >nul 2>&1
     exit /b 1
 )
+set EXTRA_ARGS=%*
+if "%~1"=="" set EXTRA_ARGS=+map start
+
 fteqw64.exe -condebug -game cortex ^
   +set developer 1 ^
   +set sv_progsaccess 2 ^
   +set sv_public 0 ^
   +set cl_master "" ^
-  +map start
+  %EXTRA_ARGS%
 set EXITCODE=%ERRORLEVEL%
 popd >nul 2>&1
 exit /b %EXITCODE%

@@ -7,8 +7,9 @@ echo.
 echo Starting Python brain server...
 echo Press Ctrl+C to stop
 echo.
-echo After this starts, launch Quake with:
-echo   scripts\run_quake.bat
+echo This is for HYBRID File-IPC mode (QuakeC -> file -> Python).
+echo After this starts, launch Quake with: scripts\run_quake.bat
+echo For the pure QuakeC bot (no Python): scripts\run_pure_qc.bat
 echo.
 echo For TCP stream + control input (experimental):
 echo   scripts\run_quake_tcp.bat

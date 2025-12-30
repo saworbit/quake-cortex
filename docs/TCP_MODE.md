@@ -4,7 +4,7 @@ Stream mode replaces File IPC with a local stream so the Brain can both:
 - receive telemetry (NDJSON), and
 - send control commands back to Quake.
 
-This is required for RL training (`train_cortex.py` / `python/cortex_env.py`).
+This is required for RL training (`train_cortex.py` / `cortex_env.py`).
 
 Default URI (set automatically by `scripts\\run_quake_tcp.bat`):
 - `ws://127.0.0.1:26000/`
