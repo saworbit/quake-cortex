@@ -1,6 +1,6 @@
-# Project Cortex - Quick Start (File IPC)
+# Project Cortex - Quick Start
 
-## 30-Second Setup
+## 30-Second Setup (File IPC)
 
 ### Step 1: Build the Mod
 
@@ -31,6 +31,14 @@ sv_progsaccess 2
 - Python: `[POS] X=... Y=... Z=...` while you move around
 
 Note: telemetry won’t appear until you’re in an actual map (menus don’t run QuakeC). Use `map start`/`map e1m1` if needed.
+
+Telemetry format: newline-delimited JSON (NDJSON). The tools also accept the older `POS: 'x y z'` format.
+
+## TCP Stream + RL (Experimental)
+
+1. Install deps: `pip install -r python/requirements.txt`
+2. Launch Quake: `scripts\\run_quake_tcp.bat`
+3. Train: `python train_cortex.py`
 
 ## Visual Debug Mode (Optional)
 

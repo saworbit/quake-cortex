@@ -1,47 +1,57 @@
 /*
-    cortex_tcp.qc - File-based Communication Bridge
+    cortex_tcp.qc - Cortex Stream Abstraction (File or TCP)
 
-    Uses file I/O instead of TCP to avoid FTEQW security restrictions.
-    QuakeC writes telemetry to a file, Python reads it in real-time.
+    In Phase 1, Project Cortex used file I/O because some FTE builds restrict
+    network access from QuakeC by default.
+
+    FTE's `fopen` also supports URI streams when called with `fmode < 0`
+    (see engine builtin `PF_fopen`), including `tcp://...`.
+
+    This file provides small wrappers so the rest of the Cortex code can treat
+    the output as a single "socket-like" handle regardless of whether we're
+    writing to a file or a TCP stream.
 */
-
-// File handle for telemetry output
-float telemetry_file;
-string TELEMETRY_PATH = "cortex_telemetry.txt";
 
 // Wrapper functions using file I/O
 float(string hostname) TCP_Connect =
 {
-    // Open file for writing telemetry.
-    // Note: FTEQW restricts QuakeC file writes to the mod's `data/` folder.
-    // So this typically ends up at: `Game/cortex/data/cortex_telemetry.txt`
-    telemetry_file = fopen(TELEMETRY_PATH, FILE_APPEND);
+    local float handle;
+    local float is_tcp;
 
-    if (telemetry_file >= 0)
+    // URI streams: `fopen("tcp://127.0.0.1:26000", -1)` returns a STREAM handle.
+    is_tcp =
+        (strncmp(hostname, "tcp://", 6) == 0) ||
+        (strncmp(hostname, "tls://", 6) == 0) ||
+        (strncmp(hostname, "ws:", 3) == 0) ||
+        (strncmp(hostname, "wss:", 4) == 0);
+
+    if (is_tcp)
+        handle = fopen(hostname, -1);
+    else
     {
-        // Write header to indicate new session
-        fputs(telemetry_file, "--- CORTEX SESSION START ---\n");
-        return telemetry_file;  // Return handle to indicate success
+        // File writes are restricted to the mod's `data/` folder.
+        // So this typically ends up at: `Game/cortex/data/<hostname>`
+        handle = fopen(hostname, FILE_APPEND);
     }
 
-    return -1;  // Failed to open file
+    if (handle < 0)
+        return -1;
+
+    fputs(handle, "--- CORTEX SESSION START ---\n");
+    return handle;
 };
 
 void(float socket, string buffer) TCP_Send =
 {
-    if (telemetry_file >= 0)
-    {
-        fputs(telemetry_file, buffer);
-        // Note: File is flushed automatically by FTEQW
-    }
+    if (socket >= 0)
+        fputs(socket, buffer);
 };
 
 void(float socket) TCP_Close =
 {
-    if (telemetry_file >= 0)
-    {
-        fputs(telemetry_file, "--- CORTEX SESSION END ---\n");
-        fclose(telemetry_file);
-        telemetry_file = -1;
-    }
+    if (socket < 0)
+        return;
+
+    fputs(socket, "--- CORTEX SESSION END ---\n");
+    fclose(socket);
 };

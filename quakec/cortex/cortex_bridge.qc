@@ -14,9 +14,18 @@ float cortex_initialized;
 float cortex_warn_time;  // Avoid spamming setup hints
 float cortex_ext_checked;
 
+// Latest control command received from the Brain (TCP stream mode).
+vector cortex_cmd_move;     // x=forward, y=side
+vector cortex_cmd_aim;      // x=pitch_delta, y=yaw_delta
+float cortex_cmd_buttons;   // bit0=attack, bit1=jump
+float cortex_cmd_time;      // last time we applied an update
+
 void() Cortex_Frame;
 void() Cortex_EnsureTelemetryOpen;
 void() Cortex_PrintFileSupportStatus;
+void() Cortex_PrintStreamSupportStatus;
+void() Cortex_PollControls;
+void() Cortex_ApplyControls;
 
 /*
 =================
@@ -74,6 +83,20 @@ void() Cortex_PrintFileSupportStatus =
 
 /*
 =================
+Cortex_PrintStreamSupportStatus
+
+URI streams (`tcp://`, `tls://`, `ws:`, `wss:`) are opened via `fopen(uri, -1)`.
+FTE gates this behind `pr_enable_uriget` for safety.
+=================
+*/
+void() Cortex_PrintStreamSupportStatus =
+{
+    if (!cvar("pr_enable_uriget"))
+        bprint("CORTEX: Note: URI streams disabled (set `pr_enable_uriget 1` to allow tcp://)\n");
+};
+
+/*
+=================
 Cortex_EnsureTelemetryOpen
 
 Opens the telemetry file once file access is available.
@@ -82,19 +105,41 @@ Retries periodically so the user can set sv_progsaccess without restarting the m
 */
 void() Cortex_EnsureTelemetryOpen =
 {
+    local float use_tcp;
+    local string target;
+
     if (cortex_socket >= 0) return;
 
-    // Retry at most once per second.
+    use_tcp = cvar("cortex_use_tcp");
+
+    // Retry occasionally to avoid console spam.
     if (time < cortex_retry_time) return;
-    cortex_retry_time = time + 1;
+    cortex_retry_time = time + (use_tcp ? 3 : 1);
 
-    Cortex_PrintFileSupportStatus();
+    if (use_tcp)
+        Cortex_PrintStreamSupportStatus();
+    else
+        Cortex_PrintFileSupportStatus();
 
-    cortex_socket = TCP_Connect("cortex_telemetry.txt");
+    if (use_tcp)
+    {
+        target = cvar_string("cortex_tcp_uri");
+        if (target == "") target = "tcp://127.0.0.1:26000";
+    }
+    else
+    {
+        target = cvar_string("cortex_telemetry_file");
+        if (target == "") target = "cortex_telemetry.txt";
+    }
+
+    cortex_socket = TCP_Connect(target);
 
     if (cortex_socket >= 0)
     {
-        bprint("CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)\n");
+        if (use_tcp)
+            bprint("CORTEX: Connected Cortex stream (tcp://)\n");
+        else
+            bprint("CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)\n");
         return;
     }
 
@@ -102,8 +147,147 @@ void() Cortex_EnsureTelemetryOpen =
     if (time >= cortex_warn_time)
     {
         cortex_warn_time = time + 5;
-        bprint("CORTEX: Telemetry disabled (try `sv_progsaccess 2` in console)\n");
+        if (use_tcp)
+            bprint("CORTEX: Stream connect failed (check Python server + `pr_enable_uriget 1`)\n");
+        else
+            bprint("CORTEX: Telemetry disabled (try `sv_progsaccess 2` in console)\n");
     }
+};
+
+float(string s, float start) Cortex_ParseJsonNumber =
+{
+    local float len;
+    local float c;
+    local float end;
+
+    len = strlen(s);
+
+    // Skip whitespace and common separators.
+    while (start < len)
+    {
+        c = str2chr(s, start);
+        if (c == 32 || c == 9 || c == 10 || c == 13 || c == 58)
+            start = start + 1;
+        else
+            break;
+    }
+
+    end = start;
+    while (end < len)
+    {
+        c = str2chr(s, end);
+        if ((c >= 48 && c <= 57) || c == 45 || c == 46 || c == 43 || c == 69 || c == 101)
+            end = end + 1;
+        else
+            break;
+    }
+
+    return stof(substring(s, start, end - start));
+};
+
+void(string line) Cortex_ParseControlLine =
+{
+    local float ofs;
+    local float start;
+    local float comma;
+    local float a0;
+    local float a1;
+
+    // Expect JSON object.
+    if (line == "") return;
+    if (str2chr(line, 0) != 123) return; // '{'
+
+    // Parse: "move":[forward,side]
+    ofs = strstrofs(line, "\"move\":[", 0);
+    if (ofs >= 0)
+    {
+        start = ofs + strlen("\"move\":[");
+        cortex_cmd_move_x = Cortex_ParseJsonNumber(line, start);
+        comma = strstrofs(line, ",", start);
+        if (comma >= 0)
+            cortex_cmd_move_y = Cortex_ParseJsonNumber(line, comma + 1);
+    }
+
+    // Parse: "aim":[yaw_delta,pitch_delta]
+    ofs = strstrofs(line, "\"aim\":[", 0);
+    if (ofs >= 0)
+    {
+        start = ofs + strlen("\"aim\":[");
+        a0 = Cortex_ParseJsonNumber(line, start);
+        comma = strstrofs(line, ",", start);
+        if (comma >= 0)
+            a1 = Cortex_ParseJsonNumber(line, comma + 1);
+        else
+            a1 = 0;
+
+        // Store as pitch/yaw deltas for easy application later.
+        cortex_cmd_aim_x = a1;
+        cortex_cmd_aim_y = a0;
+    }
+
+    // Parse: "buttons":N
+    ofs = strstrofs(line, "\"buttons\":", 0);
+    if (ofs >= 0)
+    {
+        start = ofs + strlen("\"buttons\":");
+        cortex_cmd_buttons = Cortex_ParseJsonNumber(line, start);
+    }
+
+    cortex_cmd_time = time;
+};
+
+void() Cortex_PollControls =
+{
+    local string line;
+    local float i;
+
+    if (cortex_socket < 0) return;
+    if (!cvar("cortex_use_tcp")) return;
+    if (!cvar("cortex_enable_controls")) return;
+
+    // Drain a few lines per frame (non-blocking on FTE tcp streams).
+    for (i = 0; i < 8; i = i + 1)
+    {
+        line = fgets(cortex_socket);
+        if (line == "") return;
+        Cortex_ParseControlLine(line);
+    }
+};
+
+void() Cortex_ApplyControls =
+{
+    local float attack;
+    local float jump;
+    local float vz;
+
+    if (!cvar("cortex_use_tcp")) return;
+    if (!cvar("cortex_enable_controls")) return;
+
+    // Safety: don't keep applying stale commands forever.
+    if (time > cortex_cmd_time + 0.25)
+        return;
+
+    // Aim deltas (degrees).
+    self.v_angle_x = self.v_angle_x + cortex_cmd_aim_x;
+    self.v_angle_y = self.v_angle_y + cortex_cmd_aim_y;
+
+    if (self.v_angle_x > 80) self.v_angle_x = 80;
+    if (self.v_angle_x < -70) self.v_angle_x = -70;
+
+    // Keep the model facing the view yaw.
+    self.angles_y = self.v_angle_y;
+
+    // Movement: override horizontal velocity while preserving vertical.
+    vz = self.velocity_z;
+    makevectors(self.v_angle);
+    self.velocity = (v_forward * cortex_cmd_move_x) + (v_right * cortex_cmd_move_y);
+    self.velocity_z = vz;
+
+    // Buttons (bitmask).
+    attack = (cortex_cmd_buttons & 1) ? 1 : 0;
+    jump = (cortex_cmd_buttons & 2) ? 1 : 0;
+    self.button0 = attack;
+    self.button2 = jump;
 };
 
 /*
@@ -120,8 +304,8 @@ void() Cortex_Connect =
     if (time < cortex_retry_time) return;
     cortex_retry_time = time + 3;
 
-    // Try to connect to Python on Localhost Port 5000
-    cortex_socket = TCP_Connect("tcp://127.0.0.1:5000");
+    // Try to connect to Python on Localhost Port 26000
+    cortex_socket = TCP_Connect("tcp://127.0.0.1:26000");
 
     if (cortex_socket >= 0)
     {
@@ -144,6 +328,7 @@ Sends sensor data to Python brain.
 void() Cortex_Think =
 {
     local string packet;
+    local float interval;
 
     // Exit if disabled or not connected
     if (!cortex_enabled) return;
@@ -152,8 +337,10 @@ void() Cortex_Think =
     Cortex_EnsureTelemetryOpen();
     if (cortex_socket < 0) return;
 
-    // Throttle to 10 updates per second (every 0.1 seconds)
-    if (time < cortex_last_send + 0.1) return;
+    // Throttle updates (default 10Hz; override via `cortex_send_interval`).
+    interval = cvar("cortex_send_interval");
+    if (interval <= 0) interval = 0.1;
+    if (time < cortex_last_send + interval) return;
     cortex_last_send = time;
 
     // Build and send sensor packet
@@ -191,6 +378,7 @@ Entry point called from StartFrame to initialize and emit telemetry.
 void() Cortex_Frame =
 {
     local entity old_self;
+    local float interval;
 
     if (!cortex_initialized)
     {
@@ -202,8 +390,13 @@ void() Cortex_Frame =
     Cortex_EnsureTelemetryOpen();
     if (cortex_socket < 0) return;
 
+    // If running in TCP stream mode, poll control commands every frame.
+    Cortex_PollControls();
+
     // Avoid the per-frame entity lookup if we won't send yet.
-    if (time < cortex_last_send + 0.1) return;
+    interval = cvar("cortex_send_interval");
+    if (interval <= 0) interval = 0.1;
+    if (time < cortex_last_send + interval) return;
 
     old_self = self;
     self = find(world, classname, "player");

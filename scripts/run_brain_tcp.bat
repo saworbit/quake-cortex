@@ -1,17 +1,16 @@
 @echo off
 setlocal
 echo ========================================
-echo PROJECT CORTEX - Brain Server
+echo PROJECT CORTEX - Brain Server (TCP Stream)
 echo ========================================
 echo.
-echo Starting Python brain server...
-echo Press Ctrl+C to stop
+echo This starts a TCP server on 127.0.0.1:26000 for QuakeC to connect to via:
+echo   tcp://127.0.0.1:26000
 echo.
-echo After this starts, launch Quake with:
-echo   scripts\run_quake.bat
-echo.
-echo For TCP stream + control input (experimental):
+echo In another terminal, launch Quake with:
 echo   scripts\run_quake_tcp.bat
+echo.
+echo Note: this is a debug logger. For RL training, run:
 echo   python train_cortex.py
 echo.
 echo ========================================
@@ -22,7 +21,8 @@ if errorlevel 1 (
     echo ERROR: Unable to cd to repository root.
     exit /b 1
 )
-python cortex_brain.py
+python python\cortex_brain.py
 set EXITCODE=%ERRORLEVEL%
 popd >nul 2>&1
 exit /b %EXITCODE%
+

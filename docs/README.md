@@ -1,10 +1,10 @@
-# PROJECT CORTEX (Current: File-Based IPC)
+# PROJECT CORTEX
 
 Project Cortex is an experimental “sidecar” AI architecture for Quake 1:
 - QuakeC emits telemetry (sensor data)
 - Python tails a telemetry file and prints/visualizes it
 
-This repo previously contained a TCP/JSON prototype; the current implementation is **file-based** because QuakeC networking is heavily restricted in FTEQW.
+Default mode is **file-based** IPC because QuakeC networking is often restricted in FTEQW. An experimental TCP stream mode is also supported for RL training/control loops.
 
 ## Architecture
 
@@ -17,6 +17,10 @@ This repo previously contained a TCP/JSON prototype; the current implementation 
 
 Telemetry file (expected):
 - `Game/cortex/data/cortex_telemetry.txt`
+
+TCP stream (experimental):
+- QuakeC connects to `tcp://127.0.0.1:26000` (requires `pr_enable_uriget 1`)
+- Python runs a local server (`python train_cortex.py` or `scripts\\run_brain_tcp.bat`)
 
 Note: FTEQW typically restricts QuakeC file writes to the mod’s `data/` folder, even if QuakeC opens `"cortex_telemetry.txt"` directly.
 
@@ -32,10 +36,15 @@ This produces `Game/cortex/progs.dat`.
 
 - Logger: `scripts\\run_brain.bat`
 - Visualizer: `scripts\\run_visualizer.bat` (requires `pip install pygame`)
+- TCP logger (experimental): `scripts\\run_brain_tcp.bat`
 
 ### 3) Launch Quake
 
 `scripts\\run_quake.bat`
+
+Or TCP stream mode:
+
+`scripts\\run_quake_tcp.bat`
 
 Expected Quake console messages:
 - `CORTEX: Initializing AI Bridge...`
@@ -58,6 +67,6 @@ Expected Python output:
 - Ensure you’re actually in a map (menus don’t run QuakeC): `map start` or `map e1m1`
 - Verify the file exists and changes: `Game/cortex/data/cortex_telemetry.txt`
 
-## Legacy TCP Prototype
+## Python Modules
 
-The `python/` folder contains older TCP-based scripts (`python/cortex_brain.py`, `python/cortex_visualizer.py`). The current entrypoints are the repo-root `cortex_brain.py` and `cortex_visualizer.py`.
+The repo-root entrypoints are `cortex_brain.py` and `cortex_visualizer.py`. The `python/` package contains RL/training modules (including `python/cortex_env.py`) and a simple TCP debug server (`python/cortex_brain.py`).

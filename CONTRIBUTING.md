@@ -46,7 +46,7 @@ Feature requests are welcome! Please:
 # Compile QuakeC
 scripts\build.bat
 
-# Test Python
+# File IPC brain (tail telemetry file)
 python cortex_brain.py
 ```
 
@@ -56,8 +56,12 @@ python cortex_brain.py
 # Run the telemetry visualizer (optional; requires pygame)
 python cortex_visualizer.py
 
-# Launch Quake and verify connection
+# Launch Quake and verify file IPC connection
 scripts\run_quake.bat
+
+# TCP stream mode (experimental: control + RL)
+scripts\run_quake_tcp.bat
+python train_cortex.py
 ```
 
 ## Project Structure
@@ -65,7 +69,7 @@ scripts\run_quake.bat
 ```
 quakec/cortex/     - Custom QuakeC modules (sensors, bridge, etc.)
 python/            - Python AI brain
-                 (legacy TCP prototypes; current entrypoints are in repo root)
+                 (Gym env + training modules; repo root scripts are entrypoints)
 scripts/           - Build and run scripts
 docs/              - Documentation
 ```

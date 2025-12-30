@@ -43,4 +43,4 @@ jobs:
 
     - name: Python syntax check (repo root scripts)
       run: |
-        python -m py_compile cortex_brain.py cortex_visualizer.py test_cortex_connection.py
+        python -m py_compile cortex_brain.py cortex_visualizer.py cortex_env.py train_cortex.py test_cortex_connection.py

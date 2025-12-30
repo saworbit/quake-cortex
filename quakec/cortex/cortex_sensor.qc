@@ -9,6 +9,8 @@
 
 // Number of rays in the lidar sphere
 #define RAYCAST_COUNT 32
+#define CORTEX_LIDAR_RANGE 1000
+#define CORTEX_ENEMY_RADIUS 1000
 
 // Sensor data structure
 string sensor_data;
@@ -158,6 +160,103 @@ string() Cortex_GetPosition =
 
 /*
 =================
+Cortex_Vec3Array
+
+Returns a vector as a JSON array: [x,y,z]
+=================
+*/
+string(vector v) Cortex_Vec3Array =
+{
+    local string out;
+
+    out = "[";
+    out = strcat(out, ftos(v_x), ",", ftos(v_y), ",", ftos(v_z), "]");
+    return out;
+};
+
+/*
+=================
+Cortex_Lidar5
+
+Returns a JSON array of 5 trace fractions (0..1).
+Rays: center, left15, right15, left30, right30 (approx).
+=================
+*/
+string() Cortex_Lidar5 =
+{
+    local vector start;
+    local vector endpos;
+    local vector dir;
+    local float i;
+    local string result;
+
+    makevectors(self.v_angle);
+    start = self.origin + '0 0 16';
+
+    result = "[";
+
+    // i = -2..2 -> -30deg, -15deg, 0deg, +15deg, +30deg (approx)
+    for (i = -2; i <= 2; i = i + 1)
+    {
+        dir = v_forward + (v_right * (i * 0.15));
+        dir = normalize(dir);
+
+        endpos = start + (dir * CORTEX_LIDAR_RANGE);
+        traceline(start, endpos, TRUE, self);
+
+        if (i > -2)
+            result = strcat(result, ",");
+        result = strcat(result, ftos(trace_fraction));
+    }
+
+    result = strcat(result, "]");
+    return result;
+};
+
+/*
+=================
+Cortex_VisibleEnemies
+
+Returns a JSON array of visible player summaries (distance only, for now).
+=================
+*/
+string() Cortex_VisibleEnemies =
+{
+    local string result;
+    local entity head;
+    local float first_enemy;
+    local vector start;
+    local float dist;
+
+    start = self.origin + '0 0 16';
+    first_enemy = 1;
+
+    result = "[";
+
+    head = findradius(self.origin, CORTEX_ENEMY_RADIUS);
+    while (head)
+    {
+        if (head.classname == "player" && head != self && head.health > 0)
+        {
+            traceline(start, head.origin + '0 0 16', TRUE, self);
+            if (trace_fraction == 1)
+            {
+                dist = vlen(head.origin - self.origin);
+                if (!first_enemy)
+                    result = strcat(result, ",");
+                first_enemy = 0;
+                result = strcat(result, "{\"dist\":", ftos(dist), "}");
+            }
+        }
+        head = head.chain;
+    }
+
+    result = strcat(result, "]");
+    return result;
+};
+
+/*
+=================
 Cortex_BuildSensorPacket
 
 Assembles all sensor data into a single JSON packet
@@ -168,30 +267,23 @@ string() Cortex_BuildSensorPacket =
 {
     local string packet;
 
-    // PHASE 1: Send simple position data (compatible with Python parser)
-    // Format: POS: 'x y z'
-    packet = "POS: '";
-    packet = strcat(packet, ftos(self.origin_x), " ");
-    packet = strcat(packet, ftos(self.origin_y), " ");
-    packet = strcat(packet, ftos(self.origin_z));
-    packet = strcat(packet, "'\n");
-
-    return packet;
-
-    /* PHASE 2: Full JSON sensor data (commented out for now)
     packet = "{";
-    packet = strcat(packet, "\"type\":\"sensor_update\"");
-    packet = strcat(packet, ",\"time\":", ftos(time));
-    packet = strcat(packet, ",\"position\":", Cortex_GetPosition());
-    packet = strcat(packet, ",\"velocity\":", Cortex_GetVelocity());
-    packet = strcat(packet, ",\"state\":", Cortex_GetState());
+    packet = strcat(packet, "\"time\":", ftos(time));
 
-    // Note: Raycasts are expensive, only send every 3rd frame
-    if (framecount % 3 == 0)
-        packet = strcat(packet, ",\"raycasts\":", Cortex_CastRays());
+    // Proprioception
+    packet = strcat(packet, ",\"health\":", ftos(self.health));
+    packet = strcat(packet, ",\"armor\":", ftos(self.armorvalue));
+    packet = strcat(packet, ",\"ammo_shells\":", ftos(self.ammo_shells));
+    packet = strcat(packet, ",\"ammo_nails\":", ftos(self.ammo_nails));
+    packet = strcat(packet, ",\"ammo_rockets\":", ftos(self.ammo_rockets));
+    packet = strcat(packet, ",\"ammo_cells\":", ftos(self.ammo_cells));
+    packet = strcat(packet, ",\"pos\":", Cortex_Vec3Array(self.origin));
+    packet = strcat(packet, ",\"vel\":", Cortex_Vec3Array(self.velocity));
+
+    // Vision + awareness
+    packet = strcat(packet, ",\"lidar\":", Cortex_Lidar5());
+    packet = strcat(packet, ",\"enemies\":", Cortex_VisibleEnemies());
 
     packet = strcat(packet, "}\n");
-
     return packet;
-    */
 };

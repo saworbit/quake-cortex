@@ -5,13 +5,14 @@ This server receives sensor data from the Quake client via TCP.
 In Phase 1, we simply log the data to verify the pipeline works.
 """
 
+import json
 import socket
 import time
 from datetime import datetime
 
 
 class CortexBrain:
-    def __init__(self, host="127.0.0.1", port=5000):
+    def __init__(self, host="127.0.0.1", port=26000):
         self.host = host
         self.port = port
         self.socket = None
@@ -41,6 +42,12 @@ class CortexBrain:
         while self.running:
             try:
                 self.client_socket, addr = self.socket.accept()
+                try:
+                    self.client_socket.setsockopt(
+                        socket.IPPROTO_TCP, socket.TCP_NODELAY, 1
+                    )
+                except OSError:
+                    pass
                 print(f"[CORTEX BRAIN] Connected to Quake client at {addr}")
                 self.handle_client()
             except KeyboardInterrupt:
@@ -88,6 +95,22 @@ class CortexBrain:
         Phase 2+: Parse and process sensor data
         """
         timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        if packet.startswith("{"):
+            try:
+                data = json.loads(packet)
+            except json.JSONDecodeError:
+                print(f"[{timestamp}] {packet}")
+                return
+
+            pos = data.get("pos")
+            if isinstance(pos, list) and len(pos) == 3:
+                x, y, z = pos
+                print(f"[{timestamp}] POS x={x} y={y} z={z}")
+                return
+
+            print(f"[{timestamp}] JSON {data}")
+            return
+
         print(f"[{timestamp}] {packet}")
 
         # TODO Phase 2: Parse JSON sensor data and run through neural networks

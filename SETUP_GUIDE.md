@@ -1,6 +1,8 @@
 # Project Cortex - Quick Setup Guide
 
-**Current Status**: Telemetry is file-based and should work end-to-end; some FTEQW builds still require manually setting `sv_progsaccess 2` in the console.
+Project Cortex supports two modes:
+- **File IPC (default)**: QuakeC appends telemetry to `data/cortex_telemetry.txt`, Python tails it.
+- **TCP Stream (experimental)**: QuakeC connects to `tcp://127.0.0.1:26000` and exchanges NDJSON for telemetry + controls.
 
 📚 **See Also**:
 - [README.md](README.md) - Project overview and current status
@@ -9,7 +11,7 @@
 
 ---
 
-## First-Time Setup (Each Launch)
+## Mode A: File IPC (Recommended)
 
 Recommended launch:
 - `scripts\\run_brain.bat`
@@ -43,6 +45,8 @@ WASD bindings are now provided by `Game/cortex/default.cfg`, so you typically do
 - **Space**: Jump
 
 You should see telemetry flowing in the Python brain window!
+
+Telemetry format: newline-delimited JSON (NDJSON). The tools also accept the older `POS: 'x y z'` format.
 
 ---
 
@@ -83,6 +87,33 @@ CORTEX: Telemetry file opened!
 - Is the Python brain running?
 - Move around in-game to generate position updates
 - Confirm the telemetry file exists at `Game/cortex/data/cortex_telemetry.txt`
+
+---
+
+## Mode B: TCP Stream + Control Input (Experimental)
+
+Use this for RL training and bidirectional control.
+
+### 1. Install Python deps
+
+```
+pip install -r python/requirements.txt
+```
+
+### 2. Launch Quake in TCP mode
+
+- `scripts\\run_quake_tcp.bat`
+
+This enables:
+- `pr_enable_uriget 1` (required for `fopen("tcp://...", -1)` in FTE)
+- `cortex_use_tcp 1` (switch Cortex from file IPC to TCP stream)
+- `cortex_enable_controls 1` (allow Brain -> Body control updates)
+
+### 3. Start a TCP server
+
+Choose one:
+- RL training: `python train_cortex.py`
+- Debug TCP logger: `scripts\\run_brain_tcp.bat`
 
 ---
 

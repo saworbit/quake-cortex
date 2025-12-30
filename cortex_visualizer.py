@@ -1,4 +1,5 @@
 import argparse
+import json
 import sys
 import time
 from pathlib import Path
@@ -63,6 +64,19 @@ def _iter_telemetry_lines(path: Path, *, from_start: bool, poll_s: float):
 
 
 def _parse_pos(line: str):
+    if line.startswith("{"):
+        try:
+            data = json.loads(line)
+        except json.JSONDecodeError:
+            return None
+        pos = data.get("pos")
+        if isinstance(pos, list) and len(pos) == 3:
+            try:
+                return float(pos[0]), float(pos[1]), float(pos[2])
+            except (TypeError, ValueError):
+                return None
+        return None
+
     if not line.startswith("POS:"):
         return None
     try:

@@ -1,4 +1,5 @@
 import argparse
+import json
 import sys
 import time
 from pathlib import Path
@@ -71,6 +72,22 @@ def _iter_telemetry_lines(path: Path, *, from_start: bool, poll_s: float):
 def process_packet(line: str):
     if line.startswith("--- CORTEX SESSION "):
         print(f"[CORTEX] {line}")
+        return
+
+    if line.startswith("{"):
+        try:
+            data = json.loads(line)
+        except json.JSONDecodeError:
+            print(f"[RAW] {line}")
+            return
+
+        pos = data.get("pos")
+        if isinstance(pos, list) and len(pos) == 3:
+            x, y, z = pos
+            print(f"[POS] X={x} Y={y} Z={z}")
+            return
+
+        print(f"[JSON] {data}")
         return
 
     if line.startswith("POS:"):

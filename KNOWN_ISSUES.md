@@ -51,9 +51,32 @@ development, the root causes, workarounds, and current status.
 
 ---
 
+### 2. TCP Stream Mode Requires `pr_enable_uriget 1`
+
+**Status**: OPEN (engine/security behavior varies by build)  
+**Priority**: P1 - Blocks TCP telemetry/control mode  
+**First Observed**: December 30, 2025
+
+#### Symptoms (TCP Mode)
+
+- Quake prints `CORTEX: Stream connect failed...`
+- Training/env or TCP brain server never sees a connection
+
+#### Root Cause (TCP Mode)
+
+- FTE gates URI streams (including `tcp://`) behind `pr_enable_uriget`.
+- Project Cortex uses `fopen("tcp://...", -1)` for TCP stream mode.
+
+#### Workaround (TCP Mode)
+
+- Use `scripts\\run_quake_tcp.bat` (it sets `pr_enable_uriget 1` and switches Cortex to TCP mode).
+- If a build hard-disables URI streams, use File IPC mode (`scripts\\run_quake.bat`) instead.
+
+---
+
 ## Medium Priority Issues
 
-### 2. No Telemetry Until a Map Is Loaded
+### 3. No Telemetry Until a Map Is Loaded
 
 **Status**: EXPECTED (engine behavior)  
 **Priority**: P2 - Confusing during first setup
@@ -100,7 +123,7 @@ development, the root causes, workarounds, and current status.
 
 #### Root Cause (Entrypoint)
 
-- `python/` contains legacy TCP prototypes; the QuakeC side is file-based.
+- `python/` contains multiple modules; the repo-root entrypoints (`cortex_brain.py` / `cortex_visualizer.py`) are for File IPC, while `train_cortex.py` / `python/cortex_env.py` are for TCP stream mode.
 
 #### Solution (Entrypoint)
 

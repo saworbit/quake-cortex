@@ -14,16 +14,32 @@
 # 1. Build the QuakeC mod
 scripts\build.bat
 
-# 2. Start the Python brain (in one terminal)
+# 2. Start the Python brain (file telemetry tail, in one terminal)
 scripts\run_brain.bat
 
-# 3. Launch Quake (in another terminal)
+# 3. Launch Quake (file IPC mode, in another terminal)
 scripts\run_quake.bat
 ```
 
 **Expected Result**: Quake console shows `CORTEX: Telemetry file opened!` and Python prints `[POS] X=... Y=... Z=...`.
 
-Entrypoints: `cortex_brain.py` and `cortex_visualizer.py` in the repo root (the `python/` folder contains legacy TCP prototypes).
+Telemetry format: newline-delimited JSON (NDJSON). The tools also accept the older `POS: 'x y z'` format.
+
+Entrypoints: `cortex_brain.py` and `cortex_visualizer.py` in the repo root.
+
+### Experimental: TCP Stream + RL Training
+
+This uses `tcp://` telemetry + control input instead of file IPC.
+
+```bash
+pip install -r python/requirements.txt
+scripts\\run_quake_tcp.bat   # Quake connects out to a local TCP server
+python train_cortex.py
+```
+
+Notes:
+- Requires `pr_enable_uriget 1` (see `scripts/run_quake_tcp.bat`).
+- For a simple TCP logger (no training), use `scripts\\run_brain_tcp.bat`.
 
 ## Project Structure
 
@@ -31,6 +47,8 @@ Entrypoints: `cortex_brain.py` and `cortex_visualizer.py` in the repo root (the 
 ProjectCortex/
 ├── cortex_brain.py             # Brain (file-based telemetry tail)
 ├── cortex_visualizer.py        # Visualizer (file-based telemetry)
+├── cortex_env.py               # Gymnasium env wrapper (TCP server)
+├── train_cortex.py             # Stable-Baselines training entrypoint
 ├── test_cortex_connection.py   # Guided end-to-end test
 │
 ├── 📁 docs/                    # Documentation
@@ -39,15 +57,15 @@ ProjectCortex/
 │   └── STATUS.md              # Implementation status
 │
 ├── 📁 python/                  # Python AI Brain
-│   ├── cortex_brain.py        # Legacy TCP prototype (unused)
-│   ├── cortex_visualizer.py   # Legacy TCP prototype (unused)
+│   ├── cortex_env.py          # Gymnasium env (TCP server)
+│   ├── cortex_brain.py        # TCP telemetry logger (debug)
 │   └── requirements.txt       # Python dependencies
 │
 ├── 📁 quakec/                  # QuakeC Source Code
 │   ├── 📁 cortex/             # Cortex mod code
 │   │   ├── cortex_sensor.qc   # Sensor suite (raycasts, state)
-│   │   ├── cortex_bridge.qc   # Telemetry driver (file IPC)
-│   │   ├── cortex_tcp.qc      # File I/O wrappers (FTEQW fopen)
+│   │   ├── cortex_bridge.qc   # Telemetry + control driver
+│   │   ├── cortex_tcp.qc      # File/TCP stream wrappers (FTE `fopen`)
 │   │   ├── cortex_config.qc   # Compiler configuration
 │   │   └── cortex_world.qc    # Game loop integration
 │   ├── 📁 lib/                # Third-party libraries
@@ -67,25 +85,30 @@ ProjectCortex/
 ├── 📁 scripts/                 # Build & Run Scripts
 │   ├── build.bat              # Compile QuakeC
 │   ├── run_brain.bat          # Start Python brain
+│   ├── run_brain_tcp.bat      # Start TCP debug brain
 │   ├── run_visualizer.bat     # Start visual debugger
-│   └── run_quake.bat          # Launch Quake client
+│   ├── run_quake.bat          # Launch Quake client
+│   ├── run_quake_tcp.bat      # Launch Quake (TCP stream mode)
+│   └── run_train.bat          # Train PPO agent
 │
 └── README.md                   # This file
 ```
 
-## Current Status: Phase 1 - Telemetry Pipeline (File IPC)
+## Current Status: Phase 2 - Telemetry + Control Loop
 
 **What Works:**
 - ✅ QuakeC code compiles successfully
 - ✅ Switched from QuakeWorld to single-player Quake source
-- ✅ File-based IPC system (replaced TCP due to FTEQW restrictions)
-- ✅ Full sensor suite code written (position, velocity, health, raycasts)
-- ✅ Python brain monitoring script ready
+- ✅ NDJSON telemetry emitted (health/armor/ammo/pos/vel/lidar/enemies)
+- ✅ File IPC mode (default) + optional TCP stream mode (`pr_enable_uriget 1`)
+- ✅ Minimal Brain → Body control loop over TCP (`cortex_enable_controls 1`)
+- ✅ Gymnasium env wrapper + SB3 training entrypoint (`train_cortex.py`)
 - ✅ Automated test harness created
 
 **Current Blockers:**
-- ⚠️ Verify telemetry end-to-end on a clean setup
-- ⚠️ `sv_progsaccess` may still require manual console entry on some FTEQW builds (we now attempt it via cfg/`+set`, and QuakeC retries file-open)
+- ⚠️ Episode/reset semantics for RL training (Quake is not yet headless/episodic)
+- ⚠️ Protocol version + sequence IDs (robust sync)
+- ⚠️ Smoothing/rate limiting for more human-like movement
 
 **See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for detailed troubleshooting**
 
@@ -93,7 +116,7 @@ ProjectCortex/
 - See the roadmap in [NEXT_STEPS.md](NEXT_STEPS.md)
 - Run `python test_cortex_connection.py` to validate the pipeline
 - If telemetry is missing, confirm the file exists at `Game/cortex/data/cortex_telemetry.txt`
-- Once Phase 1 works: Add control input stream (Python → Quake)
+- Try TCP stream mode: `scripts\\run_quake_tcp.bat` + `python train_cortex.py`
 
 ## Development Workflow
 
@@ -218,6 +241,6 @@ This is an experimental research project. The codebase is organized for clarity:
 
 ---
 
-**Status**: Phase 1 - Telemetry Pipeline (File IPC) - Working (verify across FTEQW builds)
+**Status**: Phase 2 - Telemetry + Control Loop (File IPC + optional TCP)
 **Last Updated**: 2025-12-30
 **Version**: 0.1.0

@@ -10,6 +10,8 @@ echo.
 echo After this starts, launch Quake with:
 echo   scripts\run_quake.bat
 echo.
+echo Note: visualizer tails the telemetry file (File IPC mode).
+echo.
 echo ========================================
 echo.
 

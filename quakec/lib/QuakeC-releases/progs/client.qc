@@ -19,6 +19,8 @@
 
 float modelindex_eyes, modelindex_player;
 
+void() Cortex_ApplyControls;
+
 /*
 =============================================================================
 
@@ -1024,6 +1026,8 @@ void() PlayerPreThink =
     {
         return; // intermission or finale
     }
+
+    Cortex_ApplyControls();
 
     makevectors(self.v_angle); // is this still used
 

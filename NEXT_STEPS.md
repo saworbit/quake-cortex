@@ -7,7 +7,7 @@ Project Cortex uses a "Brain-Body" architecture:
 This split is the foundation for embodied AI experimentation: Quake becomes a fast simulator; Python becomes the research stack.
 
 **Last Updated**: 2025-12-30  
-**Current Focus**: Phase 2 control loop + persistence foundations
+**Current Focus**: Telemetry/control protocol hardening + RL loop bring-up
 
 ---
 
@@ -17,17 +17,20 @@ This "Brain-Body" split is the standard move in modern embodied AI (separating s
 
 ---
 
-## Current State (Phase 1: Telemetry, File IPC)
+## Current State (Phase 2: Telemetry + optional TCP stream)
 
-- **Telemetry path**: `Game/cortex/data/cortex_telemetry.txt`
-- **Entrypoints**: `cortex_brain.py` / `cortex_visualizer.py` (repo root)
-- **Startup**: `scripts\\build.bat`, `scripts\\run_brain.bat`, `scripts\\run_quake.bat`
+- **File IPC telemetry path**: `Game/cortex/data/cortex_telemetry.txt`
+- **TCP stream (experimental)**: `tcp://127.0.0.1:26000` (requires `pr_enable_uriget 1`)
+- **Entrypoints**: `cortex_brain.py` / `cortex_visualizer.py` (file tail), `cortex_env.py` / `train_cortex.py` (TCP server + RL)
+- **Startup (file)**: `scripts\\build.bat`, `scripts\\run_brain.bat`, `scripts\\run_quake.bat`
+- **Startup (tcp)**: `scripts\\run_quake_tcp.bat` + `python train_cortex.py`
 - **Important**: telemetry won't appear until a map is loaded (`map start` / `map e1m1`) because menus don't run QuakeC
 - **FTEQW file access**: some builds require manually setting `sv_progsaccess 2` in the console
 
 Success looks like:
-- Quake: `CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)`
-- Python: `[POS] X=... Y=... Z=...`
+- Quake (file): `CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)`
+- Quake (tcp): `CORTEX: Connected Cortex stream (tcp://)`
+- Python (both): `[POS] X=... Y=... Z=...`
 
 ---
 
@@ -43,11 +46,15 @@ Goal: the Body introduces itself so the Brain can load a persistent profile:
   - If `brains/reaper.*` exists: load it
   - Else: load a shared baseline and start a new profile
 
-### 2B. Non-Blocking Control Stream
+### 2B. Non-Blocking Control Stream (Implemented, needs hardening)
 
 Design rule: **the Body executes the last known command until a new one arrives**. The game loop must not wait on the Brain.
 
-Concrete steps:
+Current implementation:
+- Controls are accepted only in TCP stream mode (`cortex_use_tcp 1`)
+- QuakeC polls up to a few command lines per frame and applies the latest (`cortex_enable_controls 1`)
+
+Concrete next steps:
 - Define a minimal action set: move/strafe/turn/fire/jump
 - Send control outputs at a fixed lower rate (e.g., 10-20Hz)
 - Apply commands smoothly (hold durations, deadzones, clamp values)
