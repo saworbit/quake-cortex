@@ -33,7 +33,7 @@ fteqw64.exe -condebug -game cortex ^
   +set developer 1 ^
   +set pr_checkextension 1 ^
   +set pr_enable_uriget 1 ^
-  +set cortex_tcp_uri ws://127.0.0.1:26000/ ^
+  +set cortex_tcp_uri tcp://127.0.0.1:26000 ^
   +set cortex_use_tcp 1 ^
   +set cortex_enable_controls 1 ^
   +set cortex_send_interval 0.05 ^
@@ -44,7 +44,7 @@ popd >nul 2>&1
 if not "%EXITCODE%"=="0" (
     echo.
     echo Quake exited with code %EXITCODE%.
-    echo Check Game\\qconsole.log (if created) for details.
+    echo Check Game\\cortex\\qconsole.log (some builds write Game\\qconsole.log) for details.
     pause
 )
 exit /b %EXITCODE%

@@ -94,6 +94,32 @@ float(string hostname) TCP_Connect =
     return handle;
 };
 
+float(string uri) TCP_ConnectStream =
+{
+    local float handle;
+
+    uri = Cortex_TrimUriString(uri);
+    handle = fopen(uri, -1);
+    if (handle < 0)
+        return -1;
+
+    fputs(handle, "--- CORTEX SESSION START ---\n");
+    return handle;
+};
+
+float(string filename) TCP_ConnectFile =
+{
+    local float handle;
+
+    filename = Cortex_TrimUriString(filename);
+    handle = fopen(filename, FILE_APPEND);
+    if (handle < 0)
+        return -1;
+
+    fputs(handle, "--- CORTEX SESSION START ---\n");
+    return handle;
+};
+
 void(float socket, string buffer) TCP_Send =
 {
     if (socket >= 0)

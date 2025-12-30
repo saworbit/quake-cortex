@@ -58,6 +58,19 @@ def _setup_logging() -> None:
     logger.info(f"[CORTEX BRAIN] Logging to cortex_brain_tcp_{ts}.log")
 
 
+def _close_socket(sock: socket.socket | None) -> None:
+    if not sock:
+        return
+    try:
+        sock.shutdown(socket.SHUT_RDWR)
+    except OSError:
+        pass
+    try:
+        sock.close()
+    except OSError:
+        pass
+
+
 class CortexBrain:
     def __init__(self, host="127.0.0.1", port=26000):
         self.host = host
@@ -75,16 +88,10 @@ class CortexBrain:
                 return
             logger.info("[CORTEX BRAIN] Quit requested (ENTER).")
             self.running = False
-            try:
-                if self.client_socket:
-                    self.client_socket.close()
-            except OSError:
-                pass
-            try:
-                if self.socket:
-                    self.socket.close()
-            except OSError:
-                pass
+            _close_socket(self.client_socket)
+            self.client_socket = None
+            _close_socket(self.socket)
+            self.socket = None
 
         t = threading.Thread(target=_watch, name="cortex-quit-watcher", daemon=True)
         t.start()
@@ -116,6 +123,8 @@ class CortexBrain:
         while self.running:
             try:
                 try:
+                    if not self.socket:
+                        break
                     self.client_socket, addr = self.socket.accept()
                 except socket.timeout:
                     continue
@@ -134,9 +143,18 @@ class CortexBrain:
             except KeyboardInterrupt:
                 logger.info("\n[CORTEX BRAIN] Shutting down...")
                 self.running = False
+                break
+            except OSError as e:
+                # Expected when the quit watcher closes sockets while we're blocked in accept/recv.
+                if not self.running:
+                    break
+                logger.error(f"[ERROR] Socket error: {e}")
+                time.sleep(0.25)
             except Exception as e:
+                if not self.running:
+                    break
                 logger.error(f"[ERROR] Connection error: {e}")
-                time.sleep(1)
+                time.sleep(0.5)
 
     def handle_client(self):
         """Process incoming data from Quake"""
@@ -164,7 +182,11 @@ class CortexBrain:
                             logger.info("[CORTEX BRAIN] WebSocket handshake complete")
                             continue
                         except Exception as e:
-                            logger.error(f"[ERROR] WebSocket handshake failed: {e}")
+                            if "Sec-WebSocket-Key" in str(e):
+                                logger.error("[CORTEX BRAIN] Client sent an HTTP request, not a WebSocket upgrade.")
+                                logger.error("[CORTEX BRAIN] Fix: set `cortex_tcp_uri tcp://127.0.0.1:26000` (raw TCP) and restart Quake.")
+                            else:
+                                logger.error(f"[ERROR] WebSocket handshake failed: {e}")
                             break
 
                     if looks_like_websocket_frame(chunk):
@@ -198,13 +220,17 @@ class CortexBrain:
 
             except socket.timeout:
                 continue
+            except OSError as e:
+                if not self.running:
+                    break
+                logger.error(f"[ERROR] Socket error while processing data: {e}")
+                break
             except Exception as e:
                 logger.error(f"[ERROR] Failed to process data: {e}")
                 break
 
-        if self.client_socket:
-            self.client_socket.close()
-            self.client_socket = None
+        _close_socket(self.client_socket)
+        self.client_socket = None
 
     def process_packet(self, packet):
         """
@@ -238,10 +264,10 @@ class CortexBrain:
     def cleanup(self):
         """Clean shutdown"""
         self.running = False
-        if self.client_socket:
-            self.client_socket.close()
-        if self.socket:
-            self.socket.close()
+        _close_socket(self.client_socket)
+        self.client_socket = None
+        _close_socket(self.socket)
+        self.socket = None
 
 
 if __name__ == "__main__":

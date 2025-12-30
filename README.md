@@ -229,7 +229,7 @@ scripts\run_quake.bat      # Terminal 2
 ## Cortex Black Box Logs
 
 - Brain (Python): `cortex_brain_<unix_ts>.log` (DEBUG, created in the working directory)
-- Body (Quake): `Game\\qconsole.log` (enable `condebug 1`, already set in `scripts\\run_quake.bat`)
+- Body (Quake): `Game\\cortex\\qconsole.log` (some builds write `Game\\qconsole.log`; enabled via `-condebug`, already set in `scripts\\run_quake.bat`)
 - Guide: `docs/LOGGING.md`
 
 ## Contributing

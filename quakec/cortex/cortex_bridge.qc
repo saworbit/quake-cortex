@@ -148,6 +148,7 @@ void() Cortex_EnsureTelemetryOpen =
 {
     local float use_tcp;
     local string target;
+    local string fallback;
 
     if (cortex_socket >= 0) return;
 
@@ -172,8 +173,8 @@ void() Cortex_EnsureTelemetryOpen =
         else
             target = "";
 
-        // Prefer ws:// for maximum compatibility (some builds fake tcp:// as websockets/TLS).
-        if (target == "") target = "ws://127.0.0.1:26000/";
+        // Default to raw TCP; some builds may present websocket framing, which the Python side can handle.
+        if (target == "") target = "tcp://127.0.0.1:26000";
     }
     else
     {
@@ -185,7 +186,22 @@ void() Cortex_EnsureTelemetryOpen =
         if (target == "") target = "cortex_telemetry.txt";
     }
 
-    cortex_socket = TCP_Connect(target);
+    if (use_tcp)
+        cortex_socket = TCP_ConnectStream(target);
+    else
+        cortex_socket = TCP_ConnectFile(target);
+
+    // Fallback: if ws:// was configured but blocked/mis-parsed, try tcp://.
+    if (use_tcp && cortex_socket < 0)
+    {
+        fallback = "tcp://127.0.0.1:26000";
+        if (target != fallback)
+        {
+            cortex_socket = TCP_ConnectStream(fallback);
+            if (cortex_socket >= 0)
+                target = fallback;
+        }
+    }
 
     if (cortex_socket >= 0)
     {

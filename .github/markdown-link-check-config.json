@@ -5,6 +5,12 @@
     },
     {
       "pattern": "^tcp://"
+    },
+    {
+      "pattern": "^ws://"
+    },
+    {
+      "pattern": "^wss://"
     }
   ],
   "timeout": "20s",

@@ -13,7 +13,7 @@ echo.
 echo Notes:
 echo - No pip install required for this debug logger.
 echo - Quake connects to tcp://127.0.0.1:26000
-echo - Logs: Game\qconsole.log (enabled via condebug 1)
+echo - Logs: Game\cortex\qconsole.log (some builds write Game\qconsole.log)
 echo.
 
 pushd "%~dp0\.." >nul 2>&1
@@ -44,4 +44,3 @@ echo Done. If Quake doesn't connect, wait a few seconds (it retries).
 echo Close both windows to stop.
 popd >nul 2>&1
 exit /b 0
-
