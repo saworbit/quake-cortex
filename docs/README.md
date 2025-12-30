@@ -35,7 +35,7 @@ This produces `Game/cortex/progs.dat`.
 ### 2) Start Python (choose one)
 
 - Logger: `scripts\\run_brain.bat`
-- Visualizer: `scripts\\run_visualizer.bat` (requires `pip install pygame`)
+- Visualizer: `scripts\\run_visualizer.bat` (requires `pip install pygame`, or use `python cortex_visualizer.py --text`)
 - TCP logger (experimental): `scripts\\run_brain_tcp.bat`
 
 ### 3) Launch Quake

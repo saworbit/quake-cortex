@@ -50,6 +50,9 @@ Guide: `docs/TCP_MODE.md`
 Requires:
 `pip install pygame`
 
+If `pip install pygame` fails (common on very new Python versions that don't have wheels yet), run in text mode instead:
+`python cortex_visualizer.py --text`
+
 ## Common Issues
 
 **No `progs.dat` / mod doesn’t load**

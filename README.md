@@ -140,7 +140,7 @@ scripts\run_quake.bat      # Terminal 2
 
 **Option 2: Visual Debugger**
 ```bash
-scripts\run_visualizer.bat # Terminal 1 (requires pygame)
+scripts\run_visualizer.bat # Terminal 1 (requires pygame; fallback: `python cortex_visualizer.py --text`)
 scripts\run_quake.bat      # Terminal 2
 ```
 
@@ -194,8 +194,8 @@ scripts\run_quake.bat      # Terminal 2
 - FTEQW compiler (✅ included: `quakec/fteqcc64.exe`)
 
 **Python**:
-- Python 3.7+ (no dependencies for basic mode)
-- Optional: `pygame` for visual debugger
+- Core telemetry/brain scripts: Python 3.11+ recommended (no dependencies for basic mode)
+- Optional: `pygame` for visual debugger (use Python 3.11/3.12; very new Python versions may not have wheels yet)
 
 **Quake Runtime** (⚠️ **YOU MUST PROVIDE**):
 - **FTEQW Engine**: Download from [https://fte.triptohell.info/](https://fte.triptohell.info/)
