@@ -13,6 +13,7 @@ This logger auto-detects and supports both.
 import json
 import logging
 import socket
+import threading
 import time
 from datetime import datetime
 
@@ -66,6 +67,28 @@ class CortexBrain:
         self.running = False
         self.accept_timeout_s = 0.5
 
+    def _start_quit_watcher(self) -> None:
+        def _watch() -> None:
+            try:
+                input()
+            except (EOFError, KeyboardInterrupt):
+                return
+            logger.info("[CORTEX BRAIN] Quit requested (ENTER).")
+            self.running = False
+            try:
+                if self.client_socket:
+                    self.client_socket.close()
+            except OSError:
+                pass
+            try:
+                if self.socket:
+                    self.socket.close()
+            except OSError:
+                pass
+
+        t = threading.Thread(target=_watch, name="cortex-quit-watcher", daemon=True)
+        t.start()
+
     def start(self):
         """Start the brain server and wait for Quake to connect"""
         _setup_logging()
@@ -78,6 +101,8 @@ class CortexBrain:
             self.socket.settimeout(self.accept_timeout_s)
             logger.info(f"[CORTEX BRAIN] Listening on {self.host}:{self.port}")
             logger.info("[CORTEX BRAIN] Waiting for Quake client to connect...")
+            logger.info("[CORTEX BRAIN] Press ENTER to quit.")
+            self._start_quit_watcher()
 
             self.running = True
             self.accept_connection()
@@ -171,6 +196,8 @@ class CortexBrain:
                     if line:
                         self.process_packet(line)
 
+            except socket.timeout:
+                continue
             except Exception as e:
                 logger.error(f"[ERROR] Failed to process data: {e}")
                 break
