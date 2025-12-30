@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .fteqw_stream.ws import (  # noqa: F401
+from .streams.tcp.ws import (  # noqa: F401
     WebSocketConn,
     accept_websocket,
     looks_like_http_websocket_handshake,

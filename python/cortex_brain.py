@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from .fteqw_stream.brain_tcp import main
+from .streams.file.brain import run_server
 
 if __name__ == "__main__":
-    main()
+    run_server()
 

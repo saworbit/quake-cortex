@@ -64,9 +64,10 @@ ProjectCortex/
   train_cortex.py              # RL training entrypoint (stream mode)
   docs/                        # Mode docs + deep dives
   python/                      # Python implementations (per mode)
-    file_ipc/                  # file tail + visualizer
-    fteqw_stream/              # ws/tcp stream + env
-    darkplaces_rcon/           # UDP RCON control loop
+    streams/
+      file/                    # file-IPC brain + visualizer
+      tcp/                     # ws/tcp stream + Gym env
+      rcon/                    # DarkPlaces RCON loop
   quakec/                      # QuakeC sources
     cortex/
       common/                  # sensors + world integration
@@ -161,12 +162,12 @@ scripts\run_quake.bat      # Terminal 2
 | File | Purpose | Lines |
 | --- | --- | --- |
 | [cortex_brain.py](cortex_brain.py) | File IPC brain entrypoint | ~20 |
-| [python/file_ipc/brain.py](python/file_ipc/brain.py) | File IPC implementation | ~200 |
+| [python/streams/file/brain.py](python/streams/file/brain.py) | File IPC implementation | ~200 |
 | [cortex_visualizer.py](cortex_visualizer.py) | File IPC visualizer entrypoint | ~20 |
-| [python/file_ipc/visualizer.py](python/file_ipc/visualizer.py) | File IPC visualizer implementation | ~200 |
-| [python/fteqw_stream/env.py](python/fteqw_stream/env.py) | RL env (stream mode) | ~250 |
-| [python/fteqw_stream/brain_tcp.py](python/fteqw_stream/brain_tcp.py) | Stream logger (debug) | ~350 |
-| [python/darkplaces_rcon/brain_rcon.py](python/darkplaces_rcon/brain_rcon.py) | DarkPlaces RCON loop | ~200 |
+| [python/streams/file/visualizer.py](python/streams/file/visualizer.py) | File IPC visualizer implementation | ~200 |
+| [python/streams/tcp/env.py](python/streams/tcp/env.py) | RL env (stream mode) | ~250 |
+| [python/streams/tcp/brain_tcp.py](python/streams/tcp/brain_tcp.py) | Stream logger (debug) | ~350 |
+| [python/streams/rcon/brain_rcon.py](python/streams/rcon/brain_rcon.py) | DarkPlaces RCON loop | ~200 |
 | [quakec/cortex/common/cortex_sensor.qc](quakec/cortex/common/cortex_sensor.qc) | Sensor suite | ~200 |
 | [quakec/cortex/hybrid/cortex_bridge.qc](quakec/cortex/hybrid/cortex_bridge.qc) | Hybrid telemetry/control driver | ~200 |
 | [quakec/cortex/bot/cortex_bot.qc](quakec/cortex/bot/cortex_bot.qc) | Pure QuakeC bot AI | ~1400 |
@@ -229,7 +230,7 @@ scripts\run_quake.bat      # Terminal 2
 This is an experimental research project. The codebase is organized for clarity:
 
 - **Add new sensors**: Edit [quakec/cortex/common/cortex_sensor.qc](quakec/cortex/common/cortex_sensor.qc)
-- **Modify hybrid IPC**: Edit [quakec/cortex/hybrid/cortex_bridge.qc](quakec/cortex/hybrid/cortex_bridge.qc) and [python/file_ipc/brain.py](python/file_ipc/brain.py)
+- **Modify hybrid IPC**: Edit [quakec/cortex/hybrid/cortex_bridge.qc](quakec/cortex/hybrid/cortex_bridge.qc) and [python/streams/file/brain.py](python/streams/file/brain.py)
 - **Hack the pure bot AI**: Edit [quakec/cortex/bot/cortex_bot.qc](quakec/cortex/bot/cortex_bot.qc)
 - **Add AI features**: Edit [cortex_brain.py](cortex_brain.py)
 - **Update build process**: Edit [scripts/build.bat](scripts/build.bat)

@@ -1,10 +1,10 @@
 """
 Deprecated wrapper for backwards compatibility.
 
-The canonical file-IPC brain lives at `python/file_ipc/brain.py`.
+The canonical file-IPC brain lives at `python/streams/file/brain.py`.
 """
 
-from python.file_ipc.brain import run_server
+from python.streams.file.brain import run_server
 
 
 if __name__ == "__main__":

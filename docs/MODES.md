@@ -31,7 +31,7 @@ Run:
 
 Code:
 - QuakeC telemetry + integration: `quakec/cortex/hybrid/` + `quakec/cortex/common/`
-- Python file-tail brain: `python/file_ipc/` (repo-root `cortex_brain.py` is a wrapper)
+- Python file-tail brain: `python/streams/file/` (repo-root `cortex_brain.py` is a wrapper)
 
 ### B) Stream mode (ws:// / tcp://) + RL (experimental)
 
@@ -44,8 +44,8 @@ Debug logger only (no training):
 - `scripts\\run_mode_b_debug.bat` (or `scripts\\run_brain_tcp.bat` + `scripts\\run_quake_tcp.bat`)
 
 Code:
-- Python stream logger: `python/fteqw_stream/brain_tcp.py`
-- Gymnasium env: `python/fteqw_stream/env.py`
+- Python stream logger: `python/streams/tcp/brain_tcp.py`
+- Gymnasium env: `python/streams/tcp/env.py`
 
 Key cvars (set by `scripts\\run_quake_tcp.bat`):
 - `pr_enable_uriget 1`
@@ -63,6 +63,6 @@ Docs:
 - `docs/DARKPLACES_PIVOT.md`
 
 Code:
-- Python RCON loop: `python/darkplaces_rcon/brain_rcon.py` (repo-root `cortex_rcon.py` is the entrypoint)
+- Python RCON loop: `python/streams/rcon/brain_rcon.py` (repo-root `cortex_rcon.py` is the entrypoint)
 - QuakeC bot entity: `quakec/cortex/bot/cortex_bot.qc`
 

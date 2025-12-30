@@ -26,6 +26,6 @@ Start here: `docs/MODES.md`
   - `quakec/cortex/hybrid/` (file/stream IPC driver)
   - `quakec/cortex/bot/` (pure-QuakeC bot AI stack)
 - Python:
-  - `python/file_ipc/` (file tail + visualizer)
-  - `python/fteqw_stream/` (ws/tcp stream + Gymnasium env)
-  - `python/darkplaces_rcon/` (DarkPlaces RCON loop)
+  - `python/streams/file/` (file tail + visualizer)
+  - `python/streams/tcp/` (ws/tcp stream + Gymnasium env)
+  - `python/streams/rcon/` (DarkPlaces RCON loop)
