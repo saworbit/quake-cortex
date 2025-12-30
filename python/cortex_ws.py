@@ -19,6 +19,22 @@ def looks_like_http_websocket_handshake(data: bytes) -> bool:
     return data.startswith(b"GET ") or data.startswith(b"OPTIONS ") or data.startswith(b"HEAD ")
 
 
+def looks_like_websocket_frame(data: bytes) -> bool:
+    # Minimal heuristic:
+    # - 2+ bytes
+    # - client->server frames are masked (mask bit set)
+    # - opcode is plausible (text/binary/continuation/ping/pong/close)
+    if len(data) < 2:
+        return False
+    b0 = data[0]
+    b1 = data[1]
+    opcode = b0 & 0x0F
+    masked = (b1 & 0x80) != 0
+    if not masked:
+        return False
+    return opcode in (0x0, 0x1, 0x2, 0x8, 0x9, 0xA)
+
+
 def _read_until(sock, buf: bytearray, marker: bytes, *, max_bytes: int = 16_384) -> None:
     while marker not in buf:
         chunk = sock.recv(4096)
@@ -77,9 +93,9 @@ class WebSocketConn:
     sock: any
     _recv_buf: bytearray
 
-    def recv_message(self) -> bytes:
+    def _recv_frame(self) -> tuple[int, bool, bytes]:
         """
-        Receives a single WebSocket message (text/binary) and returns raw payload bytes.
+        Returns (opcode, fin, payload_bytes) for the next WS frame.
         """
 
         buf = self._recv_buf
@@ -99,19 +115,28 @@ class WebSocketConn:
 
         if length == 126:
             while len(buf) < idx + 2:
-                buf.extend(self.sock.recv(4096))
+                chunk = self.sock.recv(4096)
+                if not chunk:
+                    raise ConnectionError("WebSocket disconnected.")
+                buf.extend(chunk)
             length = int.from_bytes(buf[idx : idx + 2], "big")
             idx += 2
         elif length == 127:
             while len(buf) < idx + 8:
-                buf.extend(self.sock.recv(4096))
+                chunk = self.sock.recv(4096)
+                if not chunk:
+                    raise ConnectionError("WebSocket disconnected.")
+                buf.extend(chunk)
             length = int.from_bytes(buf[idx : idx + 8], "big")
             idx += 8
 
         mask = b""
         if masked:
             while len(buf) < idx + 4:
-                buf.extend(self.sock.recv(4096))
+                chunk = self.sock.recv(4096)
+                if not chunk:
+                    raise ConnectionError("WebSocket disconnected.")
+                buf.extend(chunk)
             mask = bytes(buf[idx : idx + 4])
             idx += 4
 
@@ -127,26 +152,45 @@ class WebSocketConn:
         if masked:
             payload = bytes(b ^ mask[i % 4] for i, b in enumerate(payload))
 
-        if opcode == 0x8:
-            raise ConnectionError("WebSocket close frame received.")
-        if opcode == 0x9:
-            # ping -> pong
-            self.send_message(payload, opcode=0xA)
-            return self.recv_message()
-        if opcode == 0xA:
-            return self.recv_message()
-        if opcode in (0x1, 0x2, 0x0):
-            if fin:
-                return payload
-            # Continuations: accumulate until fin.
-            parts = [payload]
-            while True:
-                part = self.recv_message()
-                parts.append(part)
-                # recv_message() above only returns on fin=true frames; good enough.
-                return b"".join(parts)
+        return opcode, fin, payload
 
-        return payload
+    def recv_message(self) -> bytes:
+        """
+        Receives a single WebSocket message (text/binary) and returns raw payload bytes.
+        """
+
+        msg_opcode: int | None = None
+        parts: list[bytes] = []
+
+        while True:
+            opcode, fin, payload = self._recv_frame()
+
+            if opcode == 0x8:
+                raise ConnectionError("WebSocket close frame received.")
+            if opcode == 0x9:
+                self.send_message(payload, opcode=0xA)  # pong
+                continue
+            if opcode == 0xA:
+                continue
+
+            if opcode in (0x1, 0x2):
+                msg_opcode = opcode
+                parts = [payload]
+                if fin:
+                    return b"".join(parts)
+                continue
+
+            if opcode == 0x0:
+                # Continuation.
+                if msg_opcode is None:
+                    # Ignore stray continuation.
+                    continue
+                parts.append(payload)
+                if fin:
+                    return b"".join(parts)
+                continue
+
+            # Unknown opcode: ignore.
 
     def send_message(self, payload: bytes, *, opcode: int = 0x1) -> None:
         """
@@ -169,4 +213,3 @@ class WebSocketConn:
             header.extend(length.to_bytes(8, "big"))
 
         self.sock.sendall(bytes(header) + payload)
-

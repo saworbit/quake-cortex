@@ -4,7 +4,7 @@ echo ========================================
 echo PROJECT CORTEX - Launch Quake (TCP Stream)
 echo ========================================
 echo.
-echo This mode streams telemetry over tcp:// and enables control input.
+echo This mode streams telemetry over a local stream (tcp:// or ws:// depending on engine) and enables control input.
 echo Make sure you understand `pr_enable_uriget` before using this.
 echo.
 echo If you just want file telemetry, use:
@@ -29,9 +29,8 @@ if not exist id1\\PAK0.PAK (
     exit /b 1
 )
 
-fteqw64.exe -game cortex ^
+fteqw64.exe -condebug -game cortex ^
   +set developer 1 ^
-  +set condebug 1 ^
   +set pr_checkextension 1 ^
   +set pr_enable_uriget 1 ^
   +set cortex_tcp_uri ws://127.0.0.1:26000/ ^

@@ -11,6 +11,7 @@ This logger auto-detects and supports both.
 """
 
 import json
+import logging
 import socket
 import time
 from datetime import datetime
@@ -21,6 +22,7 @@ try:
         accept_websocket,
         looks_like_http_websocket_handshake,
         looks_like_tls_client_hello,
+        looks_like_websocket_frame,
     )
 except ImportError:  # pragma: no cover
     # When imported as a package (python.cortex_brain), use absolute import.
@@ -29,7 +31,30 @@ except ImportError:  # pragma: no cover
         accept_websocket,
         looks_like_http_websocket_handshake,
         looks_like_tls_client_hello,
+        looks_like_websocket_frame,
     )
+
+logger = logging.getLogger("CortexBrainTCP")
+
+
+def _setup_logging() -> None:
+    if getattr(logger, "_cortex_configured", False):
+        return
+    logger.setLevel(logging.DEBUG)
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_handler = logging.FileHandler(f"cortex_brain_tcp_{ts}.log", encoding="utf-8")
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(logging.Formatter("%(asctime)s | %(levelname)s | %(message)s"))
+
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    console.setFormatter(logging.Formatter("%(message)s"))
+
+    logger.addHandler(file_handler)
+    logger.addHandler(console)
+    logger._cortex_configured = True  # type: ignore[attr-defined]
+    logger.info(f"[CORTEX BRAIN] Logging to cortex_brain_tcp_{ts}.log")
 
 
 class CortexBrain:
@@ -42,20 +67,21 @@ class CortexBrain:
 
     def start(self):
         """Start the brain server and wait for Quake to connect"""
+        _setup_logging()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         try:
             self.socket.bind((self.host, self.port))
             self.socket.listen(1)
-            print(f"[CORTEX BRAIN] Listening on {self.host}:{self.port}")
-            print("[CORTEX BRAIN] Waiting for Quake client to connect...")
+            logger.info(f"[CORTEX BRAIN] Listening on {self.host}:{self.port}")
+            logger.info("[CORTEX BRAIN] Waiting for Quake client to connect...")
 
             self.running = True
             self.accept_connection()
 
         except Exception as e:
-            print(f"[ERROR] Failed to start server: {e}")
+            logger.error(f"[ERROR] Failed to start server: {e}")
             self.cleanup()
 
     def accept_connection(self):
@@ -69,13 +95,13 @@ class CortexBrain:
                     )
                 except OSError:
                     pass
-                print(f"[CORTEX BRAIN] Connected to Quake client at {addr}")
+                logger.info(f"[CORTEX BRAIN] Connected to Quake client at {addr}")
                 self.handle_client()
             except KeyboardInterrupt:
-                print("\n[CORTEX BRAIN] Shutting down...")
+                logger.info("\n[CORTEX BRAIN] Shutting down...")
                 self.running = False
             except Exception as e:
-                print(f"[ERROR] Connection error: {e}")
+                logger.error(f"[ERROR] Connection error: {e}")
                 time.sleep(1)
 
     def handle_client(self):
@@ -89,22 +115,28 @@ class CortexBrain:
                     # First read: detect transport.
                     chunk = self.client_socket.recv(4096)
                     if not chunk:
-                        print("[CORTEX BRAIN] Client disconnected")
+                        logger.info("[CORTEX BRAIN] Client disconnected")
                         break
 
                     if looks_like_tls_client_hello(chunk):
-                        print("[CORTEX BRAIN] Received TLS handshake bytes (client hello).")
-                        print("[CORTEX BRAIN] Fix: use ws:// (not tcp://) in cortex_tcp_uri, or update run_quake_tcp.bat.")
+                        logger.error("[CORTEX BRAIN] Received TLS handshake bytes (client hello).")
+                        logger.error("[CORTEX BRAIN] This logger does not support TLS yet.")
+                        logger.error("[CORTEX BRAIN] Fix: set `cortex_tcp_uri tcp://127.0.0.1:26000` (raw TCP) or use a non-TLS build.")
                         break
 
                     if looks_like_http_websocket_handshake(chunk):
                         try:
                             ws = accept_websocket(self.client_socket, initial=chunk)
-                            print("[CORTEX BRAIN] WebSocket handshake complete (ws://)")
+                            logger.info("[CORTEX BRAIN] WebSocket handshake complete")
                             continue
                         except Exception as e:
-                            print(f"[ERROR] WebSocket handshake failed: {e}")
+                            logger.error(f"[ERROR] WebSocket handshake failed: {e}")
                             break
+
+                    if looks_like_websocket_frame(chunk):
+                        ws = WebSocketConn(sock=self.client_socket, _recv_buf=bytearray(chunk))
+                        logger.info("[CORTEX BRAIN] Detected WebSocket frames without handshake; decoding anyway.")
+                        continue
 
                     buffer.extend(chunk)
                 elif ws is not None:
@@ -114,7 +146,7 @@ class CortexBrain:
                 else:
                     chunk = self.client_socket.recv(4096)
                     if not chunk:
-                        print("[CORTEX BRAIN] Client disconnected")
+                        logger.info("[CORTEX BRAIN] Client disconnected")
                         break
                     buffer.extend(chunk)
 
@@ -131,7 +163,7 @@ class CortexBrain:
                         self.process_packet(line)
 
             except Exception as e:
-                print(f"[ERROR] Failed to process data: {e}")
+                logger.error(f"[ERROR] Failed to process data: {e}")
                 break
 
         if self.client_socket:
@@ -150,19 +182,19 @@ class CortexBrain:
             try:
                 data = json.loads(packet)
             except json.JSONDecodeError:
-                print(f"[{timestamp}] {packet}")
+                logger.info(f"[{timestamp}] {packet}")
                 return
 
             pos = data.get("pos")
             if isinstance(pos, list) and len(pos) == 3:
                 x, y, z = pos
-                print(f"[{timestamp}] POS x={x} y={y} z={z}")
+                logger.info(f"[{timestamp}] POS x={x} y={y} z={z}")
                 return
 
-            print(f"[{timestamp}] JSON {data}")
+            logger.info(f"[{timestamp}] JSON {data}")
             return
 
-        print(f"[{timestamp}] {packet}")
+        logger.info(f"[{timestamp}] {packet}")
 
         # TODO Phase 2: Parse JSON sensor data and run through neural networks
         # TODO Phase 3: Generate control outputs and send back to Quake
@@ -177,15 +209,16 @@ class CortexBrain:
 
 
 if __name__ == "__main__":
-    print("=" * 60)
-    print("PROJECT CORTEX - Phase 1: The Skeleton")
-    print("=" * 60)
-    print()
+    _setup_logging()
+    logger.info("=" * 60)
+    logger.info("PROJECT CORTEX - Phase 1: The Skeleton")
+    logger.info("=" * 60)
+    logger.info("")
 
     brain = CortexBrain()
     try:
         brain.start()
     except KeyboardInterrupt:
-        print("\n[CORTEX BRAIN] Interrupted by user")
+        logger.info("\n[CORTEX BRAIN] Interrupted by user")
     finally:
         brain.cleanup()
