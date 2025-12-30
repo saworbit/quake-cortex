@@ -43,6 +43,10 @@ Telemetry format: newline-delimited JSON (NDJSON). The tools also accept the old
 
 Guide: `docs/TCP_MODE.md`
 
+If Quake shows a black screen and exits in TCP mode, check:
+- `Game\\cortex\\qconsole.log` (some builds write `Game\\qconsole.log`)
+- the latest `cortex_brain_tcp_*.log`
+
 ## Visual Debug Mode (Optional)
 
 `scripts\\run_visualizer.bat`
@@ -55,13 +59,13 @@ If `pip install pygame` fails (common on very new Python versions that don't hav
 
 ## Common Issues
 
-**No `progs.dat` / mod doesn’t load**
+**No `progs.dat` / mod doesn't load**
 - Confirm `Game/cortex/progs.dat` exists and is recent
 
 **No telemetry file created**
-- Confirm you’re running `-game cortex`
+- Confirm you're running `-game cortex`
 - Set `sv_progsaccess 2` in console
 
 **Python shows no data**
-- Ensure you’re in a map: `map start`
+- Ensure you're in a map: `map start`
 - Check `Game/cortex/data/cortex_telemetry.txt`

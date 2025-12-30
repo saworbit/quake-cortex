@@ -21,6 +21,7 @@ Telemetry file (expected):
 TCP stream (experimental):
 - QuakeC connects to `tcp://127.0.0.1:26000` (requires `pr_enable_uriget 1`)
 - Python runs a local server (`python train_cortex.py` or `scripts\\run_brain_tcp.bat`)
+- Some engine builds initiate a TLS handshake even on `tcp://`; the TCP brain auto-handles this and may create `.cortex\\tls\\`.
 
 Note: FTEQW typically restricts QuakeC file writes to the mod’s `data/` folder, even if QuakeC opens `"cortex_telemetry.txt"` directly.
 

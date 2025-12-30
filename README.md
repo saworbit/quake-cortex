@@ -41,6 +41,7 @@ Notes:
 - Requires `pr_enable_uriget 1` (see `scripts/run_quake_tcp.bat`).
 - For a simple TCP logger (no training), use `scripts\\run_brain_tcp.bat`.
 - For an idiot-proof launch, use `scripts\\run_mode_b_debug.bat` or `scripts\\run_mode_b_train.bat`.
+- Some engine builds initiate a TLS handshake even on `tcp://`; the TCP brain auto-handles this and may create `.cortex\\tls\\`.
 - Guide: `docs/TCP_MODE.md`
 
 ## Project Structure

@@ -72,6 +72,19 @@ development, the root causes, workarounds, and current status.
 - Use `scripts\\run_quake_tcp.bat` (it sets `pr_enable_uriget 1` and switches Cortex to TCP mode).
 - If a build hard-disables URI streams, use File IPC mode (`scripts\\run_quake.bat`) instead.
 
+#### Related: Some Builds Use TLS on `tcp://`
+
+**Symptoms**:
+- Quake may show a black screen then exit shortly after.
+- Brain log shows `Detected TLS client hello` / `TLS handshake ...`
+
+**Root Cause**:
+- Some FTE builds initiate a TLS handshake even when the URI is `tcp://...`.
+
+**Fix**:
+- Use current `main` (the TCP brain auto-switches to TLS and generates a localhost dev cert under `.cortex\\tls\\`).
+- If cert generation fails, run: `scripts\\generate_cortex_tls_cert.ps1`
+
 ---
 
 ## Medium Priority Issues
@@ -83,7 +96,7 @@ development, the root causes, workarounds, and current status.
 
 #### Symptoms (Menus)
 
-- Python prints “Waiting for Quake to write data...” while Quake is on the title
+- Python prints `waiting_for_quake` while Quake is on the title
   screen / main menus.
 
 #### Root Cause (Menus)

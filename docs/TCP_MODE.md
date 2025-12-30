@@ -102,14 +102,21 @@ Brain -> Quake (one JSON object per line):
 
 ### Quake shows a black screen then closes
 
-Common causes:
+This usually means the engine aborted during startup. Start by checking the console log:
+- `Game\\cortex\\qconsole.log` (some builds write `Game\\qconsole.log`)
+
+Common causes (not Cortex-specific):
 - Missing `Game\\id1\\PAK0.PAK`
 - Engine can't initialize video/audio on your system
 - Mod failed to load `progs.dat`
 
 What to check:
-- `scripts\\run_quake_tcp.bat` prints an exit code and points at `Game\\cortex\\qconsole.log` (some builds write `Game\\qconsole.log`)
+- `scripts\\run_quake_tcp.bat` prints an exit code and points at the log file.
 - Try File IPC mode to confirm the engine works at all: `scripts\\run_quake.bat`
+- If Quake works in File IPC but exits in TCP mode, search `qconsole.log` for:
+  - `qcfopen("ws://..."): Access denied` (that build blocked/mis-parsed `ws://`; use `tcp://` or update)
+  - `CORTEX: Stream connect failed ...` (Brain not running or URI streams blocked)
+  - OpenSSL/TLS errors near Cortex init (see TLS note below)
 
 ### Python shows `utf-8 codec can't decode ...`
 
@@ -122,6 +129,13 @@ This is handled in current builds (TCP brain decodes bytes per-line with replace
 Some FTE builds initiate a TLS handshake even when using `tcp://`.
 
 Current builds auto-handle this by generating a local dev cert under `.cortex\\tls\\` and switching the Brain server to TLS.
+
+If the Brain logs `TLS cert generation failed`, generate it manually:
+```
+powershell -ExecutionPolicy Bypass -File scripts\\generate_cortex_tls_cert.ps1 ^
+  -CertPath .cortex\\tls\\cortex_localhost.crt.pem ^
+  -KeyPath  .cortex\\tls\\cortex_localhost.key.pem
+```
 
 ### TCP connects, but controls don't work
 

@@ -96,15 +96,21 @@ Use this for RL training and bidirectional control.
 
 Full guide: `docs/TCP_MODE.md`
 
-### 1. Install Python deps
+### Recommended: idiot-proof launcher (debug)
 
+This starts both windows (Brain + Quake) and does not require any pip installs:
+- `scripts\\run_mode_b_debug.bat`
+
+### Training / RL
+
+If you are training (SB3 / Gymnasium), install deps first:
 ```
 pip install -r python/requirements.txt
 ```
 
-### 2. Launch Quake in TCP mode
-
-- `scripts\\run_quake_tcp.bat`
+Then:
+- Quake: `scripts\\run_quake_tcp.bat`
+- Brain/training: `python train_cortex.py`
 
 This enables:
 - `pr_enable_uriget 1` (required for `fopen("tcp://...", -1)` in FTE)
@@ -114,11 +120,9 @@ This enables:
 If Quake crashes on launch in TCP mode, try disabling controls first to isolate stream issues:
 - Set `cortex_enable_controls 0` (or temporarily edit `scripts\\run_quake_tcp.bat`)
 
-### 3. Start a TCP server
+### If you get a black screen then Quake exits
 
-Choose one:
-- RL training: `python train_cortex.py`
-- Debug TCP logger: `scripts\\run_brain_tcp.bat`
+Check `Game\\cortex\\qconsole.log` (some builds write `Game\\qconsole.log`) and the latest `cortex_brain_tcp_*.log` for the exact failure reason.
 
 ---
 
