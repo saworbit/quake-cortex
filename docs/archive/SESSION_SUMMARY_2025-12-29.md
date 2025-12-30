@@ -20,8 +20,8 @@ This document summarizes the work completed during this development session and 
 **Impact**: WASD movement completely broken
 **Solution**:
 - Downloaded official single-player Quake source from [maddes-b/QuakeC-releases](https://github.com/maddes-b/QuakeC-releases/)
-- Updated [quakec/progs.src](quakec/progs.src) to reference single-player source files
-- Completely rewrote [quakec/cortex/cortex_world.qc](quakec/cortex/cortex_world.qc) to match single-player structure
+- Updated [quakec/progs.src](../../quakec/progs.src) to reference single-player source files
+- Completely rewrote [quakec/cortex/cortex_world.qc](../../quakec/cortex/cortex_world.qc) to match single-player structure
 
 **Result**: Code now uses proper single-player source that should support WASD input
 
@@ -32,8 +32,8 @@ This document summarizes the work completed during this development session and 
 - Function name mismatch: `InitBodyQue()` vs `InitBodyQueue()`
 
 **Files Fixed**:
-- [quakec/cortex/cortex_bridge.qc](quakec/cortex/cortex_bridge.qc) - Removed PRINT_HIGH from all bprint() calls
-- [quakec/cortex/cortex_world.qc](quakec/cortex/cortex_world.qc) - Changed to InitBodyQueue()
+- [quakec/cortex/cortex_bridge.qc](../../quakec/cortex/cortex_bridge.qc) - Removed PRINT_HIGH from all bprint() calls
+- [quakec/cortex/cortex_world.qc](../../quakec/cortex/cortex_world.qc) - Changed to InitBodyQueue()
 
 **Result**: Clean compilation with no errors
 
@@ -52,7 +52,7 @@ This document summarizes the work completed during this development session and 
 
 ### 5. Updated Test Harness
 
-**File**: [test_cortex_connection.py](test_cortex_connection.py)
+**File**: [test_cortex_connection.py](../../test_cortex_connection.py)
 **Changes**:
 - Removed broken `+sv_progsaccess 2` parameter
 - Added clear on-screen instructions for manual setup
@@ -62,13 +62,13 @@ This document summarizes the work completed during this development session and 
 ### 6. Created Comprehensive Documentation
 
 **New Files**:
-- [SETUP_GUIDE.md](SETUP_GUIDE.md) - Quick reference for setup procedure
-- [KNOWN_ISSUES.md](KNOWN_ISSUES.md) - Detailed issue tracking and troubleshooting
-- [NEXT_STEPS.md](NEXT_STEPS.md) - Actionable steps for resuming development
+- [SETUP_GUIDE.md](../../SETUP_GUIDE.md) - Quick reference for setup procedure
+- [KNOWN_ISSUES.md](../../KNOWN_ISSUES.md) - Detailed issue tracking and troubleshooting
+- [NEXT_STEPS.md](../../NEXT_STEPS.md) - Actionable steps for resuming development
 - `docs/archive/SESSION_SUMMARY_2025-12-29.md` - This file
 
 **Updated Files**:
-- [README.md](README.md) - Updated status to reflect current blockers
+- [README.md](../../README.md) - Updated status to reflect current blockers
 
 ---
 
@@ -224,7 +224,7 @@ Find official documentation or ask FTEQW community about sv_progsaccess and file
 ### Priority 5: Explore Alternatives (2-4 hours)
 If file I/O remains problematic, investigate TCP sockets, UDP, or other IPC methods.
 
-**See [NEXT_STEPS.md](NEXT_STEPS.md) for detailed action plans**
+**See [NEXT_STEPS.md](../../NEXT_STEPS.md) for detailed action plans**
 
 ---
 
