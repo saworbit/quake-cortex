@@ -20,6 +20,14 @@ vector cortex_cmd_aim;      // x=pitch_delta, y=yaw_delta
 float cortex_cmd_buttons;   // bit0=attack, bit1=jump
 float cortex_cmd_time;      // last time we applied an update
 
+// Extension detection (TCP/control mode needs extra builtins on some engines).
+float cortex_stream_ext_checked;
+float cortex_has_cvar_string;
+float cortex_has_strings;
+float cortex_warned_missing_cvar_string;
+float cortex_warned_missing_strings;
+float cortex_warned_uriget_disabled;
+
 void() Cortex_Frame;
 void() Cortex_EnsureTelemetryOpen;
 void() Cortex_PrintFileSupportStatus;
@@ -91,8 +99,30 @@ FTE gates this behind `pr_enable_uriget` for safety.
 */
 void() Cortex_PrintStreamSupportStatus =
 {
-    if (!cvar("pr_enable_uriget"))
+    if (!cvar("pr_enable_uriget") && !cortex_warned_uriget_disabled)
+    {
+        cortex_warned_uriget_disabled = 1;
         bprint("CORTEX: Note: URI streams disabled (set `pr_enable_uriget 1` to allow tcp://)\n");
+    }
+
+    if (!cortex_stream_ext_checked)
+    {
+        cortex_stream_ext_checked = 1;
+        cortex_has_cvar_string = checkextension("DP_QC_CVAR_STRING");
+        cortex_has_strings = checkextension("FTE_STRINGS");
+    }
+
+    if (!cortex_has_cvar_string && !cortex_warned_missing_cvar_string)
+    {
+        cortex_warned_missing_cvar_string = 1;
+        bprint("CORTEX: Note: DP_QC_CVAR_STRING missing (TCP URI cvar overrides disabled)\n");
+    }
+
+    if (!cortex_has_strings && !cortex_warned_missing_strings)
+    {
+        cortex_warned_missing_strings = 1;
+        bprint("CORTEX: Note: FTE_STRINGS missing (Brain->Body control parsing disabled)\n");
+    }
 };
 
 /*
@@ -123,12 +153,23 @@ void() Cortex_EnsureTelemetryOpen =
 
     if (use_tcp)
     {
-        target = cvar_string("cortex_tcp_uri");
+        if (!cortex_stream_ext_checked)
+            Cortex_PrintStreamSupportStatus();
+
+        if (cortex_has_cvar_string)
+            target = cvar_string("cortex_tcp_uri");
+        else
+            target = "";
+
         if (target == "") target = "tcp://127.0.0.1:26000";
     }
     else
     {
-        target = cvar_string("cortex_telemetry_file");
+        if (checkextension("DP_QC_CVAR_STRING"))
+            target = cvar_string("cortex_telemetry_file");
+        else
+            target = "";
+
         if (target == "") target = "cortex_telemetry.txt";
     }
 
@@ -244,6 +285,19 @@ void() Cortex_PollControls =
     if (cortex_socket < 0) return;
     if (!cvar("cortex_use_tcp")) return;
     if (!cvar("cortex_enable_controls")) return;
+
+    if (!cortex_stream_ext_checked)
+        Cortex_PrintStreamSupportStatus();
+
+    if (!cortex_has_strings)
+    {
+        if (!cortex_warned_missing_strings)
+        {
+            cortex_warned_missing_strings = 1;
+            bprint("CORTEX: Controls disabled (missing FTE_STRINGS)\n");
+        }
+        return;
+    }
 
     // Drain a few lines per frame (non-blocking on FTE tcp streams).
     for (i = 0; i < 8; i = i + 1)

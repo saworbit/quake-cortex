@@ -22,8 +22,17 @@ if not exist fteqw64.exe (
     popd >nul 2>&1
     exit /b 1
 )
+if not exist id1\\PAK0.PAK (
+    echo ERROR: Missing Quake data: Game\\id1\\PAK0.PAK
+    echo See SETUP_GUIDE.md
+    popd >nul 2>&1
+    exit /b 1
+)
 
 fteqw64.exe -game cortex ^
+  +set developer 1 ^
+  +set condebug 1 ^
+  +set pr_checkextension 1 ^
   +set pr_enable_uriget 1 ^
   +set cortex_use_tcp 1 ^
   +set cortex_enable_controls 1 ^
@@ -32,5 +41,10 @@ fteqw64.exe -game cortex ^
 
 set EXITCODE=%ERRORLEVEL%
 popd >nul 2>&1
+if not "%EXITCODE%"=="0" (
+    echo.
+    echo Quake exited with code %EXITCODE%.
+    echo Check Game\\qconsole.log (if created) for details.
+    pause
+)
 exit /b %EXITCODE%
-

@@ -109,6 +109,9 @@ This enables:
 - `cortex_use_tcp 1` (switch Cortex from file IPC to TCP stream)
 - `cortex_enable_controls 1` (allow Brain -> Body control updates)
 
+If Quake crashes on launch in TCP mode, try disabling controls first to isolate stream issues:
+- Set `cortex_enable_controls 0` (or temporarily edit `scripts\\run_quake_tcp.bat`)
+
 ### 3. Start a TCP server
 
 Choose one:

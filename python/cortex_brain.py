@@ -59,25 +59,28 @@ class CortexBrain:
 
     def handle_client(self):
         """Process incoming data from Quake"""
-        buffer = ""
+        buffer = bytearray()
 
         while self.running:
             try:
-                # Receive data in chunks
-                data = self.client_socket.recv(4096).decode("utf-8")
-
-                if not data:
+                chunk = self.client_socket.recv(4096)
+                if not chunk:
                     print("[CORTEX BRAIN] Client disconnected")
                     break
 
-                # Add to buffer and process line by line
-                buffer += data
-                lines = buffer.split("\n")
-                buffer = lines[-1]  # Keep incomplete line in buffer
+                buffer.extend(chunk)
 
-                for line in lines[:-1]:
-                    if line.strip():
-                        self.process_packet(line.strip())
+                while True:
+                    nl = buffer.find(b"\n")
+                    if nl == -1:
+                        break
+
+                    line_bytes = buffer[:nl]
+                    del buffer[: nl + 1]
+
+                    line = line_bytes.decode("utf-8", errors="replace").strip()
+                    if line:
+                        self.process_packet(line)
 
             except Exception as e:
                 print(f"[ERROR] Failed to process data: {e}")
