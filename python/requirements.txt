@@ -14,5 +14,5 @@ stable-baselines3==2.2.1; python_version < "3.14"
 numpy>=1.21.0; python_version < "3.14"
 shimmy>=0.2.0; python_version < "3.14"
 
-# Optional: For visualization
-pygame>=2.5.0; python_version < "3.14"
+# Optional extras:
+# - Visualization: see `python/requirements-visualizer.txt`

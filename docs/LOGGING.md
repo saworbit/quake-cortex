@@ -6,10 +6,8 @@ Project Cortex produces two primary logs (Body + Brain) that you can hand to a h
 
 ### Brain (Python)
 
-- **File**: `cortex_brain_<unix_ts>.log`
-  - Location: the current working directory you launched `python cortex_brain.py` from
-  - If you use `scripts\\run_brain.bat`, that is the repo root (`C:\\ProjectCortex\\`)
-- **Stream mode file**: `cortex_brain_tcp_<YYYYMMDD_HHMMSS>.log` (when using `scripts\\run_brain_tcp.bat`)
+- **File**: `.cortex\\logs\\cortex_brain_<unix_ts>.log` (when using `scripts\\run_brain.bat`)
+- **Stream mode file**: `.cortex\\logs\\cortex_brain_tcp_<YYYYMMDD_HHMMSS>.log` (when using `scripts\\run_brain_tcp.bat`)
 - **Console**: structured INFO/ERROR lines prefixed with `[BRAIN]`
 
 The file log is **DEBUG** and contains the high-volume timeline (telemetry packets, decisions, etc). The console is **INFO** to avoid noise.
@@ -36,9 +34,12 @@ A built-in dump is bound to **impulse 199**:
 
 ## Recommended Workflow
 
-1. Run `scripts\\run_brain.bat` (Brain log file appears in repo root).
+1. Run `scripts\\run_brain.bat` (Brain log file appears under `.cortex\\logs\\`).
 2. Run `scripts\\run_quake.bat` (Body console log appears at `Game\\cortex\\qconsole.log`).
 3. Reproduce the issue, then press your dump-state key (e.g. F7) at the failure moment.
 4. Share:
-   - `cortex_brain_*.log`
+   - `.cortex\\logs\\cortex_brain_*.log`
    - the relevant section of `Game\\cortex\\qconsole.log` (or `Game\\qconsole.log`)
+
+Quick sanity check (prints tails of the latest logs):
+`scripts\\check_logs.bat`

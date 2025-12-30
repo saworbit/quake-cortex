@@ -47,7 +47,10 @@ def _setup_logging() -> None:
     logger.setLevel(logging.DEBUG)
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_handler = logging.FileHandler(f"cortex_brain_tcp_{ts}.log", encoding="utf-8")
+    logs_dir = _project_root() / ".cortex" / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    log_path = logs_dir / f"cortex_brain_tcp_{ts}.log"
+    file_handler = logging.FileHandler(log_path, encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(
         logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
@@ -60,7 +63,7 @@ def _setup_logging() -> None:
     logger.addHandler(file_handler)
     logger.addHandler(console)
     logger._cortex_configured = True  # type: ignore[attr-defined]
-    logger.info(f"[CORTEX BRAIN] Logging to cortex_brain_tcp_{ts}.log")
+    logger.info(f"[CORTEX BRAIN] Logging to {log_path}")
 
 
 def _close_socket(sock: socket.socket | None) -> None:
@@ -255,7 +258,7 @@ class CortexBrain:
 
                     if looks_like_tls_client_hello(peek):
                         logger.info(
-                            "[CORTEX BRAIN] Detected TLS client hello; switching to TLS."
+                            "[CORTEX BRAIN] Detected TLS client hello (engine is negotiating TLS on this stream)."
                         )
                         try:
                             self.client_socket = _wrap_tls_server(self.client_socket)
@@ -264,6 +267,9 @@ class CortexBrain:
                             continue
                         except Exception as e:
                             logger.error(f"[ERROR] TLS handshake failed: {e}")
+                            logger.error(
+                                "[CORTEX BRAIN] Fix: prefer `ws://127.0.0.1:26000/` for `cortex_tcp_uri` (default in scripts/run_quake_tcp.bat), or upgrade FTEQW."
+                            )
                             break
 
                     chunk = self.client_socket.recv(4096)

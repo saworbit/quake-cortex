@@ -83,11 +83,9 @@ development, the root causes, workarounds, and current status.
 - Some FTE builds initiate a TLS handshake even when the URI is `tcp://...`.
 
 **Fix**:
-- Use current `main` (the TCP brain auto-switches to TLS and generates a localhost dev cert under `.cortex\\tls\\`).
-- If cert generation fails, run: `scripts\\generate_cortex_tls_cert.ps1`
-- If the Brain logs `[SSL] PEM lib`, delete `.cortex\\tls\\` and restart the TCP brain (it will regenerate).
-- If the Brain logs `TLSV1_ALERT_UNKNOWN_CA`, set `tls_ignorecertificateerrors 1` (already set by `scripts\\run_quake_tcp.bat`).
-- Prefer a newer FTEQW build where `tcp://` is plain TCP and TLS is only used with `tls://`.
+- Prefer `ws://127.0.0.1:26000/` (default in `scripts\\run_quake_tcp.bat`) to avoid TLS negotiation entirely.
+- If your build is doing TLS on `tcp://`, Cortex cannot reliably override the engine’s cert verification; upgrade FTEQW (where `tcp://` is plain TCP and TLS is only used with `tls://`).
+- If you want to investigate anyway: the TCP brain can generate a local dev cert under `.cortex\\tls\\` via `scripts\\generate_cortex_tls_cert.ps1`, but some builds will still reject it as `unknown ca`.
 
 ---
 

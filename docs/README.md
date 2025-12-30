@@ -19,9 +19,9 @@ Telemetry file (expected):
 - `Game/cortex/data/cortex_telemetry.txt`
 
 TCP stream (experimental):
-- QuakeC connects to `tcp://127.0.0.1:26000` (requires `pr_enable_uriget 1`)
+- QuakeC connects to `ws://127.0.0.1:26000/` (default; requires `pr_enable_uriget 1`)
 - Python runs a local server (`python train_cortex.py` or `scripts\\run_brain_tcp.bat`)
-- Some engine builds initiate a TLS handshake even on `tcp://`; the TCP brain auto-handles this and may create `.cortex\\tls\\`.
+- Some engine builds initiate a TLS handshake on `tcp://` and fail cert verification; prefer `ws://` unless your engine build is known-good.
 
 Note: FTEQW typically restricts QuakeC file writes to the mod’s `data/` folder, even if QuakeC opens `"cortex_telemetry.txt"` directly.
 
@@ -36,7 +36,7 @@ This produces `Game/cortex/progs.dat`.
 ### 2) Start Python (choose one)
 
 - Logger: `scripts\\run_brain.bat`
-- Visualizer: `scripts\\run_visualizer.bat` (requires `pip install pygame`, or use `python cortex_visualizer.py --text`)
+- Visualizer: `scripts\\run_visualizer.bat` (requires `pip install -r python/requirements-visualizer.txt`, or use `python cortex_visualizer.py --text`)
 - TCP logger (experimental): `scripts\\run_brain_tcp.bat`
 
 ### 3) Launch Quake
@@ -56,10 +56,10 @@ Expected Quake console messages:
 - `CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)`
 
 Expected Python output:
-- `[BRAIN] BOOT | logger_initialized | {"log_file":"...\\cortex_brain_<timestamp>.log"}`
+- `[BRAIN] BOOT | logger_initialized | {"log_file":"...\\.cortex\\logs\\cortex_brain_<timestamp>.log"}`
 - `[BRAIN] IO | monitoring_telemetry_file | {"path":"...\\Game\\cortex\\data\\cortex_telemetry.txt",...}`
 
-For high-volume timelines (telemetry packets, decisions), read the generated `cortex_brain_<timestamp>.log`.
+For high-volume timelines (telemetry packets, decisions), read the generated `.cortex\\logs\\cortex_brain_<timestamp>.log`.
 
 ## Troubleshooting
 

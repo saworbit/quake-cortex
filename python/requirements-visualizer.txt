@@ -1,0 +1,9 @@
+# Optional visualization dependencies (NOT needed for Mode B debug or training)
+#
+# Usage:
+#   pip install -r python/requirements.txt
+#   pip install -r python/requirements-visualizer.txt
+#
+# Note: wheels may lag on very new Python releases; use Python 3.11/3.12 on Windows if installs fail.
+
+pygame>=2.5.0; python_version < "3.14"

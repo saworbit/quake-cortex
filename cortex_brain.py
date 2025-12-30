@@ -27,7 +27,9 @@ def _setup_logging() -> None:
     logger.setLevel(logging.DEBUG)
 
     # File Handler - writes detailed logs to a file for post-mortem analysis
-    log_path = Path(f"cortex_brain_{int(time.time())}.log").resolve()
+    logs_dir = Path(__file__).resolve().parent / ".cortex" / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    log_path = (logs_dir / f"cortex_brain_{int(time.time())}.log").resolve()
     file_handler = logging.FileHandler(log_path, encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
     file_formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")

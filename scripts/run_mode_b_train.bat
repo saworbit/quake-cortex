@@ -7,12 +7,12 @@ echo ========================================
 echo.
 echo This will:
 echo   1) Build QuakeC (progs.dat)
-echo   2) Create a venv (.venv_tcp) using Python 3.12 (recommended)
+echo   2) Create a venv (.venv_tcp) using Python 3.11 (recommended)
 echo   3) Install Python deps (SB3/Gymnasium) into that venv
 echo   4) Start Quake (TCP mode) in a new window
 echo   5) Run training (TCP server) in THIS window
 echo.
-echo If you are on Python 3.14+ and installs fail: use the venv this script creates.
+echo If you are on a very new Python and installs fail: use the venv this script creates.
 echo.
 
 pushd "%~dp0\.." >nul 2>&1
@@ -31,14 +31,14 @@ if errorlevel 1 (
 )
 
 set VENV_DIR=.venv_tcp
-set PY_LAUNCHER=py -3.12
+set PY_LAUNCHER=py -3.11
 
 echo.
 echo [2/5] Creating venv: %VENV_DIR%
 %PY_LAUNCHER% -V >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: Python launcher for 3.12 not found.
-    echo Install Python 3.12 (recommended) and ensure the Windows "py" launcher is available.
+    echo ERROR: Python launcher for 3.11 not found.
+    echo Install Python 3.11 (recommended) and ensure the Windows "py" launcher is available.
     echo Then re-run: scripts\run_mode_b_train.bat
     popd >nul 2>&1
     exit /b 1
@@ -87,4 +87,3 @@ set EXITCODE=%ERRORLEVEL%
 
 popd >nul 2>&1
 exit /b %EXITCODE%
-

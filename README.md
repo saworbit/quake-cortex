@@ -21,15 +21,17 @@ scripts\run_brain.bat
 scripts\run_quake.bat
 ```
 
-**Expected Result**: Quake console shows `CORTEX: Telemetry file opened!` and Python creates `cortex_brain_<timestamp>.log` in the repo root (via `scripts\\run_brain.bat`).
+**Expected Result**: Quake console shows `CORTEX: Telemetry file opened!` and Python creates `.cortex\\logs\\cortex_brain_<timestamp>.log` (via `scripts\\run_brain.bat`).
 
 Telemetry format: newline-delimited JSON (NDJSON). The tools also accept the older `POS: 'x y z'` format.
 
+Engine: currently tested with **FTEQW** (`Game\\fteqw64.exe`). Other engines may not support the required QuakeC builtins/URI streams.
+
 Entrypoints: `cortex_brain.py` and `cortex_visualizer.py` in the repo root.
 
-### Experimental: TCP Stream + RL Training
+### Experimental: Stream Mode + RL Training
 
-This uses `tcp://` telemetry + control input instead of file IPC.
+This uses a local stream (`ws://` recommended) for telemetry + control input instead of file IPC.
 
 ```bash
 pip install -r python/requirements.txt
@@ -41,7 +43,7 @@ Notes:
 - Requires `pr_enable_uriget 1` (see `scripts/run_quake_tcp.bat`).
 - For a simple TCP logger (no training), use `scripts\\run_brain_tcp.bat`.
 - For an idiot-proof launch, use `scripts\\run_mode_b_debug.bat` or `scripts\\run_mode_b_train.bat`.
-- Some engine builds initiate a TLS handshake even on `tcp://`; the TCP brain auto-handles this and may create `.cortex\\tls\\`.
+- Some engine builds initiate a TLS handshake on `tcp://` and fail cert verification; prefer `ws://` unless your engine build is known-good.
 - Guide: `docs/TCP_MODE.md`
 
 ## Project Structure
@@ -142,7 +144,7 @@ scripts\run_quake.bat      # Terminal 2
 
 **Option 2: Visual Debugger**
 ```bash
-scripts\run_visualizer.bat # Terminal 1 (requires pygame; fallback: `python cortex_visualizer.py --text`)
+scripts\run_visualizer.bat # Terminal 1 (requires `pip install -r python/requirements-visualizer.txt`; fallback: `python cortex_visualizer.py --text`)
 scripts\run_quake.bat      # Terminal 2
 ```
 
@@ -197,7 +199,7 @@ scripts\run_quake.bat      # Terminal 2
 
 **Python**:
 - Core telemetry/brain scripts: Python 3.11+ recommended (no dependencies for basic mode)
-- Optional: `pygame` for visual debugger (use Python 3.11/3.12; very new Python versions may not have wheels yet)
+- Optional: `pygame` for visual debugger (install via `python/requirements-visualizer.txt`; use Python 3.11/3.12 on Windows if wheels are missing)
 
 **Quake Runtime** (⚠️ **YOU MUST PROVIDE**):
 - **FTEQW Engine**: Download from [https://fte.triptohell.info/](https://fte.triptohell.info/)

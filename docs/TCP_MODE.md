@@ -7,10 +7,17 @@ Stream mode replaces File IPC with a local stream so the Brain can both:
 This is required for RL training (`train_cortex.py` / `python/cortex_env.py`).
 
 Default URI (set automatically by `scripts\\run_quake_tcp.bat`):
+- `ws://127.0.0.1:26000/`
+
+If you want to force raw sockets (not recommended on current Windows FTE builds), use:
 - `tcp://127.0.0.1:26000`
 
-If your engine build wraps streams in WebSocket framing, use:
+If your engine build wraps streams in WebSocket framing, use (default):
 - `ws://127.0.0.1:26000/`
+
+Overrides:
+- Force raw TCP once: `scripts\\run_quake_tcp.bat tcp`
+- Set an explicit URI: `set CORTEX_STREAM_URI=ws://127.0.0.1:26000/` (or `tcp://...`) then run `scripts\\run_quake_tcp.bat`
 
 ## Prerequisites
 
@@ -27,11 +34,11 @@ Run this once and it opens two windows (Brain server + Quake client):
 scripts\\run_mode_b_debug.bat
 ```
 
-### Training (creates a Python 3.12 venv)
+### Training (creates a Python 3.11 venv)
 
 Run this once and it will:
 - build QuakeC,
-- create `.venv_tcp` using Python 3.12,
+- create `.venv_tcp` using Python 3.11,
 - install deps into that venv,
 - launch Quake in a new window,
 - run training in the current window.
@@ -41,7 +48,7 @@ scripts\\run_mode_b_train.bat
 
 ## Important Security Setting (`pr_enable_uriget`)
 
-FTE gates URI streams (including `tcp://`) behind `pr_enable_uriget`.
+FTE gates URI streams (including `ws://` and `tcp://`) behind `pr_enable_uriget`.
 
 TCP mode will not work unless:
 ```
@@ -64,7 +71,7 @@ scripts\\run_quake_tcp.bat
 
 Success looks like:
 - Python prints a client connection and then periodic `POS x=... y=... z=...`
-- Quake console prints `CORTEX: Connected Cortex stream (tcp://)` (or `ws://` if you force websocket framing)
+- Quake console prints `CORTEX: Connected Cortex stream (ws://)` (or `tcp://` if you forced raw sockets)
 
 ## Manual Start (RL Training / Stable Baselines 3)
 
@@ -86,7 +93,7 @@ python train_cortex.py
 Notes:
 - TCP training uses `cortex_enable_controls 1` so Quake applies the latest command every frame.
 - The environment is a local TCP server that Quake connects to.
-- If you are on a very new Python version and installs fail, use Python 3.12.
+- If you are on a very new Python version and installs fail, use Python 3.11/3.12.
 
 ## Controls Protocol (Current)
 
@@ -128,34 +135,14 @@ This is handled in current builds (TCP brain decodes bytes per-line with replace
 
 Some FTE builds initiate a TLS handshake even when using `tcp://`.
 
-Current builds auto-handle this by generating a local dev cert under `.cortex\\tls\\` and switching the Brain server to TLS.
-
 If you see these errors, your engine is doing TLS verification against a self-signed localhost cert:
 - Brain: `TLSV1_ALERT_UNKNOWN_CA`
 - Quake: `X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT`
 
 Workarounds:
 - Prefer a newer FTEQW build where `tcp://` opens a raw TCP socket and `tls://` is the explicit TLS scheme.
-- If you must use this build, set `tls_ignorecertificateerrors 1` (already set by `scripts\\run_quake_tcp.bat`).
-- If you want to force plain sockets, also set `net_enable_tls 0` and `net_enable_dtls 0` (already set by `scripts\\run_quake_tcp.bat`).
-
-If your engine rejects the self-signed cert, set:
-```
-tls_ignorecertificateerrors 1
-```
-
-`scripts\\run_quake_tcp.bat` sets this automatically.
-
-If the Brain logs `TLS handshake failed: [SSL] PEM lib`, you likely have an old/bad cert/key from an earlier build:
-- Delete `.cortex\\tls\\` and re-run `scripts\\run_brain_tcp.bat`, or
-- Regenerate manually (command below).
-
-If the Brain logs `TLS cert generation failed`, generate it manually:
-```
-powershell -ExecutionPolicy Bypass -File scripts\\generate_cortex_tls_cert.ps1 ^
-  -CertPath .cortex\\tls\\cortex_localhost.crt.pem ^
-  -KeyPath  .cortex\\tls\\cortex_localhost.key.pem
-```
+- Use `ws://127.0.0.1:26000/` (default in `scripts\\run_quake_tcp.bat`) to avoid TLS negotiation entirely.
+- If you must use `tcp://`, upgrade FTEQW (this is an engine behavior/bug, not a Python-side fix).
 
 ### TCP connects, but controls don't work
 

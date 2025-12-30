@@ -4,9 +4,9 @@ echo ========================================
 echo PROJECT CORTEX - Brain Server (TCP Stream)
 echo ========================================
 echo.
-echo This starts a TCP server on 127.0.0.1:26000 for QuakeC to connect to via:
-echo   tcp://127.0.0.1:26000  (default)
-echo   ws://127.0.0.1:26000/  (websocket framing)
+echo This starts a stream server on 127.0.0.1:26000 for QuakeC to connect to via:
+echo   ws://127.0.0.1:26000/  (recommended on current FTEQW builds)
+echo   tcp://127.0.0.1:26000  (fallback; some builds incorrectly start TLS here)
 echo.
 echo In another terminal, launch Quake with:
 echo   scripts\run_quake_tcp.bat

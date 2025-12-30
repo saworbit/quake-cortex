@@ -8,7 +8,7 @@
 ### Sidecar Architecture
 - [x] QuakeC emits telemetry to a file (FTEQW `FRIK_FILE` builtins)
 - [x] Python tails telemetry and writes structured logs (Brain timeline)
-- [x] Optional pygame visualizer
+- [x] Optional pygame visualizer (install via `python/requirements-visualizer.txt`)
 
 ### Sensor Suite (Current Output)
 - [x] NDJSON telemetry (`health/armor/ammo/pos/vel/lidar/enemies`) at configurable rate (`cortex_send_interval`)

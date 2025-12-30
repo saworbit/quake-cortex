@@ -12,7 +12,7 @@ echo   3) Start Quake in TCP mode (client)
 echo.
 echo Notes:
 echo - No pip install required for this debug logger.
-echo - Quake connects to tcp://127.0.0.1:26000
+echo - Quake connects to ws://127.0.0.1:26000/ by default (set CORTEX_STREAM_URI or pass "tcp" to run_quake_tcp.bat to override)
 echo - Logs: Game\cortex\qconsole.log (some builds write Game\qconsole.log)
 echo.
 

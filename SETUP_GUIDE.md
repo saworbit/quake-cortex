@@ -61,7 +61,7 @@ CORTEX: Telemetry file opened!
 
 ### In Python Brain Window
 ```
-[BRAIN] BOOT | logger_initialized | {"log_file":"...\\cortex_brain_<timestamp>.log"}
+[BRAIN] BOOT | logger_initialized | {"log_file":"...\\.cortex\\logs\\cortex_brain_<timestamp>.log"}
 [BRAIN] IO | monitoring_telemetry_file | {"path":"...\\Game\\cortex\\data\\cortex_telemetry.txt",...}
 ```
 
@@ -122,7 +122,7 @@ If Quake crashes on launch in TCP mode, try disabling controls first to isolate 
 
 ### If you get a black screen then Quake exits
 
-Check `Game\\cortex\\qconsole.log` (some builds write `Game\\qconsole.log`) and the latest `cortex_brain_tcp_*.log` for the exact failure reason.
+Check `Game\\cortex\\qconsole.log` (some builds write `Game\\qconsole.log`) and the latest `.cortex\\logs\\cortex_brain_tcp_*.log` for the exact failure reason.
 
 ---
 

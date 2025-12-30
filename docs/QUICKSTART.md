@@ -12,7 +12,7 @@
 
 You should see:
 ```
-[BRAIN] BOOT | logger_initialized | {"log_file":"...\\cortex_brain_<timestamp>.log"}
+[BRAIN] BOOT | logger_initialized | {"log_file":"...\\.cortex\\logs\\cortex_brain_<timestamp>.log"}
 [BRAIN] IO | monitoring_telemetry_file | {"path":"...\\Game\\cortex\\data\\cortex_telemetry.txt",...}
 [BRAIN] IO | waiting_for_quake
 ```
@@ -29,7 +29,7 @@ sv_progsaccess 2
 ### Step 4: Verify Telemetry
 
 - Quake console: `CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)`
-- Python: check the generated `cortex_brain_<timestamp>.log` for NDJSON packets / parsed telemetry
+- Python: check the generated `.cortex\\logs\\cortex_brain_<timestamp>.log` for NDJSON packets / parsed telemetry
 
 Note: telemetry won’t appear until you’re in an actual map (menus don’t run QuakeC). Use `map start`/`map e1m1` if needed.
 
@@ -45,16 +45,16 @@ Guide: `docs/TCP_MODE.md`
 
 If Quake shows a black screen and exits in TCP mode, check:
 - `Game\\cortex\\qconsole.log` (some builds write `Game\\qconsole.log`)
-- the latest `cortex_brain_tcp_*.log`
+- the latest `.cortex\\logs\\cortex_brain_tcp_*.log`
 
 ## Visual Debug Mode (Optional)
 
 `scripts\\run_visualizer.bat`
 
 Requires:
-`pip install pygame`
+`pip install -r python/requirements-visualizer.txt`
 
-If `pip install pygame` fails (common on very new Python versions that don't have wheels yet), run in text mode instead:
+If installs fail (common on very new Python versions that don't have wheels yet), run in text mode instead:
 `python cortex_visualizer.py --text`
 
 ## Common Issues
