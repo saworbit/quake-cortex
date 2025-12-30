@@ -37,4 +37,3 @@ A built-in dump is bound to **impulse 199**:
 4. Share:
    - `cortex_brain_*.log`
    - the relevant section of `Game\\qconsole.log`
-
