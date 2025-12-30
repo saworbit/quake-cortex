@@ -12,12 +12,34 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 function Join-Bytes {
-    param([Parameter(Mandatory = $true)][byte[][]]$Parts)
+    param([Parameter(Mandatory = $true)][object[]]$Parts)
     $ms = New-Object System.IO.MemoryStream
     foreach ($p in $Parts) {
-        if ($null -ne $p -and $p.Length -gt 0) {
-            $ms.Write($p, 0, $p.Length) | Out-Null
+        if ($null -eq $p) {
+            continue
         }
+
+        if ($p -is [byte]) {
+            $ms.WriteByte([byte]$p) | Out-Null
+            continue
+        }
+
+        if ($p -is [byte[]]) {
+            if ($p.Length -gt 0) {
+                $ms.Write($p, 0, $p.Length) | Out-Null
+            }
+            continue
+        }
+
+        if ($p -is [System.Collections.IEnumerable]) {
+            foreach ($b in $p) {
+                if ($null -eq $b) { continue }
+                $ms.WriteByte([byte]$b) | Out-Null
+            }
+            continue
+        }
+
+        throw "Join-Bytes: Unsupported part type: $($p.GetType().FullName)"
     }
     $ms.ToArray()
 }
@@ -31,10 +53,10 @@ function Der-Length {
     $n = $Length
     while ($n -gt 0) {
         $bytes.Insert(0, [byte]($n -band 0xFF))
-        $n = [int]($n / 256)
+        $n = $n -shr 8
     }
     $prefix = [byte](0x80 -bor $bytes.Count)
-    return Join-Bytes -Parts @([byte[]]@($prefix), $bytes.ToArray())
+    return Join-Bytes -Parts @([byte[]]@($prefix), [byte[]]$bytes.ToArray())
 }
 
 function Der-Integer {

@@ -84,6 +84,7 @@ development, the root causes, workarounds, and current status.
 **Fix**:
 - Use current `main` (the TCP brain auto-switches to TLS and generates a localhost dev cert under `.cortex\\tls\\`).
 - If cert generation fails, run: `scripts\\generate_cortex_tls_cert.ps1`
+- If the Brain logs `[SSL] PEM lib`, delete `.cortex\\tls\\` and restart the TCP brain (it will regenerate).
 
 ---
 

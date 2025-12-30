@@ -86,11 +86,7 @@ def _tls_paths() -> tuple[Path, Path]:
     return tls_dir / "cortex_localhost.crt.pem", tls_dir / "cortex_localhost.key.pem"
 
 
-def _ensure_tls_cert() -> tuple[Path, Path]:
-    cert_path, key_path = _tls_paths()
-    if cert_path.exists() and key_path.exists():
-        return cert_path, key_path
-
+def _generate_tls_cert(cert_path: Path, key_path: Path) -> None:
     cert_path.parent.mkdir(parents=True, exist_ok=True)
     script = _project_root() / "scripts" / "generate_cortex_tls_cert.ps1"
     if not script.exists():
@@ -118,6 +114,14 @@ def _ensure_tls_cert() -> tuple[Path, Path]:
         raise RuntimeError(
             f"TLS cert generation failed: {e.stderr or e.stdout or e}"
         ) from e
+
+
+def _ensure_tls_cert(*, force: bool = False) -> tuple[Path, Path]:
+    cert_path, key_path = _tls_paths()
+    if not force and cert_path.exists() and key_path.exists():
+        return cert_path, key_path
+
+    _generate_tls_cert(cert_path, key_path)
     return cert_path, key_path
 
 
@@ -125,7 +129,22 @@ def _wrap_tls_server(sock: socket.socket) -> ssl.SSLSocket:
     cert_path, key_path = _ensure_tls_cert()
 
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    ctx.load_cert_chain(certfile=str(cert_path), keyfile=str(key_path))
+    try:
+        ctx.load_cert_chain(certfile=str(cert_path), keyfile=str(key_path))
+    except ssl.SSLError:
+        # Old/bad certs can linger under `.cortex/tls/` from earlier builds.
+        try:
+            cert_path.unlink()
+        except OSError:
+            pass
+        try:
+            key_path.unlink()
+        except OSError:
+            pass
+
+        cert_path, key_path = _ensure_tls_cert(force=True)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ctx.load_cert_chain(certfile=str(cert_path), keyfile=str(key_path))
     ssl_sock = ctx.wrap_socket(sock, server_side=True, do_handshake_on_connect=False)
     ssl_sock.do_handshake()
     return ssl_sock

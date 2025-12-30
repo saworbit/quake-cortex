@@ -130,6 +130,10 @@ Some FTE builds initiate a TLS handshake even when using `tcp://`.
 
 Current builds auto-handle this by generating a local dev cert under `.cortex\\tls\\` and switching the Brain server to TLS.
 
+If the Brain logs `TLS handshake failed: [SSL] PEM lib`, you likely have an old/bad cert/key from an earlier build:
+- Delete `.cortex\\tls\\` and re-run `scripts\\run_brain_tcp.bat`, or
+- Regenerate manually (command below).
+
 If the Brain logs `TLS cert generation failed`, generate it manually:
 ```
 powershell -ExecutionPolicy Bypass -File scripts\\generate_cortex_tls_cert.ps1 ^
