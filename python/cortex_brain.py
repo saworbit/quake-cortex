@@ -13,9 +13,12 @@ This logger auto-detects and supports both.
 import json
 import logging
 import socket
+import ssl
+import subprocess
 import threading
 import time
 from datetime import datetime
+from pathlib import Path
 
 try:
     from cortex_ws import (
@@ -69,6 +72,59 @@ def _close_socket(sock: socket.socket | None) -> None:
         sock.close()
     except OSError:
         pass
+
+
+def _project_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
+def _tls_paths() -> tuple[Path, Path]:
+    root = _project_root()
+    tls_dir = root / ".cortex" / "tls"
+    return tls_dir / "cortex_localhost.crt.pem", tls_dir / "cortex_localhost.key.pem"
+
+
+def _ensure_tls_cert() -> tuple[Path, Path]:
+    cert_path, key_path = _tls_paths()
+    if cert_path.exists() and key_path.exists():
+        return cert_path, key_path
+
+    cert_path.parent.mkdir(parents=True, exist_ok=True)
+    script = _project_root() / "scripts" / "generate_cortex_tls_cert.ps1"
+    if not script.exists():
+        raise FileNotFoundError(f"Missing TLS cert generator script: {script}")
+
+    try:
+        subprocess.run(
+            [
+                "powershell",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(script),
+                "-CertPath",
+                str(cert_path),
+                "-KeyPath",
+                str(key_path),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"TLS cert generation failed: {e.stderr or e.stdout or e}") from e
+    return cert_path, key_path
+
+
+def _wrap_tls_server(sock: socket.socket) -> ssl.SSLSocket:
+    cert_path, key_path = _ensure_tls_cert()
+
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.load_cert_chain(certfile=str(cert_path), keyfile=str(key_path))
+    ssl_sock = ctx.wrap_socket(sock, server_side=True, do_handshake_on_connect=False)
+    ssl_sock.do_handshake()
+    return ssl_sock
 
 
 class CortexBrain:
@@ -164,16 +220,30 @@ class CortexBrain:
         while self.running:
             try:
                 if ws is None and not buffer:
-                    # First read: detect transport.
-                    chunk = self.client_socket.recv(4096)
-                    if not chunk:
+                    # First read: detect transport without consuming bytes (TLS needs the full handshake).
+                    try:
+                        peek = self.client_socket.recv(4096, socket.MSG_PEEK)
+                    except OSError:
+                        peek = b""
+
+                    if not peek:
                         logger.info("[CORTEX BRAIN] Client disconnected")
                         break
 
-                    if looks_like_tls_client_hello(chunk):
-                        logger.error("[CORTEX BRAIN] Received TLS handshake bytes (client hello).")
-                        logger.error("[CORTEX BRAIN] This logger does not support TLS yet.")
-                        logger.error("[CORTEX BRAIN] Fix: set `cortex_tcp_uri tcp://127.0.0.1:26000` (raw TCP) or use a non-TLS build.")
+                    if looks_like_tls_client_hello(peek):
+                        logger.info("[CORTEX BRAIN] Detected TLS client hello; switching to TLS.")
+                        try:
+                            self.client_socket = _wrap_tls_server(self.client_socket)
+                            self.client_socket.settimeout(0.5)
+                            logger.info("[CORTEX BRAIN] TLS handshake complete")
+                            continue
+                        except Exception as e:
+                            logger.error(f"[ERROR] TLS handshake failed: {e}")
+                            break
+
+                    chunk = self.client_socket.recv(4096)
+                    if not chunk:
+                        logger.info("[CORTEX BRAIN] Client disconnected")
                         break
 
                     if looks_like_http_websocket_handshake(chunk):

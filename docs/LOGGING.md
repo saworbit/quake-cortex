@@ -14,6 +14,8 @@ Project Cortex produces two primary logs (Body + Brain) that you can hand to a h
 
 The file log is **DEBUG** and contains the high-volume timeline (telemetry packets, decisions, etc). The console is **INFO** to avoid noise.
 
+Stream mode may also create `.cortex\\tls\\` (dev TLS certs) on some engine builds.
+
 ### Body (Quake / FTEQW)
 
 - **Console log file**: `Game\\cortex\\qconsole.log` (some builds write to `Game\\qconsole.log`)

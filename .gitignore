@@ -56,6 +56,9 @@ Game/*.so
 *.swo
 *~
 
+# Local runtime state
+.cortex/
+
 # OS
 .DS_Store
 Thumbs.db

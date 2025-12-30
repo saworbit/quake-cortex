@@ -117,6 +117,12 @@ This is handled in current builds (TCP brain decodes bytes per-line with replace
 - Confirm you pulled latest `main`
 - Use `scripts\\run_brain_tcp.bat` (not older copies)
 
+### Brain logs `Detected TLS client hello`
+
+Some FTE builds initiate a TLS handshake even when using `tcp://`.
+
+Current builds auto-handle this by generating a local dev cert under `.cortex\\tls\\` and switching the Brain server to TLS.
+
 ### TCP connects, but controls don't work
 
 Controls require extra QuakeC string builtins on some engines (`FTE_STRINGS`).
