@@ -22,7 +22,6 @@ Recommended launch:
 
 This mode runs the internal bot AI inside QuakeC (no external IPC).
 
-
 ## Mode A: File IPC (Recommended)
 
 Recommended launch:

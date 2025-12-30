@@ -77,7 +77,6 @@ ProjectCortex/
   scripts/                     # build/run helpers per mode
 ```
 
-
 ## Current Status: Phase 2 - Telemetry + Control Loop
 
 **What Works:**
@@ -172,7 +171,6 @@ scripts\run_quake.bat      # Terminal 2
 | [quakec/cortex/hybrid/cortex_bridge.qc](quakec/cortex/hybrid/cortex_bridge.qc) | Hybrid telemetry/control driver | ~200 |
 | [quakec/cortex/bot/cortex_bot.qc](quakec/cortex/bot/cortex_bot.qc) | Pure QuakeC bot AI | ~1400 |
 | [quakec/progs.src](quakec/progs.src) | Build manifest | ~35 |
-
 
 ## Documentation
 

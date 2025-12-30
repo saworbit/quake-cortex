@@ -13,7 +13,6 @@ Use this guide to spawn, manage, and tweak Cortex bots without editing QuakeC—
 | `F3` | Switch to aggressive style |
 | `MOUSE4` | Add one bot (side button) |
 
-
 ## Step 1: Launch Quake with the Cortex mod
 Copy-paste this into a terminal that is already in `Game/`:
 
@@ -29,14 +28,12 @@ darkplaces.exe -game cortex +map dm3 +deathmatch 1 +sv_cheats 1 +skill 3 +rcon_p
 
 `dm3` is the default deathmatch map; swap to `dm4`, `start`, etc. Save either command as `scripts/run_cortex_bots.bat` for one-click launches.
 
-
 ## Step 2: Auto-setup keybinds & help menu (one-time)
 In the Quake console (`~`), execute:
 ```
 exec cortex_bots.cfg
 ```
 If the file does not exist yet, create it under `Game/cortex/` using the snippet below. The console printouts confirm bot controls are loaded.
-
 
 ## Step 3: Core console commands
 All commands begin with `cortex_` and print `DONE!` or an error when you run them:
@@ -60,7 +57,6 @@ cortex_set_skill 0.7
 cortex_bot_list
 ```
 Output: `6 Cortex bots spawned! Skill: 70% | Bot1: 5 frags | Bot2: Alive...` or a helpful error (e.g., “Max bots reached!”).
-
 
 ## Step 4: The auto-config file
 Create `Game/cortex/cortex_bots.cfg` with this content:
@@ -90,7 +86,6 @@ echo "^2Keybinds ready! Press h anytime."
 ```
 
 Then `exec cortex_bots.cfg` to load it again.
-
 
 ## Step 5: Optional QuakeC helpers (copy into `quakec/cortex/bot/cortex_bot.qc`)
 Add these definitions **before** `Cortex_SpawnBot()` if you want dedicated console commands and multi-bot tracking. They layer on top of the existing bot logic (no external edits otherwise).
@@ -175,7 +170,6 @@ void() cortex_toggle_bots =
 ```
 
 Recompile with `scripts/build.bat` after adding the snippet.
-
 
 ## Step 6: Bonus tips
 - `cortex_spawn_bot` and `cortex_add_bots` do not require Python—just make sure `cortex_bot_enable 1` (for pure QuakeC) or `cortex_spawn_bot 1` (for RCON) is set.
