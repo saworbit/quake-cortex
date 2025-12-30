@@ -367,7 +367,8 @@ void() StartFrame =
     framecount = framecount + 1;
 
     // CORTEX: Emit telemetry (safe to call every frame; internally throttled).
-    Cortex_Frame();
+    if (!cvar("cortex_pure_mode"))
+        Cortex_Frame();
 };
 
 /*

@@ -56,12 +56,18 @@ void() Cortex_Init =
     cortex_ext_checked = 0;
     cortex_file_last_flush = -9999;
 
-    bprint("CORTEX: Initializing AI Bridge...\n");
-    CortexLog(LOG_info, "BRIDGE", "init");
-
     // Initialize control cvars + spawn optional server-side bot (used for RCON control).
     Cortex_BotInitCvars();
     Cortex_BotEnsureSpawned();
+
+    if (cvar("cortex_pure_mode"))
+    {
+        cortex_enabled = 0;
+        return;
+    }
+
+    bprint("CORTEX: Initializing AI Bridge...\n");
+    CortexLog(LOG_info, "BRIDGE", "init");
 
     // Don't assume sv_progsaccess is already enabled; we'll retry from StartFrame.
     Cortex_EnsureTelemetryOpen();
@@ -539,6 +545,7 @@ Entry point called from StartFrame to initialize and emit telemetry.
 */
 void() Cortex_Frame =
 {
+    if (cvar("cortex_pure_mode")) return;
     local entity old_self;
     local entity target;
     local float interval;

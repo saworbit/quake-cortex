@@ -21,7 +21,8 @@ if errorlevel 1 (
 set EXTRA_ARGS=%*
 if "%~1"=="" set EXTRA_ARGS=+set deathmatch 1 +map dm3
 
-call scripts\run_quake.bat +set cortex_bot_enable 1 %EXTRA_ARGS%
+set PURE_FLAGS=+set cortex_pure_mode 1 +set cortex_bot_enable 1 +set cortex_spawn_bot 1 +set cortex_track_bot 0 +set cortex_use_tcp 0 +set cortex_enable_controls 0
+call scripts\run_quake.bat %PURE_FLAGS% %EXTRA_ARGS%
 set EXITCODE=%ERRORLEVEL%
 popd >nul 2>&1
 exit /b %EXITCODE%
