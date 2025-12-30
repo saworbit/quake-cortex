@@ -1,14 +1,35 @@
 """
 PROJECT CORTEX - Brain Server (Phase 1: The Skeleton)
 
-This server receives sensor data from the Quake client via TCP.
-In Phase 1, we simply log the data to verify the pipeline works.
+This server receives sensor data from Quake via a stream opened by QuakeC.
+
+Depending on the engine build, the stream may be:
+- raw TCP (newline-delimited JSON), or
+- WebSocket-wrapped TCP (engine uses ws:// framing).
+
+This logger auto-detects and supports both.
 """
 
 import json
 import socket
 import time
 from datetime import datetime
+
+try:
+    from cortex_ws import (
+        WebSocketConn,
+        accept_websocket,
+        looks_like_http_websocket_handshake,
+        looks_like_tls_client_hello,
+    )
+except ImportError:  # pragma: no cover
+    # When imported as a package (python.cortex_brain), use absolute import.
+    from python.cortex_ws import (  # type: ignore[no-redef]
+        WebSocketConn,
+        accept_websocket,
+        looks_like_http_websocket_handshake,
+        looks_like_tls_client_hello,
+    )
 
 
 class CortexBrain:
@@ -60,15 +81,42 @@ class CortexBrain:
     def handle_client(self):
         """Process incoming data from Quake"""
         buffer = bytearray()
+        ws: WebSocketConn | None = None
 
         while self.running:
             try:
-                chunk = self.client_socket.recv(4096)
-                if not chunk:
-                    print("[CORTEX BRAIN] Client disconnected")
-                    break
+                if ws is None and not buffer:
+                    # First read: detect transport.
+                    chunk = self.client_socket.recv(4096)
+                    if not chunk:
+                        print("[CORTEX BRAIN] Client disconnected")
+                        break
 
-                buffer.extend(chunk)
+                    if looks_like_tls_client_hello(chunk):
+                        print("[CORTEX BRAIN] Received TLS handshake bytes (client hello).")
+                        print("[CORTEX BRAIN] Fix: use ws:// (not tcp://) in cortex_tcp_uri, or update run_quake_tcp.bat.")
+                        break
+
+                    if looks_like_http_websocket_handshake(chunk):
+                        try:
+                            ws = accept_websocket(self.client_socket, initial=chunk)
+                            print("[CORTEX BRAIN] WebSocket handshake complete (ws://)")
+                            continue
+                        except Exception as e:
+                            print(f"[ERROR] WebSocket handshake failed: {e}")
+                            break
+
+                    buffer.extend(chunk)
+                elif ws is not None:
+                    payload = ws.recv_message()
+                    if payload:
+                        buffer.extend(payload)
+                else:
+                    chunk = self.client_socket.recv(4096)
+                    if not chunk:
+                        print("[CORTEX BRAIN] Client disconnected")
+                        break
+                    buffer.extend(chunk)
 
                 while True:
                     nl = buffer.find(b"\n")

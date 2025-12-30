@@ -1,10 +1,13 @@
-# TCP Stream Mode (Experimental)
+# Stream Mode (Experimental)
 
-TCP stream mode replaces File IPC with a local `tcp://` stream so the Brain can both:
+Stream mode replaces File IPC with a local stream so the Brain can both:
 - receive telemetry (NDJSON), and
 - send control commands back to Quake.
 
 This is required for RL training (`train_cortex.py` / `python/cortex_env.py`).
+
+Recommended URI (set automatically by `scripts\\run_quake_tcp.bat`):
+- `ws://127.0.0.1:26000/` (WebSocket framing, most compatible)
 
 ## Prerequisites
 
@@ -45,7 +48,7 @@ pr_enable_uriget 1
 
 `scripts\\run_quake_tcp.bat` sets this automatically.
 
-## Manual Start (TCP Debug Logger)
+## Manual Start (Debug Logger)
 
 Terminal 1:
 ```
@@ -59,7 +62,7 @@ scripts\\run_quake_tcp.bat
 
 Success looks like:
 - Python prints a client connection and then periodic `POS x=... y=... z=...`
-- Quake console prints `CORTEX: Connected Cortex stream (tcp://)`
+- Quake console prints `CORTEX: Connected Cortex stream (ws://)` (or `tcp://` on builds with raw TCP streams)
 
 ## Manual Start (RL Training / Stable Baselines 3)
 

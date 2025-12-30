@@ -172,7 +172,8 @@ void() Cortex_EnsureTelemetryOpen =
         else
             target = "";
 
-        if (target == "") target = "tcp://127.0.0.1:26000";
+        // Prefer ws:// for maximum compatibility (some builds fake tcp:// as websockets/TLS).
+        if (target == "") target = "ws://127.0.0.1:26000/";
     }
     else
     {
@@ -189,7 +190,12 @@ void() Cortex_EnsureTelemetryOpen =
     if (cortex_socket >= 0)
     {
         if (use_tcp)
-            bprint("CORTEX: Connected Cortex stream (tcp://)\n");
+        {
+            if (strncmp(target, "ws", 2) == 0)
+                bprint("CORTEX: Connected Cortex stream (ws://)\n");
+            else
+                bprint("CORTEX: Connected Cortex stream (tcp://)\n");
+        }
         else
             bprint("CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)\n");
 

@@ -34,6 +34,7 @@ fteqw64.exe -game cortex ^
   +set condebug 1 ^
   +set pr_checkextension 1 ^
   +set pr_enable_uriget 1 ^
+  +set cortex_tcp_uri ws://127.0.0.1:26000/ ^
   +set cortex_use_tcp 1 ^
   +set cortex_enable_controls 1 ^
   +set cortex_send_interval 0.05 ^

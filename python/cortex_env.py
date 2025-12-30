@@ -10,6 +10,13 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
+from .cortex_ws import (
+    WebSocketConn,
+    accept_websocket,
+    looks_like_http_websocket_handshake,
+    looks_like_tls_client_hello,
+)
+
 
 @dataclass
 class QuakeCortexConfig:
@@ -38,6 +45,7 @@ class QuakeCortexEnv(gym.Env[np.ndarray, np.ndarray]):
 
         self._server: socket.socket | None = None
         self._conn: socket.socket | None = None
+        self._ws: WebSocketConn | None = None
         self._recv_buf = bytearray()
 
         self._prev_health: float | None = None
@@ -73,7 +81,26 @@ class QuakeCortexEnv(gym.Env[np.ndarray, np.ndarray]):
                 pass
 
             self._conn = conn
+            self._ws = None
             self._recv_buf.clear()
+
+            # Detect WS vs raw TCP on first bytes.
+            self._conn.settimeout(self.cfg.step_timeout_s)
+            first = self._conn.recv(4096)
+            if not first:
+                self._conn.close()
+                self._conn = None
+                continue
+
+            if looks_like_tls_client_hello(first):
+                raise RuntimeError(
+                    "Quake connected using TLS handshake bytes. Use ws:// (not tcp://) for cortex_tcp_uri."
+                )
+
+            if looks_like_http_websocket_handshake(first):
+                self._ws = accept_websocket(self._conn, initial=first)
+            else:
+                self._recv_buf.extend(first)
 
     def _readline(self, timeout_s: float) -> str:
         if self._conn is None:
@@ -91,11 +118,18 @@ class QuakeCortexEnv(gym.Env[np.ndarray, np.ndarray]):
             if remaining <= 0:
                 raise TimeoutError("Timed out waiting for telemetry line.")
 
-            self._conn.settimeout(min(0.25, remaining))
-            chunk = self._conn.recv(4096)
-            if not chunk:
-                raise ConnectionError("Quake disconnected.")
-            self._recv_buf.extend(chunk)
+            if self._ws is not None:
+                self._conn.settimeout(min(0.25, remaining))
+                payload = self._ws.recv_message()
+                if not payload:
+                    raise ConnectionError("Quake disconnected.")
+                self._recv_buf.extend(payload)
+            else:
+                self._conn.settimeout(min(0.25, remaining))
+                chunk = self._conn.recv(4096)
+                if not chunk:
+                    raise ConnectionError("Quake disconnected.")
+                self._recv_buf.extend(chunk)
 
     def _send_action(self, action: np.ndarray) -> None:
         if self._conn is None:
@@ -119,7 +153,10 @@ class QuakeCortexEnv(gym.Env[np.ndarray, np.ndarray]):
         }
 
         payload = (json.dumps(cmd) + "\n").encode("utf-8")
-        self._conn.sendall(payload)
+        if self._ws is not None:
+            self._ws.send_message(payload, opcode=0x1)
+        else:
+            self._conn.sendall(payload)
 
     def _parse_obs(self, data: dict[str, Any]) -> np.ndarray:
         health = float(data.get("health", 0.0))
@@ -219,6 +256,7 @@ class QuakeCortexEnv(gym.Env[np.ndarray, np.ndarray]):
                 self._conn.close()
             finally:
                 self._conn = None
+                self._ws = None
         if self._server is not None:
             try:
                 self._server.close()
