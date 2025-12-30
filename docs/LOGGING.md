@@ -21,6 +21,8 @@ Stream mode may also create `.cortex\\tls\\` (dev TLS certs) on some engine buil
 - **Console log file**: `Game\\cortex\\qconsole.log` (some builds write to `Game\\qconsole.log`)
   - Enabled via `-condebug` (already set in `scripts\\run_quake.bat` and `scripts\\run_quake_tcp.bat`)
 - **Telemetry file (File IPC mode)**: `Game\\cortex\\data\\cortex_telemetry.txt`
+  - If you see delayed/batched updates on Windows, QuakeC periodically closes/reopens the file to force flush.
+  - Tune via `cortex_file_flush_interval` (seconds): `0` = default `0.25`, `<0` disables.
 
 QuakeC structured log format (captured in `qconsole.log`):
 `[TIME] | [LEVEL] | [SYSTEM] | [MESSAGE] | [OPTIONAL_DATA]`

@@ -120,10 +120,30 @@ float(string filename) TCP_ConnectFile =
     return handle;
 };
 
+float(string filename) TCP_ConnectFileNoMarker =
+{
+    local float handle;
+
+    filename = Cortex_TrimUriString(filename);
+    handle = fopen(filename, FILE_APPEND);
+    if (handle < 0)
+        return -1;
+
+    return handle;
+};
+
 void(float socket, string buffer) TCP_Send =
 {
     if (socket >= 0)
         fputs(socket, buffer);
+};
+
+void(float socket) TCP_CloseQuiet =
+{
+    if (socket < 0)
+        return;
+
+    fclose(socket);
 };
 
 void(float socket) TCP_Close =

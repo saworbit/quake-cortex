@@ -13,6 +13,7 @@ float cortex_last_send;  // Last time we sent telemetry
 float cortex_initialized;
 float cortex_warn_time;  // Avoid spamming setup hints
 float cortex_ext_checked;
+float cortex_file_last_flush;
 
 // Latest control command received from the Brain (TCP stream mode).
 vector cortex_cmd_move;     // x=forward, y=side
@@ -30,6 +31,7 @@ float cortex_warned_uriget_disabled;
 
 void() Cortex_Frame;
 void() Cortex_EnsureTelemetryOpen;
+void() Cortex_FileFlushMaybe;
 void() Cortex_PrintFileSupportStatus;
 void() Cortex_PrintStreamSupportStatus;
 void() Cortex_PollControls;
@@ -50,6 +52,7 @@ void() Cortex_Init =
     cortex_warn_time = 0;
     cortex_last_send = -9999;
     cortex_ext_checked = 0;
+    cortex_file_last_flush = -9999;
 
     bprint("CORTEX: Initializing AI Bridge...\n");
     CortexLog(LOG_info, "BRIDGE", "init");
@@ -149,14 +152,15 @@ void() Cortex_EnsureTelemetryOpen =
     local float use_tcp;
     local string target;
     local string fallback;
+    local float retry_delay;
 
     if (cortex_socket >= 0) return;
 
     use_tcp = cvar("cortex_use_tcp");
+    retry_delay = use_tcp ? 3 : 1;
 
-    // Retry occasionally to avoid console spam.
+    // Retry occasionally to avoid console spam (only after failures; normal opens should be immediate).
     if (time < cortex_retry_time) return;
-    cortex_retry_time = time + (use_tcp ? 3 : 1);
 
     if (use_tcp)
         Cortex_PrintStreamSupportStatus();
@@ -189,7 +193,7 @@ void() Cortex_EnsureTelemetryOpen =
     if (use_tcp)
         cortex_socket = TCP_ConnectStream(target);
     else
-        cortex_socket = TCP_ConnectFile(target);
+        cortex_socket = TCP_ConnectFileNoMarker(target);
 
     // Fallback: if ws:// was configured but blocked/mis-parsed, try tcp://.
     if (use_tcp && cortex_socket < 0)
@@ -205,6 +209,7 @@ void() Cortex_EnsureTelemetryOpen =
 
     if (cortex_socket >= 0)
     {
+        cortex_retry_time = 0;
         if (use_tcp)
         {
             if (strncmp(target, "ws", 2) == 0)
@@ -224,6 +229,8 @@ void() Cortex_EnsureTelemetryOpen =
         return;
     }
 
+    cortex_retry_time = time + retry_delay;
+
     // Helpful hint, but don't spam.
     if (time >= cortex_warn_time)
     {
@@ -238,6 +245,44 @@ void() Cortex_EnsureTelemetryOpen =
             bprint("CORTEX: Telemetry disabled (try `sv_progsaccess 2` in console)\n");
             CortexLogData(LOG_error, "IO", "telemetry_file_open_failed", strcat("{\"target\":\"", target, "\"}"));
         }
+    }
+};
+
+/*
+=================
+Cortex_FileFlushMaybe
+
+On some Windows builds, file writes can appear delayed to other processes due to buffering/locking.
+QuakeC doesn't expose fflush(), so we periodically close and reopen the telemetry file to force a flush.
+
+Control via `cortex_file_flush_interval` (seconds):
+- < 0: disabled
+- = 0: default 0.25s
+- > 0: explicit interval
+=================
+*/
+void() Cortex_FileFlushMaybe =
+{
+    local float flush_interval;
+
+    if (cvar("cortex_use_tcp"))
+        return;
+
+    flush_interval = cvar("cortex_file_flush_interval");
+    if (flush_interval < 0)
+        return;
+    if (flush_interval == 0)
+        flush_interval = 0.25;
+
+    if (time < cortex_file_last_flush + flush_interval)
+        return;
+    cortex_file_last_flush = time;
+
+    if (cortex_socket >= 0)
+    {
+        TCP_CloseQuiet(cortex_socket);
+        cortex_socket = -1;
+        cortex_retry_time = 0;
     }
 };
 
@@ -446,6 +491,9 @@ void() Cortex_Think =
     // Build and send sensor packet
     packet = Cortex_BuildSensorPacket();
     TCP_Send(cortex_socket, packet);
+
+    // File IPC: periodically close/reopen to force flush on Windows.
+    Cortex_FileFlushMaybe();
 
     // TODO Phase 2: Receive control inputs from Python
     // TODO Phase 3: Apply inputs to bot movement
