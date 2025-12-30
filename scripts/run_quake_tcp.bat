@@ -6,6 +6,7 @@ echo ========================================
 echo.
 echo This mode streams telemetry over a local stream (tcp:// or ws:// depending on engine) and enables control input.
 echo Make sure you understand `pr_enable_uriget` before using this.
+echo If your build insists on TLS for tcp://, this script also disables cert verification for localhost.
 echo.
 echo If you just want file telemetry, use:
 echo   scripts\run_quake.bat
@@ -33,6 +34,7 @@ fteqw64.exe -condebug -game cortex ^
   +set developer 1 ^
   +set pr_checkextension 1 ^
   +set pr_enable_uriget 1 ^
+  +set tls_ignorecertificateerrors 1 ^
   +set cortex_tcp_uri tcp://127.0.0.1:26000 ^
   +set cortex_use_tcp 1 ^
   +set cortex_enable_controls 1 ^

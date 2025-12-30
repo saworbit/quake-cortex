@@ -77,6 +77,7 @@ development, the root causes, workarounds, and current status.
 **Symptoms**:
 - Quake may show a black screen then exit shortly after.
 - Brain log shows `Detected TLS client hello` / `TLS handshake ...`
+- `Game\\cortex\\qconsole.log` may contain `X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT`.
 
 **Root Cause**:
 - Some FTE builds initiate a TLS handshake even when the URI is `tcp://...`.
@@ -85,6 +86,7 @@ development, the root causes, workarounds, and current status.
 - Use current `main` (the TCP brain auto-switches to TLS and generates a localhost dev cert under `.cortex\\tls\\`).
 - If cert generation fails, run: `scripts\\generate_cortex_tls_cert.ps1`
 - If the Brain logs `[SSL] PEM lib`, delete `.cortex\\tls\\` and restart the TCP brain (it will regenerate).
+- If the Brain logs `TLSV1_ALERT_UNKNOWN_CA`, set `tls_ignorecertificateerrors 1` (already set by `scripts\\run_quake_tcp.bat`).
 
 ---
 
