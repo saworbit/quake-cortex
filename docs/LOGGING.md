@@ -15,7 +15,7 @@ The file log is **DEBUG** and contains the high-volume timeline (telemetry packe
 
 ### Body (Quake / FTEQW)
 
-- **Console log file**: `Game\\qconsole.log`
+- **Console log file**: `Game\\qconsole.log` (some builds write to `Game\\cortex\\qconsole.log`)
   - Enabled via `+set condebug 1` (already set in `scripts\\run_quake.bat` and `scripts\\run_quake_tcp.bat`)
 - **Telemetry file (File IPC mode)**: `Game\\cortex\\data\\cortex_telemetry.txt`
 

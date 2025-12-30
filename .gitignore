@@ -29,6 +29,7 @@ Game/cortex/progs.dat
 Game/conhistory.txt
 Game/*.cfg
 Game/qconsole.log
+Game/cortex/qconsole.log
 Game/maptimes.txt
 Game/cortex/data/
 Game/cortex/cortex_telemetry.txt

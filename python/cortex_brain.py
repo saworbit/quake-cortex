@@ -64,6 +64,7 @@ class CortexBrain:
         self.socket = None
         self.client_socket = None
         self.running = False
+        self.accept_timeout_s = 0.5
 
     def start(self):
         """Start the brain server and wait for Quake to connect"""
@@ -74,6 +75,7 @@ class CortexBrain:
         try:
             self.socket.bind((self.host, self.port))
             self.socket.listen(1)
+            self.socket.settimeout(self.accept_timeout_s)
             logger.info(f"[CORTEX BRAIN] Listening on {self.host}:{self.port}")
             logger.info("[CORTEX BRAIN] Waiting for Quake client to connect...")
 
@@ -88,11 +90,18 @@ class CortexBrain:
         """Accept incoming connection from Quake"""
         while self.running:
             try:
-                self.client_socket, addr = self.socket.accept()
+                try:
+                    self.client_socket, addr = self.socket.accept()
+                except socket.timeout:
+                    continue
                 try:
                     self.client_socket.setsockopt(
                         socket.IPPROTO_TCP, socket.TCP_NODELAY, 1
                     )
+                except OSError:
+                    pass
+                try:
+                    self.client_socket.settimeout(0.5)
                 except OSError:
                     pass
                 logger.info(f"[CORTEX BRAIN] Connected to Quake client at {addr}")

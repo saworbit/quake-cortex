@@ -22,6 +22,8 @@ float(string hostname) TCP_Connect =
     is_tcp =
         (strncmp(hostname, "tcp://", 6) == 0) ||
         (strncmp(hostname, "tls://", 6) == 0) ||
+        (strncmp(hostname, "ws://", 5) == 0) ||
+        (strncmp(hostname, "wss://", 6) == 0) ||
         (strncmp(hostname, "ws:", 3) == 0) ||
         (strncmp(hostname, "wss:", 4) == 0);
 
