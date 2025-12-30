@@ -49,7 +49,9 @@ def _setup_logging() -> None:
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     file_handler = logging.FileHandler(f"cortex_brain_tcp_{ts}.log", encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(logging.Formatter("%(asctime)s | %(levelname)s | %(message)s"))
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+    )
 
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
@@ -113,7 +115,9 @@ def _ensure_tls_cert() -> tuple[Path, Path]:
             text=True,
         )
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"TLS cert generation failed: {e.stderr or e.stdout or e}") from e
+        raise RuntimeError(
+            f"TLS cert generation failed: {e.stderr or e.stdout or e}"
+        ) from e
     return cert_path, key_path
 
 
@@ -231,7 +235,9 @@ class CortexBrain:
                         break
 
                     if looks_like_tls_client_hello(peek):
-                        logger.info("[CORTEX BRAIN] Detected TLS client hello; switching to TLS.")
+                        logger.info(
+                            "[CORTEX BRAIN] Detected TLS client hello; switching to TLS."
+                        )
                         try:
                             self.client_socket = _wrap_tls_server(self.client_socket)
                             self.client_socket.settimeout(0.5)
@@ -253,15 +259,23 @@ class CortexBrain:
                             continue
                         except Exception as e:
                             if "Sec-WebSocket-Key" in str(e):
-                                logger.error("[CORTEX BRAIN] Client sent an HTTP request, not a WebSocket upgrade.")
-                                logger.error("[CORTEX BRAIN] Fix: set `cortex_tcp_uri tcp://127.0.0.1:26000` (raw TCP) and restart Quake.")
+                                logger.error(
+                                    "[CORTEX BRAIN] Client sent an HTTP request, not a WebSocket upgrade."
+                                )
+                                logger.error(
+                                    "[CORTEX BRAIN] Fix: set `cortex_tcp_uri tcp://127.0.0.1:26000` (raw TCP) and restart Quake."
+                                )
                             else:
                                 logger.error(f"[ERROR] WebSocket handshake failed: {e}")
                             break
 
                     if looks_like_websocket_frame(chunk):
-                        ws = WebSocketConn(sock=self.client_socket, _recv_buf=bytearray(chunk))
-                        logger.info("[CORTEX BRAIN] Detected WebSocket frames without handshake; decoding anyway.")
+                        ws = WebSocketConn(
+                            sock=self.client_socket, _recv_buf=bytearray(chunk)
+                        )
+                        logger.info(
+                            "[CORTEX BRAIN] Detected WebSocket frames without handshake; decoding anyway."
+                        )
                         continue
 
                     buffer.extend(chunk)

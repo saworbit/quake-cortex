@@ -16,7 +16,11 @@ def looks_like_tls_client_hello(data: bytes) -> bool:
 
 def looks_like_http_websocket_handshake(data: bytes) -> bool:
     # WebSocket handshake starts with an HTTP request line.
-    return data.startswith(b"GET ") or data.startswith(b"OPTIONS ") or data.startswith(b"HEAD ")
+    return (
+        data.startswith(b"GET ")
+        or data.startswith(b"OPTIONS ")
+        or data.startswith(b"HEAD ")
+    )
 
 
 def looks_like_websocket_frame(data: bytes) -> bool:
@@ -35,7 +39,9 @@ def looks_like_websocket_frame(data: bytes) -> bool:
     return opcode in (0x0, 0x1, 0x2, 0x8, 0x9, 0xA)
 
 
-def _read_until(sock, buf: bytearray, marker: bytes, *, max_bytes: int = 16_384) -> None:
+def _read_until(
+    sock, buf: bytearray, marker: bytes, *, max_bytes: int = 16_384
+) -> None:
     while marker not in buf:
         chunk = sock.recv(4096)
         if not chunk:
