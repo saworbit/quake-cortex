@@ -98,7 +98,7 @@ void() Cortex_BotInitCvars =
     cvar_set("cortex_bot_item_deny_enable", "1");
     cvar_set("cortex_bot_deny_radius", "300");
     cvar_set("cortex_bot_mega_rush_window", "5");
-    cvar_set("cortex_pure_mode", "0");   // 1 when running pure QuakeC bot mode
+    if (cvar_string("cortex_pure_mode") == "") cvar_set("cortex_pure_mode", "0");   // 1 when running pure QuakeC bot mode
 
     // Control inputs (set via RCON or local console)
     cvar_set("bot_vel_x", "0");
