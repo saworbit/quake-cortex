@@ -20,7 +20,12 @@ if not exist fteqw64.exe (
     popd >nul 2>&1
     exit /b 1
 )
-fteqw64.exe -condebug -game cortex +set developer 1 +set sv_progsaccess 2 +map start
+fteqw64.exe -condebug -game cortex ^
+  +set developer 1 ^
+  +set sv_progsaccess 2 ^
+  +set sv_public 0 ^
+  +set cl_master "" ^
+  +map start
 set EXITCODE=%ERRORLEVEL%
 popd >nul 2>&1
 exit /b %EXITCODE%

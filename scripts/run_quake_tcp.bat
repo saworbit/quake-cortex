@@ -41,6 +41,8 @@ fteqw64.exe -condebug -game cortex ^
   +set developer 1 ^
   +set pr_checkextension 1 ^
   +set pr_enable_uriget 1 ^
+  +set sv_public 0 ^
+  +set cl_master "" ^
   +set net_enable_tls 0 ^
   +set net_enable_dtls 0 ^
   +set cortex_tcp_uri %CORTEX_URI% ^

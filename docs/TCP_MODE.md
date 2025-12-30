@@ -107,6 +107,14 @@ Brain -> Quake (one JSON object per line):
 
 ## Debugging
 
+### Reduce background network noise (local testing)
+
+When iterating locally, keep the engine from advertising/querying masters:
+- `sv_public 0`
+- `cl_master ""`
+
+Both `scripts\\run_quake.bat` and `scripts\\run_quake_tcp.bat` set these automatically.
+
 ### Quake shows a black screen then closes
 
 This usually means the engine aborted during startup. Start by checking the console log:
@@ -143,6 +151,14 @@ Workarounds:
 - Prefer a newer FTEQW build where `tcp://` opens a raw TCP socket and `tls://` is the explicit TLS scheme.
 - Use `ws://127.0.0.1:26000/` (default in `scripts\\run_quake_tcp.bat`) to avoid TLS negotiation entirely.
 - If you must use `tcp://`, upgrade FTEQW (this is an engine behavior/bug, not a Python-side fix).
+
+### Avoid weird float formatting in JSON
+
+Some engine/printf implementations may emit scientific notation (e.g. `1e-6`) for very small/large floats.
+
+Recommendations:
+- Don’t send timestamps/IDs as floats.
+- Keep numeric ranges “Quake-ish” (health/ammo/pos/vel) and clamp/round where reasonable.
 
 ### TCP connects, but controls don't work
 

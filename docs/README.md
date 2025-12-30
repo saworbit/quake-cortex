@@ -83,3 +83,4 @@ The repo-root entrypoints are `cortex_brain.py` and `cortex_visualizer.py`. The 
 - Development notes: `docs/archive/SESSION_SUMMARY_2025-12-29.md`
 - TCP stream mode guide: `docs/TCP_MODE.md`
 - Cortex Black Box logging: `docs/LOGGING.md`
+- QuakeC ↔ Python compatibility notes: `docs/COMPATIBILITY.md`

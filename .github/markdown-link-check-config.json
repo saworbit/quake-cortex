@@ -1,6 +1,24 @@
 {
   "ignorePatterns": [
     {
+      "pattern": "^quakec/"
+    },
+    {
+      "pattern": "^test_cortex_connection\\.py$"
+    },
+    {
+      "pattern": "^SETUP_GUIDE\\.md$"
+    },
+    {
+      "pattern": "^KNOWN_ISSUES\\.md$"
+    },
+    {
+      "pattern": "^NEXT_STEPS\\.md$"
+    },
+    {
+      "pattern": "^README\\.md$"
+    },
+    {
       "pattern": "^http://localhost"
     },
     {

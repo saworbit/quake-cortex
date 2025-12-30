@@ -43,3 +43,5 @@ A built-in dump is bound to **impulse 199**:
 
 Quick sanity check (prints tails of the latest logs):
 `scripts\\check_logs.bat`
+
+Tip: for local testing, `scripts\\run_quake.bat`/`scripts\\run_quake_tcp.bat` set `sv_public 0` and `cl_master ""` to reduce background network noise.
