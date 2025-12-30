@@ -22,3 +22,4 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ### Fixed
 
 - TCP brain shutdown behavior (clean exit via ENTER / fewer WinSock errors).
+- TCP mode reliability on engine builds that attempt TLS verification against localhost (sets `tls_ignorecertificateerrors 1` and disables `net_enable_tls`/`net_enable_dtls` in `scripts\\run_quake_tcp.bat`).

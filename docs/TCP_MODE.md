@@ -130,6 +130,15 @@ Some FTE builds initiate a TLS handshake even when using `tcp://`.
 
 Current builds auto-handle this by generating a local dev cert under `.cortex\\tls\\` and switching the Brain server to TLS.
 
+If you see these errors, your engine is doing TLS verification against a self-signed localhost cert:
+- Brain: `TLSV1_ALERT_UNKNOWN_CA`
+- Quake: `X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT`
+
+Workarounds:
+- Prefer a newer FTEQW build where `tcp://` opens a raw TCP socket and `tls://` is the explicit TLS scheme.
+- If you must use this build, set `tls_ignorecertificateerrors 1` (already set by `scripts\\run_quake_tcp.bat`).
+- If you want to force plain sockets, also set `net_enable_tls 0` and `net_enable_dtls 0` (already set by `scripts\\run_quake_tcp.bat`).
+
 If your engine rejects the self-signed cert, set:
 ```
 tls_ignorecertificateerrors 1

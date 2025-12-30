@@ -87,6 +87,7 @@ development, the root causes, workarounds, and current status.
 - If cert generation fails, run: `scripts\\generate_cortex_tls_cert.ps1`
 - If the Brain logs `[SSL] PEM lib`, delete `.cortex\\tls\\` and restart the TCP brain (it will regenerate).
 - If the Brain logs `TLSV1_ALERT_UNKNOWN_CA`, set `tls_ignorecertificateerrors 1` (already set by `scripts\\run_quake_tcp.bat`).
+- Prefer a newer FTEQW build where `tcp://` is plain TCP and TLS is only used with `tls://`.
 
 ---
 
