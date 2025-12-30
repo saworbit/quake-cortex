@@ -12,6 +12,28 @@ This is required for RL training (`train_cortex.py` / `python/cortex_env.py`).
 - Provide Quake data: `Game\\id1\\PAK0.PAK`
 - Provide engine binary: `Game\\fteqw64.exe`
 
+## Idiot-Proof Launch (Recommended)
+
+### Debug logger (no installs)
+
+Run this once and it opens two windows (Brain server + Quake client):
+```
+scripts\\run_mode_b_debug.bat
+```
+
+### Training (creates a Python 3.12 venv)
+
+Run this once and it will:
+- build QuakeC,
+- create `.venv_tcp` using Python 3.12,
+- install deps into that venv,
+- launch Quake in a new window,
+- run training in the current window.
+
+```
+scripts\\run_mode_b_train.bat
+```
+
 ## Important Security Setting (`pr_enable_uriget`)
 
 FTE gates URI streams (including `tcp://`) behind `pr_enable_uriget`.
@@ -23,7 +45,7 @@ pr_enable_uriget 1
 
 `scripts\\run_quake_tcp.bat` sets this automatically.
 
-## Quick Start (TCP Debug Logger)
+## Manual Start (TCP Debug Logger)
 
 Terminal 1:
 ```
@@ -39,7 +61,7 @@ Success looks like:
 - Python prints a client connection and then periodic `POS x=... y=... z=...`
 - Quake console prints `CORTEX: Connected Cortex stream (tcp://)`
 
-## RL Training (Stable Baselines 3)
+## Manual Start (RL Training / Stable Baselines 3)
 
 Install deps:
 ```
@@ -59,6 +81,7 @@ python train_cortex.py
 Notes:
 - TCP training uses `cortex_enable_controls 1` so Quake applies the latest command every frame.
 - The environment is a local TCP server that Quake connects to.
+- If you are on a very new Python version and installs fail, use Python 3.12.
 
 ## Controls Protocol (Current)
 

@@ -10,6 +10,9 @@ echo.
 echo In another terminal, launch Quake with:
 echo   scripts\run_quake_tcp.bat
 echo.
+echo Or use the idiot-proof launcher (starts both windows):
+echo   scripts\run_mode_b_debug.bat
+echo.
 echo Note: this is a debug logger. For RL training, run:
 echo   python train_cortex.py
 echo.
@@ -25,4 +28,3 @@ python python\cortex_brain.py
 set EXITCODE=%ERRORLEVEL%
 popd >nul 2>&1
 exit /b %EXITCODE%
-

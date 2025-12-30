@@ -40,6 +40,7 @@ python train_cortex.py
 Notes:
 - Requires `pr_enable_uriget 1` (see `scripts/run_quake_tcp.bat`).
 - For a simple TCP logger (no training), use `scripts\\run_brain_tcp.bat`.
+- For an idiot-proof launch, use `scripts\\run_mode_b_debug.bat` or `scripts\\run_mode_b_train.bat`.
 - Guide: `docs/TCP_MODE.md`
 
 ## Project Structure

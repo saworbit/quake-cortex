@@ -46,6 +46,10 @@ Or TCP stream mode:
 
 `scripts\\run_quake_tcp.bat`
 
+Idiot-proof TCP launchers:
+- Debug logger: `scripts\\run_mode_b_debug.bat`
+- Training: `scripts\\run_mode_b_train.bat`
+
 Expected Quake console messages:
 - `CORTEX: Initializing AI Bridge...`
 - `CORTEX: Telemetry file opened! (data/cortex_telemetry.txt)`

@@ -10,6 +10,9 @@ echo.
 echo 2) In another terminal (this one):
 echo    Starting training loop...
 echo.
+echo Idiot-proof option:
+echo    scripts\run_mode_b_train.bat
+echo.
 
 pushd "%~dp0\.." >nul 2>&1
 if errorlevel 1 (
@@ -21,4 +24,3 @@ python train_cortex.py
 set EXITCODE=%ERRORLEVEL%
 popd >nul 2>&1
 exit /b %EXITCODE%
-
