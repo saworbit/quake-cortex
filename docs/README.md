@@ -70,3 +70,7 @@ Expected Python output:
 ## Python Modules
 
 The repo-root entrypoints are `cortex_brain.py` and `cortex_visualizer.py`. The `python/` package contains RL/training modules (including `python/cortex_env.py`) and a simple TCP debug server (`python/cortex_brain.py`).
+
+## Archive
+
+- Development notes: `docs/archive/SESSION_SUMMARY_2025-12-29.md`
