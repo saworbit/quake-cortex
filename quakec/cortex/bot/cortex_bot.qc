@@ -103,6 +103,9 @@ void() Cortex_BotInitCvars =
     cvar_set("cortex_bot_respawn_grace", "0.5");
     cvar_set("cortex_bot_wall_avoid", "1");
     cvar_set("cortex_bot_wall_avoid_dist", "64");
+    cvar_set("cortex_bot_fire_fov_deg", "120");
+    cvar_set("cortex_bot_rocket_safety_dist", "64");
+    cvar_set("cortex_bot_unstuck_jump", "1");
     cvar_set("cortex_bot_mcts_rollouts", "8");
     cvar_set("cortex_bot_react_min", "0.05");
     cvar_set("cortex_bot_react_max", "0.15");
@@ -1029,9 +1032,6 @@ void() Cortex_Bot_ForceJumpIfStuck =
 {
     local float speed;
 
-    if (self.flags & FL_CLIENT)
-        return;
-
     speed = vlen(self.origin - cortex_bot_last_origin);
     if (speed > 8)
     {
@@ -1041,6 +1041,9 @@ void() Cortex_Bot_ForceJumpIfStuck =
     }
 
     if (time < cortex_bot_stuck_since + 0.75)
+        return;
+
+    if (!cvar("cortex_bot_unstuck_jump"))
         return;
 
     // Try to jump out of small ledges.
@@ -1056,11 +1059,50 @@ void(entity enemy) Cortex_Bot_Attack =
     local float dist;
     local float bot_skill;
     local float fire_delay;
+    local float fire_fov;
+    local float half_fov;
+    local float yaw;
+    local float dyaw;
+    local vector to;
+    local vector start;
+    local vector endpos;
+    local float safe_dist;
 
     if (!enemy) return;
     if (time < cortex_bot_respawn_grace_until) return;
     dist = vlen(enemy.origin - self.origin);
     if (dist > 900) return;
+
+    fire_fov = cvar("cortex_bot_fire_fov_deg");
+    if (fire_fov > 0 && fire_fov < 360)
+    {
+        to = enemy.origin - self.origin;
+        to_z = 0;
+        if (vlen(to) > 0.01)
+        {
+            yaw = vectoyaw(to);
+            dyaw = yaw - ((self.flags & FL_CLIENT) ? self.v_angle_y : self.angles_y);
+            if (dyaw > 180) dyaw = dyaw - 360;
+            if (dyaw < -180) dyaw = dyaw + 360;
+            half_fov = fire_fov * 0.5;
+            if (fabs(dyaw) > half_fov)
+                return;
+        }
+    }
+
+    if (self.weapon == IT_ROCKET_LAUNCHER || self.weapon == IT_GRENADE_LAUNCHER)
+    {
+        safe_dist = cvar("cortex_bot_rocket_safety_dist");
+        if (safe_dist > 0)
+        {
+            makevectors(self.v_angle);
+            start = self.origin + '0 0 16';
+            endpos = start + v_forward * safe_dist;
+            traceline(start, endpos, TRUE, self);
+            if (trace_fraction < 1)
+                return;
+        }
+    }
 
     if (time < cortex_bot_next_attack)
         return;
@@ -1403,6 +1445,7 @@ void() Cortex_Bot_RunAI =
 void() Cortex_BotSpawn =
 {
     local vector origin;
+    local entity oldself;
 
     bprint("DEBUG: Cortex_BotSpawn called\n");
     cortex_bot_is_botclient = 0;
@@ -1471,6 +1514,10 @@ void() Cortex_BotSpawn =
     cortex_bot.solid = SOLID_SLIDEBOX;
     setsize(cortex_bot, '-16 -16 -24', '16 16 32');
     setorigin(cortex_bot, origin + '0 0 1');
+    oldself = self;
+    self = cortex_bot;
+    droptofloor();
+    self = oldself;
 
     setmodel(cortex_bot, "progs/player.mdl");
     cortex_bot.frame = 0;
