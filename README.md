@@ -18,8 +18,7 @@ scripts\build.bat
 ### Pure QuakeC Bot (no Python)
 
 ```bash
-scripts\build_pure.bat
-scripts\run_pure_qc.bat
+scripts\run_pure_qc.bat  # builds the pure mod and launches it
 ```
 
 ### Hybrid FTEQW + Python (File IPC)

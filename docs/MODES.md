@@ -9,8 +9,7 @@ This repo contains three “tracks” that share the same QuakeC mod:
 ## 1) Pure QuakeC Bot (no Python)
 
 Run:
-- `scripts\\build_pure.bat`
-- `scripts\\run_pure_qc.bat`
+- `scripts\\run_pure_qc.bat` (automatically rebuilds the pure mod)
 
 Key cvars:
 - `cortex_bot_enable 1` (enable internal AI)

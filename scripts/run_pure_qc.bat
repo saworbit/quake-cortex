@@ -18,27 +18,30 @@ if errorlevel 1 (
     exit /b 1
 )
 
+echo [1/2] Building pure Cortex mod...
+call scripts\build_pure.bat
+if errorlevel 1 (
+    echo ERROR: Pure build failed.
+    popd >nul 2>&1
+    exit /b 1
+)
+
 set EXTRA_ARGS=%*
 if "%~1"=="" set EXTRA_ARGS=+set deathmatch 1 +map dm3
 
 set PURE_FLAGS=+set cortex_pure_mode 1 +set cortex_bot_enable 1 +set cortex_spawn_bot 1
 
+echo [2/2] Launching pure Cortex client...
 pushd "%~dp0\\..\\Game" >nul 2>&1
 if errorlevel 1 (
     echo ERROR: Unable to cd to Game directory.
+    popd >nul 2>&1
     exit /b 1
 )
 
 set GAMEEXE=fteqw64.exe
 if not exist %GAMEEXE% (
     echo ERROR: %GAMEEXE% not found in Game directory.
-    popd >nul 2>&1
-    exit /b 1
-)
-
-set OUTDIR=%~dp0\\..\\Game\\cortex_pure
-if not exist %OUTDIR% (
-    echo ERROR: Pure mod not built yet. Run scripts\build_pure.bat first.
     popd >nul 2>&1
     exit /b 1
 )
@@ -53,7 +56,3 @@ if not exist %OUTDIR% (
 set EXITCODE=%ERRORLEVEL%
 popd >nul 2>&1
 exit /b %EXITCODE%
-set EXITCODE=%ERRORLEVEL%
-popd >nul 2>&1
-exit /b %EXITCODE%
-
