@@ -26,6 +26,13 @@ Pure bot shortcut:
 scripts\run_pure_qc.bat
 ```
 
+## Troubleshooting: Bot spawns but will not move
+
+If the bot stands still while logs show it wants to move, botclient physics is not running.
+Set `pr_no_playerphysics 0` so `SV_PlayerPhysics` can apply movement. Both
+`scripts\run_pure_qc.bat` and `scripts\run_pure_debug.bat` now force this
+automatically.
+
 ### DarkPlaces (recommended pivot)
 ```
 darkplaces.exe -game cortex +map dm3 +deathmatch 1 +sv_cheats 1 +skill 3 +rcon_password cortex_secret

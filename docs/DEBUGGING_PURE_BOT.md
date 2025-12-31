@@ -207,6 +207,20 @@ DEBUG: Bot think scheduled for time 0.15 (botclient mode)
 
 ## Common Issues and Diagnostics
 
+### Issue: Bot Spawns But Is Frozen (AI Disabled)
+
+If the status block shows `Bot AI enabled: 0`, the bot will spawn but never think or move.
+
+**Fix (console):**
+```
+cortex_bot_enable 1
+restart
+impulse 200
+```
+
+**Note:** `scripts\\run_pure_qc.bat`, `scripts\\run_pure_debug.bat`, and
+`Game/cortex_pure/default.cfg` already set `cortex_bot_enable 1` automatically.
+
 ### Issue: Bot Spawns But Doesn't Move
 
 **Diagnostic checklist:**
@@ -238,7 +252,29 @@ DEBUG: Bot think scheduled for time 0.15 (botclient mode)
    - Velocity should be non-zero
 
 **If all checks pass but bot still doesn't move:**
-→ **Botclient movement system incompatibility** - See "Known Issues" below
+Set `pr_no_playerphysics 0` so `SV_PlayerPhysics` can apply botclient movement.
+
+**Quick fix (pure bot):**
+```
+cortex_bot_enable 1
+pr_no_playerphysics 0
+restart
+impulse 200
+```
+
+---
+
+### Issue: qcfopen Access Denied (Pure vs. Hybrid)
+
+If you see `qcfopen("ws://..."): Access denied` in logs:
+
+- **Pure bot:** safe to ignore (no stream needed).
+- **Hybrid stream:** enable URI access and run the Python server.
+
+**Fix (console):**
+```
+pr_enable_uriget 1
+```
 
 ---
 

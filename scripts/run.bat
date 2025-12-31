@@ -142,7 +142,7 @@ if "%~1"=="" (
 )
 
 :: Set Cortex-specific flags
-set PURE_FLAGS=+set cortex_pure_mode 1 +set cortex_bot_enable 1 +set cortex_spawn_bot 1 +set cortex_debug 0 +set cortex_log_level 1
+set PURE_FLAGS=+set cortex_pure_mode 1 +set cortex_bot_enable 1 +set cortex_spawn_bot 1 +set pr_no_playerphysics 0 +set cortex_debug 0 +set cortex_log_level 1
 
 echo %ARROW% Launching FTEQW with Cortex bot...
 echo.

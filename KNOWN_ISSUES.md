@@ -3,14 +3,88 @@
 This document tracks the technical challenges encountered during Project Cortex
 development, the root causes, workarounds, and current status.
 
-**Last Updated**: December 31, 2025  
+**Last Updated**: January 1, 2026  
 **Project Phase**: 1 - Telemetry Pipeline Setup (verified)
 
 ---
 
 ## Critical Issues (Blocking Progress)
 
-### 1. FTEQW File I/O Access Requires Enabling Progs File Access
+### 1. Player Cannot Move in Pure Mode (WASD Unresponsive)
+
+**Status**: OPEN  
+**Priority**: P0 - Blocks basic testing  
+**First Observed**: December 31, 2025
+
+#### Symptoms
+
+- Mouse look and firing work, but W/A/S/D does nothing.
+- Repro in both `scripts\\run_pure_qc.bat` and `scripts\\run_pure_debug.bat`.
+
+#### Likely Cause
+
+- Movement binds or speed cvars are not being applied for `-game cortex_pure`
+  in some FTEQW setups.
+
+#### Workaround
+
+- In the console:
+  - `exec autoexec.cfg`
+  - `bind w +forward`
+  - `bind a +moveleft`
+  - `bind s +back`
+  - `bind d +moveright`
+  - `cl_forwardspeed 400`
+  - `cl_sidespeed 400`
+  - `cl_backspeed 400`
+  - `cl_upspeed 200`
+
+---
+
+### 2. Bot Spawns But Does Not Move
+
+**Status**: OPEN  
+**Priority**: P0 - Blocks AI validation  
+**First Observed**: December 31, 2025
+
+#### Symptoms
+
+- Bot appears but remains in place or only jitters/jumps.
+- Logs show `MOVE` entries with `0 0 0` movement vectors.
+
+#### Suspected Cause
+
+- Movement goal is resolving to the bot's current position (AI target selection
+  or navigation fallback). Needs further inspection with debug logs.
+
+#### Workaround
+
+- No reliable workaround yet; capture `MOVE`/`STATE` logs for debugging.
+
+---
+
+### 3. Bot Death Animation Does Not Play
+
+**Status**: OPEN  
+**Priority**: P1 - Visual regression  
+**First Observed**: December 31, 2025
+
+#### Symptoms
+
+- Bot dies but skips the death animation or floats briefly.
+
+#### Suspected Cause
+
+- Botclient respawn path may bypass the normal death think loop.
+
+#### Workaround
+
+- Increase the respawn delay so the death animation can play:
+  - `cortex_bot_respawn_delay 1.0`
+
+---
+
+### 4. FTEQW File I/O Access Requires Enabling Progs File Access
 
 **Status**: OPEN (engine/security behavior varies by build)  
 **Priority**: P0 - Can block telemetry entirely  
@@ -48,44 +122,6 @@ development, the root causes, workarounds, and current status.
   `Unknown command "sv_progsaccess"`).
 - When supported, prefer `+set sv_progsaccess 2` over `+sv_progsaccess 2`.
 - Manual console entry may still be required on some builds.
-
----
-
-### 2. TCP Stream Mode Requires `pr_enable_uriget 1`
-
-**Status**: OPEN (engine/security behavior varies by build)  
-**Priority**: P1 - Blocks TCP telemetry/control mode  
-**First Observed**: December 30, 2025
-
-#### Symptoms (TCP Mode)
-
-- Quake prints `CORTEX: Stream connect failed...`
-- Training/env or TCP brain server never sees a connection
-
-#### Root Cause (TCP Mode)
-
-- FTE gates URI streams (including `tcp://`) behind `pr_enable_uriget`.
-- Project Cortex uses `fopen("tcp://...", -1)` for TCP stream mode.
-
-#### Workaround (TCP Mode)
-
-- Use `scripts\\run_quake_tcp.bat` (it sets `pr_enable_uriget 1` and switches Cortex to TCP mode).
-- If a build hard-disables URI streams, use File IPC mode (`scripts\\run_quake.bat`) instead.
-
-#### Related: Some Builds Use TLS on `tcp://`
-
-**Symptoms**:
-- Quake may show a black screen then exit shortly after.
-- Brain log shows `Detected TLS client hello` / `TLS handshake ...`
-- `Game\\cortex\\qconsole.log` may contain `X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT`.
-
-**Root Cause**:
-- Some FTE builds initiate a TLS handshake even when the URI is `tcp://...`.
-
-**Fix**:
-- Prefer `ws://127.0.0.1:26000/` (default in `scripts\\run_quake_tcp.bat`) to avoid TLS negotiation entirely.
-- If your build is doing TLS on `tcp://`, Cortex cannot reliably override the engine’s cert verification; upgrade FTEQW (where `tcp://` is plain TCP and TLS is only used with `tls://`).
-- If you want to investigate anyway: the TCP brain can generate a local dev cert under `.cortex\\tls\\` via `scripts\\generate_cortex_tls_cert.ps1`, but some builds will still reject it as `unknown ca`.
 
 ---
 
@@ -228,6 +264,46 @@ development, the root causes, workarounds, and current status.
 
 - Vendored `quakec/lib/QuakeC-releases/progs/` into the repo so CI and clean
   clones can compile without extra steps.
+
+---
+
+## Archived Issues (Legacy / Not in Active Use)
+
+### A1. TCP Stream Mode Requires `pr_enable_uriget 1`
+
+**Status**: ARCHIVED (TCP stream mode not in active use)  
+**Priority**: P1 (historical)  
+**First Observed**: December 30, 2025
+
+#### Symptoms (TCP Mode)
+
+- Quake prints `CORTEX: Stream connect failed...`
+- Training/env or TCP brain server never sees a connection
+
+#### Root Cause (TCP Mode)
+
+- FTE gates URI streams (including `tcp://`) behind `pr_enable_uriget`.
+- Project Cortex uses `fopen("tcp://...", -1)` for TCP stream mode.
+
+#### Workaround (TCP Mode)
+
+- Use `scripts\\run_quake_tcp.bat` (it sets `pr_enable_uriget 1` and switches Cortex to TCP mode).
+- If a build hard-disables URI streams, use File IPC mode (`scripts\\run_quake.bat`) instead.
+
+#### Related: Some Builds Use TLS on `tcp://`
+
+**Symptoms**:
+- Quake may show a black screen then exit shortly after.
+- Brain log shows `Detected TLS client hello` / `TLS handshake ...`
+- `Game\\cortex\\qconsole.log` may contain `X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT`.
+
+**Root Cause**:
+- Some FTE builds initiate a TLS handshake even when the URI is `tcp://...`.
+
+**Fix**:
+- Prefer `ws://127.0.0.1:26000/` (default in `scripts\\run_quake_tcp.bat`) to avoid TLS negotiation entirely.
+- If your build is doing TLS on `tcp://`, Cortex cannot reliably override the engine's cert verification; upgrade FTEQW (where `tcp://` is plain TCP and TLS is only used with `tls://`).
+- If you want to investigate anyway: the TCP brain can generate a local dev cert under `.cortex\\tls\\` via `scripts\\generate_cortex_tls_cert.ps1`, but some builds will still reject it as `unknown ca`.
 
 ---
 
