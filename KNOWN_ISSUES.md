@@ -3,7 +3,7 @@
 This document tracks the technical challenges encountered during Project Cortex
 development, the root causes, workarounds, and current status.
 
-**Last Updated**: December 30, 2025  
+**Last Updated**: December 31, 2025  
 **Project Phase**: 1 - Telemetry Pipeline Setup (verified)
 
 ---
@@ -174,6 +174,44 @@ development, the root causes, workarounds, and current status.
 #### Solution (Keybinds)
 
 - `Game/cortex/default.cfg` includes minimal WASD + mouse binds.
+
+### 8. Pure Botclient Ignores Movement Input Without Player Physics Hook
+
+**Status**: RESOLVED  
+**Priority**: P0 (bot appears frozen)
+
+#### Symptoms (Pure Botclient)
+
+- `MOVE` logs show non-zero movement, but the bot stays in place.
+
+#### Root Cause (Pure Botclient)
+
+- Botclients rely on player physics; direct movement input is ignored unless
+  `SV_PlayerPhysics` is wired and `pr_no_playerphysics 0` allows the hook.
+
+#### Solution (Pure Botclient)
+
+- Implemented `SV_PlayerPhysics` to apply `self.movement` to the engine.
+- `scripts/run_pure_debug.bat` forces `pr_no_playerphysics 0`.
+
+### 9. Hybrid Stream Noise in Pure Mode Logs
+
+**Status**: RESOLVED  
+**Priority**: P2 (log noise only)
+
+#### Symptoms (Pure Mode)
+
+- `telemetry_stream_connect_failed` or `qcfopen("ws://...")` messages in logs.
+
+#### Root Cause (Pure Mode)
+
+- Hybrid TCP/file telemetry cvars were left enabled while running pure QuakeC.
+
+#### Solution (Pure Mode)
+
+- `Game/cortex/autoexec.cfg` forces `cortex_pure_mode 1`, `cortex_use_tcp 0`,
+  `cortex_enable_controls 0`, and `cortex_track_bot 0`.
+- `scripts/run_pure_debug.bat` also enforces those cvars for debug runs.
 
 ### 7. QuakeC Compilation Failed (Missing `defs.qc` in CI / Fresh Checkout)
 

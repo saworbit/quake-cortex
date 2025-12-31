@@ -20,6 +20,7 @@
 float modelindex_eyes, modelindex_player;
 
 void() Cortex_ApplyControls;
+void() Cortex_Bot_MaybeAutoRespawn;
 
 /*
 =============================================================================
@@ -765,6 +766,12 @@ void() CheckRules =
 void() PlayerDeathThink =
 {
     local float forward;
+
+    Cortex_Bot_MaybeAutoRespawn();
+    if (self.deadflag == DEAD_NO)
+    {
+        return;
+    }
 
     if ((self.flags & FL_ONGROUND))
     {

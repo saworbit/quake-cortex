@@ -34,6 +34,14 @@ void(entity bot) Cortex_Perception_Update;
 vector(entity bot) Cortex_Team_SeparationSteer;
 void(entity bot, entity enemy) Cortex_Combat_MaybeSwitchWeapon;
 
+// FTEQW player physics hook (botclient input)
+float input_timelength;
+vector input_angles;
+vector input_movevalues;
+float input_buttons;
+float input_impulse;
+void(entity ent) runstandardplayerphysics = #347;
+
 // Late-bound (defined in base progs later in progs.src)
 void() ClientConnect;
 void() PutClientInServer;
@@ -79,16 +87,18 @@ void() Cortex_BotInitCvars =
     cvar_set("cortex_bot_enable", "1");          // 1 to enable internal AI (also spawns bot)
     cvar_set("cortex_bot_aggression", "1.0");    // base aggression multiplier (0.5..2)
     cvar_set("cortex_bot_debug", "0");           // 1 to print occasional state/target info
+    cvar_set("cortex_log_level", "3");           // log verbosity (0=info only, 3=all)
     cvar_set("cortex_skill", "0.7");             // 0=newbie, 1=pro (scales reaction + aim jitter)
     cvar_set("cortex_style", "2");               // 0=cautious..3=reckless (risk-taking)
     cvar_set("cortex_bot_nav_enable", "1");      // 1 to enable lightweight nav graph pathing
     cvar_set("cortex_bot_nav_link_radius", "600"); // max link distance between nav nodes
     cvar_set("cortex_bot_nav_direct_check_radius", "1200"); // prefer direct LOS within this distance
-    cvar_set("cortex_bot_allow_strafejump", "1");
+    cvar_set("cortex_bot_allow_strafejump", "0");
     cvar_set("cortex_bot_allow_dodge", "1");
-    cvar_set("cortex_bot_allow_rocketjump", "1");
+    cvar_set("cortex_bot_allow_rocketjump", "0");
     cvar_set("cortex_bot_start_with_rl", "0");   // 1 to spawn with RL+rockets (testing)
     cvar_set("cortex_bot_persist", "1");
+    cvar_set("cortex_bot_respawn_delay", "0.5");
     cvar_set("cortex_bot_mcts_rollouts", "8");
     cvar_set("cortex_bot_react_min", "0.05");
     cvar_set("cortex_bot_react_max", "0.15");
@@ -149,7 +159,6 @@ void() Cortex_BotOnRespawn;
 void() Cortex_Bot_HookClient =
 {
     // Ensure a stable bot loop regardless of respawns.
-    self.th_die = Cortex_Bot_Die;
     self.think = Cortex_BotThink;
     if (self.nextthink < time + 0.01)
         self.nextthink = time + 0.05;
@@ -213,6 +222,8 @@ float cortex_bot_next_taunt;
 float cortex_bot_fatigue;
 float cortex_bot_visible_enemies;
 float cortex_bot_tactic_mode; // 1=1v1, 2=balanced, 3=multi
+float cortex_bot_last_think_time;
+float cortex_bot_respawn_at;
 
 float cortex_mem_last_state;
 float cortex_mem_last_mcts_action;
@@ -676,6 +687,8 @@ void(vector dir, float speed) Cortex_Bot_MoveDir =
     local vector angles;
     local float vz;
     local float fat;
+    local float forward;
+    local float side;
 
     if (vlen(dir) < 0.01)
         return;
@@ -697,17 +710,36 @@ void(vector dir, float speed) Cortex_Bot_MoveDir =
             dir = normalize(dir - v_right);
     }
 
-    // Preserve vertical velocity (falling/jumping).
-    vz = self.velocity_z;
-
     fat = 1;
     if (cvar("cortex_bot_fatigue_enable"))
     {
         fat = 1 - Cortex_Clamp(cortex_bot_fatigue, 0, 0.30);
     }
 
-    self.velocity = dir * (speed * fat);
-    self.velocity_z = vz;
+    if (self.flags & FL_CLIENT)
+    {
+        makevectors(self.v_angle);
+        forward = dir * v_forward;
+        side = dir * v_right;
+        self.movement_x = forward * (speed * fat);
+        self.movement_y = side * (speed * fat);
+        self.movement_z = 0;
+    }
+    else
+    {
+        // Preserve vertical velocity (falling/jumping).
+        vz = self.velocity_z;
+        self.velocity = dir * (speed * fat);
+        self.velocity_z = vz;
+    }
+
+    if (cvar("cortex_debug"))
+    {
+        if (self.flags & FL_CLIENT)
+            CortexLog(LOG_info, "MOVE", strcat("Set movement to ", vtos(self.movement), " (speed=", ftos(speed), ")"));
+        else
+            CortexLog(LOG_info, "MOVE", strcat("Set velocity to ", vtos(self.velocity), " (speed=", ftos(speed), ")"));
+    }
 };
 
 void(vector target, float speed) Cortex_Bot_MoveTo =
@@ -797,11 +829,21 @@ void(vector move_dir) Cortex_Bot_DoStrafeJump =
         perp = perp * -1;
 
     self.button2 = 1;
-    self.velocity = normalize(dir + perp * 0.35) * 480;
-
+    dir = normalize(dir + perp * 0.35);
     aim = normalize(dir + perp * 0.15);
     self.v_angle = vectoangles(aim);
     self.angles_y = self.v_angle_y;
+    if (self.flags & FL_CLIENT)
+    {
+        makevectors(self.v_angle);
+        self.movement_x = (dir * v_forward) * 480;
+        self.movement_y = (dir * v_right) * 480;
+        self.movement_z = 0;
+    }
+    else
+    {
+        self.velocity = dir * 480;
+    }
 
     cortex_bot_last_action = CX_ACT_STRAFEJUMP;
 };
@@ -830,6 +872,8 @@ float() Cortex_Bot_ApplyDodgeMaybe =
     local vector to_enemy;
     local vector perp;
     local vector vel;
+    local float forward;
+    local float side;
 
     if (time >= cortex_bot_dodge_until)
         return 0;
@@ -843,9 +887,20 @@ float() Cortex_Bot_ApplyDodgeMaybe =
         return 0;
 
     perp = Cortex_Bot_Perp2D(normalize(to_enemy)) * cortex_bot_dodge_sign;
-    vel = self.velocity;
-    vel = vel + perp * 220;
-    self.velocity = vel;
+    if (self.flags & FL_CLIENT)
+    {
+        makevectors(self.v_angle);
+        forward = perp * v_forward;
+        side = perp * v_right;
+        self.movement_x = self.movement_x + forward * 220;
+        self.movement_y = self.movement_y + side * 220;
+    }
+    else
+    {
+        vel = self.velocity;
+        vel = vel + perp * 220;
+        self.velocity = vel;
+    }
 
     return 1;
 };
@@ -890,6 +945,9 @@ void(entity enemy) Cortex_Bot_AimAt =
 void() Cortex_Bot_ForceJumpIfStuck =
 {
     local float speed;
+
+    if (self.flags & FL_CLIENT)
+        return;
 
     speed = vlen(self.origin - cortex_bot_last_origin);
     if (speed > 8)
@@ -973,9 +1031,14 @@ void() Cortex_Bot_RunAI =
     Cortex_PathInitMaybe();
     Cortex_Opp_Frame(self);
 
+    if (self.flags & FL_CLIENT)
+        self.v_angle = self.angles;
+
     // Clear buttons each tick; actions set them explicitly.
     self.button0 = 0;
     self.button2 = 0;
+    if (self.flags & FL_CLIENT)
+        self.movement = '0 0 0';
 
     bot_skill = cvar("cortex_skill");
     if (bot_skill < 0) bot_skill = 0;
@@ -999,6 +1062,18 @@ void() Cortex_Bot_RunAI =
 
     state = Cortex_Bot_SelectState(bot_enemy, pickup);
     cortex_bot_state = state;
+
+    if (cvar("cortex_debug"))
+    {
+        local string state_name;
+        if (state == BOT_STATE_EXPLORE) state_name = "EXPLORE";
+        else if (state == BOT_STATE_COLLECT) state_name = "COLLECT";
+        else if (state == BOT_STATE_CHASE) state_name = "CHASE";
+        else if (state == BOT_STATE_ATTACK) state_name = "ATTACK";
+        else if (state == BOT_STATE_FLEE) state_name = "FLEE";
+        else state_name = "UNKNOWN";
+        CortexLog(LOG_info, "STATE", strcat("Bot state: ", state_name, " | Enemy: ", ftos(bot_enemy != world), " | Pickup: ", ftos(pickup != world)));
+    }
 
     speed = 320;
     if (state == BOT_STATE_FLEE) speed = 420;
@@ -1207,7 +1282,8 @@ void() Cortex_Bot_RunAI =
     Cortex_Bot_ForceJumpIfStuck();
 
     // Team coordination: small separation steering (only meaningful in teamplay modes).
-    self.velocity = self.velocity + Cortex_Team_SeparationSteer(self);
+    if (!(self.flags & FL_CLIENT))
+        self.velocity = self.velocity + Cortex_Team_SeparationSteer(self);
 
     if (cvar("cortex_bot_debug") && random() < 0.02)
     {
@@ -1224,6 +1300,7 @@ void() Cortex_BotSpawn =
 {
     local vector origin;
 
+    bprint("DEBUG: Cortex_BotSpawn called\n");
     cortex_bot_is_botclient = 0;
     cortex_q_walk = 0.5;
     cortex_q_strafejump = 0.5;
@@ -1237,6 +1314,7 @@ void() Cortex_BotSpawn =
     cortex_bot_fatigue = 0;
     cortex_bot_visible_enemies = 0;
     cortex_bot_tactic_mode = 2;
+    cortex_bot_respawn_at = 0;
 
     cortex_mem_last_state = 0;
     cortex_mem_last_mcts_action = CX_MCTS_ACT_WALK;
@@ -1259,7 +1337,13 @@ void() Cortex_BotSpawn =
     {
         Cortex_Bot_SpawnClient();
         if (cortex_bot && cortex_bot != world)
+        {
+            // Set up think for botclient mode
+            cortex_bot.think = Cortex_BotThink;
+            cortex_bot.nextthink = time + 0.05;
+            bprint(strcat("DEBUG: Bot think scheduled for time ", ftos(cortex_bot.nextthink), " (botclient mode)\n"));
             return;
+        }
     }
 
     origin = Cortex_Bot_FindSpawnOrigin();
@@ -1285,6 +1369,7 @@ void() Cortex_BotSpawn =
 
     cortex_bot.think = Cortex_BotThink;
     cortex_bot.nextthink = time + 0.05;
+    bprint(strcat("DEBUG: Bot think scheduled for time ", ftos(cortex_bot.nextthink), " (fallback mode)\n"));
 };
 
 void() Cortex_BotEnsureSpawned =
@@ -1314,7 +1399,15 @@ void() Cortex_BotEnsureSpawned =
 
     // Already spawned and still valid.
     if (cortex_bot && ((cortex_bot.classname == "cortex_bot") || (cortex_bot.classname == "player")))
+    {
+        if (cortex_bot.think != Cortex_BotThink)
+        {
+            cortex_bot.think = Cortex_BotThink;
+            if (cortex_bot.nextthink < time + 0.01)
+                cortex_bot.nextthink = time + 0.05;
+        }
         return;
+    }
 
     Cortex_BotSpawn();
 };
@@ -1334,9 +1427,19 @@ void() Cortex_BotThink =
     // Schedule next think FIRST so we don't forget
     self.nextthink = time + interval;
 
+    if (time <= cortex_bot_last_think_time)
+        return;
+    cortex_bot_last_think_time = time;
+
+    // Debug: Log think activity
+    if (cvar("cortex_debug"))
+        CortexLog(LOG_info, "THINK", strcat("Bot think at time ", ftos(time)));
+
     // Pure QuakeC AI mode.
     if (cvar("cortex_bot_enable"))
     {
+        if (cvar("cortex_debug"))
+            CortexLog(LOG_info, "AI", "Running AI");
         Cortex_Bot_RunAI();
         return;
     }
@@ -1345,7 +1448,6 @@ void() Cortex_BotThink =
     vel_x = cvar("bot_vel_x");
     vel_y = cvar("bot_vel_y");
     vel_z = cvar("bot_vel_z");
-    self.velocity = vel;
 
     // Control: aim angles.
     pitch = cvar("bot_pitch");
@@ -1358,6 +1460,18 @@ void() Cortex_BotThink =
     self.angles_y = yaw;
     self.angles_z = 0;
     self.v_angle = self.angles;
+
+    if (self.flags & FL_CLIENT)
+    {
+        makevectors(self.v_angle);
+        self.movement_x = vel * v_forward;
+        self.movement_y = vel * v_right;
+        self.movement_z = vel * v_up;
+    }
+    else
+    {
+        self.velocity = vel;
+    }
 
     // Buttons (best-effort).
     self.button0 = cvar("bot_attack") ? 1 : 0;
@@ -1375,6 +1489,7 @@ void(entity targ, entity attacker) Cortex_BotOnObituary =
 {
     local entity real_attacker;
     local float reward;
+    local float delay;
 
     real_attacker = attacker;
     if (attacker && (attacker.classname == "teledeath" || attacker.classname == "teledeath2"))
@@ -1394,6 +1509,13 @@ void(entity targ, entity attacker) Cortex_BotOnObituary =
         CortexMem_FlushMaybe();
 
         Cortex_Bot_SavePersistentQ();
+
+        if (cortex_bot_is_botclient && cvar("cortex_bot_enable"))
+        {
+            delay = cvar("cortex_bot_respawn_delay");
+            if (delay < 0) delay = 0;
+            cortex_bot_respawn_at = time + delay;
+        }
     }
 
     if (real_attacker == cortex_bot && targ != cortex_bot)
@@ -1415,19 +1537,79 @@ void() Cortex_BotOnRespawn =
     if (self != cortex_bot) return;
     if (!cvar("cortex_bot_enable")) return;
 
+    cortex_bot_respawn_at = 0;
     Cortex_Bot_HookClient();
 };
 
 void() Cortex_Bot_Die =
 {
+    local float delay;
+
     // Fast-respawn for botclients so the match keeps flowing.
     if (!cvar("cortex_bot_enable"))
         return;
 
     if (deathmatch || coop)
     {
-        respawn();
-        Cortex_Bot_HookClient();
+        delay = cvar("cortex_bot_respawn_delay");
+        if (delay <= 0)
+        {
+            respawn();
+            Cortex_Bot_HookClient();
+        }
+        else
+        {
+            self.think = respawn;
+            self.nextthink = time + delay;
+        }
         return;
     }
+};
+
+void() Cortex_ApplyControls =
+{
+    if (!cortex_bot_is_botclient)
+        return;
+    if (self != cortex_bot)
+        return;
+    if (!(self.flags & FL_CLIENT))
+        return;
+    if (!cvar("cortex_bot_enable"))
+        return;
+
+    if (self.nextthink > time)
+        return;
+
+    Cortex_BotThink();
+};
+
+void() Cortex_Bot_MaybeAutoRespawn =
+{
+    if (!cortex_bot_is_botclient)
+        return;
+    if (self != cortex_bot)
+        return;
+    if (!cvar("cortex_bot_enable"))
+        return;
+    if (cortex_bot_respawn_at <= 0)
+        return;
+    if (time < cortex_bot_respawn_at)
+        return;
+
+    cortex_bot_respawn_at = 0;
+    respawn();
+};
+
+void() SV_PlayerPhysics =
+{
+    if (cortex_bot_is_botclient && self == cortex_bot && cvar("cortex_bot_enable"))
+    {
+        input_movevalues = self.movement;
+        input_angles = self.v_angle;
+        input_buttons = (self.button0 ? 1 : 0) + (self.button2 ? 2 : 0) + (self.button1 ? 4 : 0);
+        input_impulse = 0;
+        input_timelength = frametime;
+    }
+
+    runstandardplayerphysics(self);
 };

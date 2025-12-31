@@ -28,8 +28,13 @@ Game/cortex/progs.dat
 # Quake runtime files (engine-generated)
 Game/conhistory.txt
 Game/*.cfg
+!Game/cortex_pure/default.cfg
 Game/qconsole.log
 Game/cortex/qconsole.log
+Game/cortex_pure/progs.dat
+Game/cortex_pure/progs.lno
+Game/cortex_pure/qconsole.log
+Game/cortex_pure/logs/
 Game/maptimes.txt
 Game/cortex/data/
 Game/cortex/cortex_telemetry.txt

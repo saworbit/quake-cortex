@@ -14,6 +14,7 @@ Start here: `docs/MODES.md`
 - `docs/MULTI_SERVER.md` - Multiplayer server hosting primer
 - `docs/ARENA.md` - Bot-vs-bot spectator arena
 - `docs/QUICKSTART.md` - fast start (hybrid + experimental modes)
+- `docs/DEBUGGING_PURE_BOT.md` - pure-bot debug workflow + log triage
 - `docs/TCP_MODE.md` - FTEQW stream mode (ws:// / tcp://)
 - `docs/DARKPLACES_PIVOT.md` - DarkPlaces RCON mode
 - `docs/LOGGING.md` - logs and debugging

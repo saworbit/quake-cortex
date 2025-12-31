@@ -12,10 +12,13 @@
 
 ```bash
 # Build the pure QuakeC bot
-scripts\build.bat
+scripts\build_pure.bat
 
-# Run the bot (requires FTEQW engine)
-scripts\run.bat
+# Run the bot (pure mode, default map dm1)
+scripts\run_pure_qc.bat
+
+# Debug mode (full logs + rotation)
+scripts\run_pure_debug.bat
 ```
 
 **Main Focus**: Pure QuakeC bot with zero external dependencies. All AI logic runs inside QuakeC.

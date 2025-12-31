@@ -10,10 +10,12 @@ This repo contains three “tracks” that share the same QuakeC mod:
 
 Run:
 - `scripts\\run_pure_qc.bat` (automatically rebuilds the pure mod)
+- `scripts\\run_pure_debug.bat` (full logs + rotation, defaults to dm1)
 
 Key cvars:
 - `cortex_bot_enable 1` (enable internal AI)
 - `cortex_spawn_bot 1` (spawn bot entity/client slot depending on engine support)
+- `cortex_pure_mode 1` (disables hybrid telemetry/controls)
 
 Code:
 - QuakeC AI: `quakec/cortex/bot/`

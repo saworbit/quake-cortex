@@ -16,6 +16,19 @@ float LOG_debug = 3;
 // Configure current verbosity (0..3)
 float CORTEX_LOG_LEVEL = 3;
 
+float() Cortex_LogLevel =
+{
+    local float level;
+
+    if (cvar_string("cortex_log_level") == "")
+        return CORTEX_LOG_LEVEL;
+
+    level = cvar("cortex_log_level");
+    if (level < 0) level = 0;
+    if (level > 3) level = 3;
+    return level;
+};
+
 string(float level) Cortex_LogLevelStr =
 {
     if (level == LOG_info) return "INFO";
@@ -43,8 +56,10 @@ void(float level, string system, string msg) CortexLog =
 {
     local string level_str;
     local string line;
+    local float max_level;
 
-    if (level > CORTEX_LOG_LEVEL)
+    max_level = Cortex_LogLevel();
+    if (level > max_level)
         return;
 
     level_str = Cortex_LogLevelStr(level);
@@ -58,8 +73,10 @@ void(float level, string system, string msg, string data) CortexLogData =
 {
     local string level_str;
     local string line;
+    local float max_level;
 
-    if (level > CORTEX_LOG_LEVEL)
+    max_level = Cortex_LogLevel();
+    if (level > max_level)
         return;
 
     level_str = Cortex_LogLevelStr(level);

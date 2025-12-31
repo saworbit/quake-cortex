@@ -134,6 +134,79 @@ entity(vector pos) CortexNav_FindNearestNode =
     return best;
 };
 
+entity(entity mover, float max_dist) CortexNav_FindReachableNode =
+{
+    local entity node;
+    local entity best;
+    local float best_dist;
+    local float dist;
+    local vector start;
+    local vector endpos;
+
+    if (!mover || mover == world)
+        return world;
+
+    best_dist = 999999;
+    start = mover.origin + '0 0 16';
+
+    node = cortex_nav_head;
+    while (node)
+    {
+        dist = vlen(node.origin - mover.origin);
+        if (dist <= max_dist && dist < best_dist)
+        {
+            endpos = node.origin + '0 0 16';
+            if (CortexNav_HasLine(start, endpos, mover))
+            {
+                best = node;
+                best_dist = dist;
+            }
+        }
+        node = node.cx_nav_next;
+    }
+
+    return best;
+};
+
+entity(entity mover, vector goalpos, float max_dist) CortexNav_FindReachableToward =
+{
+    local entity node;
+    local entity best;
+    local float best_goal_dist;
+    local float dist;
+    local float goal_dist;
+    local vector start;
+    local vector endpos;
+
+    if (!mover || mover == world)
+        return world;
+
+    best_goal_dist = 999999;
+    start = mover.origin + '0 0 16';
+
+    node = cortex_nav_head;
+    while (node)
+    {
+        dist = vlen(node.origin - mover.origin);
+        if (dist <= max_dist)
+        {
+            endpos = node.origin + '0 0 16';
+            if (CortexNav_HasLine(start, endpos, mover))
+            {
+                goal_dist = vlen(goalpos - node.origin);
+                if (goal_dist < best_goal_dist)
+                {
+                    best_goal_dist = goal_dist;
+                    best = node;
+                }
+            }
+        }
+        node = node.cx_nav_next;
+    }
+
+    return best;
+};
+
 entity(entity goal) CortexNav_FindBestOpen =
 {
     local entity node;
@@ -257,9 +330,11 @@ vector(entity mover, vector goalpos) CortexNav_NextWaypoint =
     local entity goal;
     local entity endnode;
     local entity next;
+    local entity fallback;
     local vector startpos;
     local vector endpos;
     local float max_direct;
+    local float max_reach;
 
     if (!cortex_nav_initialized)
         return goalpos;
@@ -276,20 +351,30 @@ vector(entity mover, vector goalpos) CortexNav_NextWaypoint =
     if (vlen(goalpos - mover.origin) < max_direct && CortexNav_HasLine(startpos, endpos, mover))
         return goalpos;
 
-    start = CortexNav_FindNearestNode(mover.origin);
+    max_reach = cvar("cortex_bot_nav_link_radius");
+    if (max_reach <= 0) max_reach = 600;
+    max_reach = max_reach * 2;
+
+    start = CortexNav_FindReachableNode(mover, max_direct);
+    if (!start)
+        start = CortexNav_FindNearestNode(mover.origin);
     goal = CortexNav_FindNearestNode(goalpos);
     if (!start || !goal)
         return goalpos;
 
     endnode = CortexNav_AStar(start, goal, mover);
-    if (!endnode)
-        return goalpos;
+    if (endnode)
+    {
+        next = CortexNav_PathNextHopNode(start, endnode);
+        if (next)
+            return next.origin;
+    }
 
-    next = CortexNav_PathNextHopNode(start, endnode);
-    if (!next)
-        return goalpos;
+    fallback = CortexNav_FindReachableToward(mover, goalpos, max_reach);
+    if (fallback)
+        return fallback.origin;
 
-    return next.origin;
+    return goalpos;
 };
 
 void(string class_name) CortexNav_AddAllByClass =

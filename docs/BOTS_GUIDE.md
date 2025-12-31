@@ -1,6 +1,6 @@
 # Idiot-Proof Cortex Bot Spawning Guide
 
-Use this guide to spawn, manage, and tweak Cortex bots without editing QuakeC—just drop a config file, use console commands, and paste the provided snippets if you ever want faster hacks.
+Use this guide to spawn, manage, and tweak Cortex bots without editing QuakeC. For the pure bot, `scripts\run_pure_qc.bat` (or `scripts\run_pure_debug.bat`) is the simplest path, and `Game/cortex_pure/default.cfg` provides WASD binds.
 
 ## TL;DR Keybinds (after `exec cortex_bots.cfg`)
 | Key | Action |
@@ -19,6 +19,11 @@ Copy-paste this into a terminal that is already in `Game/`:
 ### FTEQW (current default)
 ```
 fteqw64.exe -game cortex +map dm3 +deathmatch 1 +sv_cheats 1 +skill 3
+```
+
+Pure bot shortcut:
+```
+scripts\run_pure_qc.bat
 ```
 
 ### DarkPlaces (recommended pivot)

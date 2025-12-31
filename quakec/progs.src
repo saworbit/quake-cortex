@@ -1,4 +1,4 @@
-../Game/cortex/progs.dat
+../Game/cortex_pure/progs.dat
 
 // Core Quake definitions
 lib/QuakeC-releases/progs/defs.qc

@@ -3,9 +3,11 @@
 ## Pure QuakeC Bot (No Python)
 
 1. Build: `scripts\\build.bat`
-2. Run: `scripts\\run_pure_qc.bat` (defaults to `deathmatch 1` + `map dm3`)
+2. Run: `scripts\\run_pure_qc.bat` (defaults to `deathmatch 1` + `map dm1`)
+3. Debug mode (full logs + rotation): `scripts\\run_pure_debug.bat`
 
 Tip: the internal bot is toggled by `cortex_bot_enable 1`.
+Bindings: `Game\\cortex_pure\\default.cfg` provides minimal WASD/mouse binds.
 
 ## 30-Second Setup (File IPC)
 

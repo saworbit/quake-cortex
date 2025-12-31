@@ -25,4 +25,4 @@ void() Cortex_DumpState;
 void(entity ent) CopyToBodyQueue;
 
 // External control hook (not used in pure mode, stub provided)
-void() Cortex_ApplyControls = {};
+void() Cortex_ApplyControls;
