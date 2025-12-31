@@ -64,12 +64,30 @@ development, the root causes, workarounds, and current status.
 
 #### Suspected Cause
 
-- Movement goal is resolving to the bot's current position (AI target selection
-  or navigation fallback). Needs further inspection with debug logs.
+- Movement goal resolves to the bot's current position (target selection or
+  navigation fallback), so the move vector stays `0 0 0`.
+- No valid nav nodes/waypoints loaded for the current map, so pathing falls
+  back to "nowhere to go."
+- AI state machine stuck in idle/oscillation and never commits to a move target.
 
 #### Workaround
 
-- No reliable workaround yet; capture `MOVE`/`STATE` logs for debugging.
+- No reliable workaround yet. Use debug logs to identify the active state,
+  chosen goal, and nav/path status.
+
+#### Debug Checklist
+
+- Verify think loop is running: `THINK` logs are continuous.
+- Log the chosen goal target (entity + position) each cycle.
+- Log nav status (node count, path length, fallback reason).
+- Confirm enemy acquisition (visible target vs. none).
+- If goal == self.origin, force a fallback roam target.
+
+#### Short-Term Fix Ideas
+
+- Add a roam fallback: pick a random direction or nearby node when no target.
+- Skip self/world when selecting targets; handle "no target" explicitly.
+- Loosen "already there" thresholds so tiny deltas don't zero movement.
 
 ---
 
@@ -85,12 +103,21 @@ development, the root causes, workarounds, and current status.
 
 #### Suspected Cause
 
-- Botclient respawn path may bypass the normal death think loop.
+- Botclient respawn path may bypass or cut short the normal death animation
+  frames (respawn occurs too quickly).
+- In deathmatch/coop, the bot respawns immediately unless a delay is enforced.
 
-#### Workaround
+#### Guidance / Fix
 
 - Increase the respawn delay so the death animation can play:
-  - `cortex_bot_respawn_delay 1.0`
+  - `cortex_bot_respawn_delay 1.0` (try 2.0 if needed)
+- Ensure the death handler defers `respawn()` and leaves the corpse for the
+  delay window (timer-based respawn).
+- Test with an exaggerated delay (e.g., 5 seconds) to confirm death frames
+  actually play; if they do, dial the delay down.
+- If the corpse still disappears instantly, check for engine auto-respawn of
+  botclients and consider spawning a fresh botclient after the delay instead
+  of reusing the same entity.
 
 ---
 
