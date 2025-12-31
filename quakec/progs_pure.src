@@ -1,0 +1,57 @@
+../Game/cortex_pure/progs.dat
+
+// Base single-player Quake definitions
+lib/QuakeC-releases/progs/defs.qc
+lib/dpextensions.qc
+
+// Cortex compiler config + logging
+cortex/common/cortex_config.qc
+cortex/common/cortex_logging.qc
+
+// Pure QuakeC bot
+cortex/common/cortex_sensor.qc
+cortex/common/cortex_world.qc
+cortex/bot/cortex_pathfinding.qc
+cortex/bot/cortex_perception.qc
+cortex/bot/cortex_tactics.qc
+cortex/bot/cortex_combat.qc
+cortex/bot/cortex_resource.qc
+cortex/bot/cortex_team.qc
+cortex/bot/cortex_opponent_model.qc
+cortex/bot/cortex_memory.qc
+cortex/bot/cortex_mcts.qc
+cortex/bot/cortex_bot.qc
+
+// Base Quake source
+lib/QuakeC-releases/progs/subs.qc
+lib/QuakeC-releases/progs/fight.qc
+lib/QuakeC-releases/progs/ai.qc
+lib/QuakeC-releases/progs/combat.qc
+lib/QuakeC-releases/progs/items.qc
+lib/QuakeC-releases/progs/weapons.qc
+cortex/common/cortex_world.qc
+lib/QuakeC-releases/progs/client.qc
+lib/QuakeC-releases/progs/player.qc
+lib/QuakeC-releases/progs/monsters.qc
+lib/QuakeC-releases/progs/doors.qc
+lib/QuakeC-releases/progs/buttons.qc
+lib/QuakeC-releases/progs/triggers.qc
+lib/QuakeC-releases/progs/plats.qc
+lib/QuakeC-releases/progs/misc.qc
+
+// Monster AI
+lib/QuakeC-releases/progs/ogre.qc
+lib/QuakeC-releases/progs/demon.qc
+lib/QuakeC-releases/progs/shambler.qc
+lib/QuakeC-releases/progs/knight.qc
+lib/QuakeC-releases/progs/soldier.qc
+lib/QuakeC-releases/progs/wizard.qc
+lib/QuakeC-releases/progs/dog.qc
+lib/QuakeC-releases/progs/zombie.qc
+lib/QuakeC-releases/progs/boss.qc
+lib/QuakeC-releases/progs/tarbaby.qc
+lib/QuakeC-releases/progs/hknight.qc
+lib/QuakeC-releases/progs/fish.qc
+lib/QuakeC-releases/progs/shalrath.qc
+lib/QuakeC-releases/progs/enforcer.qc
+lib/QuakeC-releases/progs/oldone.qc

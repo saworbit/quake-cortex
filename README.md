@@ -18,6 +18,7 @@ scripts\build.bat
 ### Pure QuakeC Bot (no Python)
 
 ```bash
+scripts\build_pure.bat
 scripts\run_pure_qc.bat
 ```
 

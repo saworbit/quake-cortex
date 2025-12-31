@@ -9,7 +9,7 @@ This repo contains three “tracks” that share the same QuakeC mod:
 ## 1) Pure QuakeC Bot (no Python)
 
 Run:
-- `scripts\\build.bat`
+- `scripts\\build_pure.bat`
 - `scripts\\run_pure_qc.bat`
 
 Key cvars:
