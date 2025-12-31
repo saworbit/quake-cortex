@@ -137,6 +137,24 @@ float() Cortex_Bot_HasDropClientSupport =
     return checkextension("DP_SV_DROPCLIENT");
 };
 
+entity() Cortex_Bot_FindExistingBotclient =
+{
+    local entity head;
+
+    if (!Cortex_Bot_HasBotClientSupport())
+        return world;
+
+    head = find(world, classname, "player");
+    while (head)
+    {
+        if (clienttype(head) == CLIENTTYPE_BOT)
+            return head;
+        head = find(head, classname, "player");
+    }
+
+    return world;
+};
+
 void() Cortex_Bot_EquipDefaults =
 {
     // Optional deterministic loadout (useful for testing); otherwise let normal spawn parms apply.
@@ -1537,6 +1555,7 @@ void() Cortex_BotSpawn =
 void() Cortex_BotEnsureSpawned =
 {
     local float want_bot;
+    local entity existing;
 
     want_bot = cvar("cortex_spawn_bot") || cvar("cortex_bot_enable");
 
@@ -1568,6 +1587,16 @@ void() Cortex_BotEnsureSpawned =
             if (cortex_bot.nextthink < time + 0.01)
                 cortex_bot.nextthink = time + 0.05;
         }
+        return;
+    }
+
+    // On map change, the engine may already have a botclient slot.
+    existing = Cortex_Bot_FindExistingBotclient();
+    if (existing && existing != world)
+    {
+        cortex_bot = existing;
+        cortex_bot_is_botclient = 1;
+        Cortex_Bot_HookClient();
         return;
     }
 

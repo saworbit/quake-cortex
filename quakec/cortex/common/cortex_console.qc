@@ -23,6 +23,17 @@ float() Cortex_CountBots =
     local float count;
 
     count = 0;
+    if (cvar("pr_checkextension") && checkextension("DP_SV_BOTCLIENT"))
+    {
+        e = find(world, classname, "player");
+        while (e)
+        {
+            if (clienttype(e) == CLIENTTYPE_BOT)
+                count = count + 1;
+            e = find(e, classname, "player");
+        }
+    }
+
     e = find(world, classname, "cortex_bot");
     while (e)
     {
@@ -40,6 +51,21 @@ void() Cortex_KillAllBots =
     local string msg;
 
     count = 0;
+    if (cvar("pr_checkextension") && checkextension("DP_SV_BOTCLIENT") && checkextension("DP_SV_DROPCLIENT"))
+    {
+        e = find(world, classname, "player");
+        while (e)
+        {
+            next = find(e, classname, "player");
+            if (clienttype(e) == CLIENTTYPE_BOT)
+            {
+                dropclient(e);
+                count = count + 1;
+            }
+            e = next;
+        }
+    }
+
     e = find(world, classname, "cortex_bot");
     while (e)
     {
@@ -67,6 +93,26 @@ void() Cortex_ListAllBots =
 
     count = 0;
     bprint("=== CORTEX BOTS ===\n");
+
+    if (cvar("pr_checkextension") && checkextension("DP_SV_BOTCLIENT"))
+    {
+        e = find(world, classname, "player");
+        while (e)
+        {
+            if (clienttype(e) == CLIENTTYPE_BOT)
+            {
+                count = count + 1;
+                info = strcat("Bot #", ftos(count));
+                info = strcat(info, " | Name: ", e.netname);
+                info = strcat(info, " | Health: ", ftos(e.health));
+                info = strcat(info, " | Armor: ", ftos(e.armorvalue));
+                info = strcat(info, " | Frags: ", ftos(e.frags));
+                info = strcat(info, "\n");
+                bprint(info);
+            }
+            e = find(e, classname, "player");
+        }
+    }
 
     e = find(world, classname, "cortex_bot");
     while (e)
