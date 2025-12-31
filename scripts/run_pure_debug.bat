@@ -41,19 +41,22 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if not exist "Game\\cortex_pure\\autoexec.cfg" (
-    if exist "Game\\id1\\autoexec.cfg" (
-        rem Use shared id1 config if present.
-        goto :AUTOEXEC_DONE
-    )
+set NEED_AUTOEXEC=0
+if exist "Game\\cortex_pure\\autoexec.cfg" (
+    findstr /R /I "^bind " "Game\\cortex_pure\\autoexec.cfg" >nul
+    if errorlevel 1 set NEED_AUTOEXEC=1
+) else (
+    set NEED_AUTOEXEC=1
+)
+
+if "%NEED_AUTOEXEC%"=="1" (
     if exist "docs\\autoexec.example.cfg" (
         copy /Y "docs\\autoexec.example.cfg" "Game\\cortex_pure\\autoexec.cfg" >nul
-        echo NOTE: Created Game\\cortex_pure\\autoexec.cfg from docs\\autoexec.example.cfg
+        echo NOTE: Updated Game\\cortex_pure\\autoexec.cfg from docs\\autoexec.example.cfg
     ) else (
         echo NOTE: No autoexec.cfg found; movement keys may be unbound.
     )
 )
-:AUTOEXEC_DONE
 
 set EXTRA_ARGS=%*
 if "%~1"=="" set EXTRA_ARGS=+set deathmatch 1 +map dm1
