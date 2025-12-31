@@ -87,7 +87,7 @@ void() Cortex_BotInitCvars =
     cvar_set("cortex_log_level", "3");           // log verbosity (0=info only, 3=all)
     cvar_set("cortex_skill", "0.7");             // 0=newbie, 1=pro (scales reaction + aim jitter)
     cvar_set("cortex_style", "2");               // 0=cautious..3=reckless (risk-taking)
-    cvar_set("cortex_bot_nav_enable", "1");      // 1 to enable lightweight nav graph pathing
+    cvar_set("cortex_bot_nav_enable", "0");      // 1 to enable lightweight nav graph pathing
     cvar_set("cortex_bot_nav_link_radius", "600"); // max link distance between nav nodes
     cvar_set("cortex_bot_nav_direct_check_radius", "1200"); // prefer direct LOS within this distance
     cvar_set("cortex_bot_allow_strafejump", "0");
@@ -100,6 +100,9 @@ void() Cortex_BotInitCvars =
     cvar_set("cortex_bot_enemy_memory", "2.5");
     cvar_set("cortex_bot_retaliate_time", "1.5");
     cvar_set("cortex_bot_weapon_switch_cooldown", "0.35");
+    cvar_set("cortex_bot_respawn_grace", "0.5");
+    cvar_set("cortex_bot_wall_avoid", "1");
+    cvar_set("cortex_bot_wall_avoid_dist", "64");
     cvar_set("cortex_bot_mcts_rollouts", "8");
     cvar_set("cortex_bot_react_min", "0.05");
     cvar_set("cortex_bot_react_max", "0.15");
@@ -204,6 +207,7 @@ float cortex_bot_last_decay;
 float cortex_bot_next_attack;
 float cortex_bot_next_rocketjump;
 float cortex_bot_next_weapon_switch;
+float cortex_bot_respawn_grace_until;
 vector cortex_bot_wander_goal;
 float cortex_bot_wander_until;
 vector cortex_bot_last_origin;
@@ -220,6 +224,8 @@ float cortex_bot_respawn_at;
 float cortex_bot_idle_since;
 float cortex_bot_idle_until;
 vector cortex_bot_idle_dir;
+float cortex_bot_wall_sign;
+float cortex_bot_wall_until;
 
 float cortex_mem_last_state;
 float cortex_mem_last_mcts_action;
@@ -638,6 +644,7 @@ void(vector dir, float speed) Cortex_Bot_MoveDir =
     local float fat;
     local float forward;
     local float side;
+    local float avoid_dist;
 
     if (vlen(dir) < 0.01)
         return;
@@ -646,17 +653,28 @@ void(vector dir, float speed) Cortex_Bot_MoveDir =
     dir = normalize(dir);
 
     // Simple obstacle check: if a short forward trace hits, try a sidestep.
-    start = self.origin + '0 0 16';
-    endpos = start + dir * 48;
-    traceline(start, endpos, TRUE, self);
-    if (trace_fraction < 1)
+    if (!cvar("cortex_bot_nav_enable") && cvar("cortex_bot_wall_avoid"))
     {
-        angles = vectoangles(dir);
-        makevectors(angles);
-        if (random() > 0.5)
-            dir = normalize(dir + v_right);
-        else
-            dir = normalize(dir - v_right);
+        start = self.origin + '0 0 16';
+        avoid_dist = cvar("cortex_bot_wall_avoid_dist");
+        if (avoid_dist <= 0) avoid_dist = 64;
+        endpos = start + dir * avoid_dist;
+        traceline(start, endpos, TRUE, self);
+        if (trace_fraction < 1)
+        {
+            angles = vectoangles(dir);
+            makevectors(angles);
+            if (time > cortex_bot_wall_until)
+            {
+                if (random() < 0.5)
+                    cortex_bot_wall_sign = -cortex_bot_wall_sign;
+                cortex_bot_wall_until = time + 0.35 + random() * 0.35;
+            }
+            if (cortex_bot_wall_sign > 0)
+                dir = normalize(dir * 0.35 + v_right);
+            else
+                dir = normalize(dir * 0.35 - v_right);
+        }
     }
 
     fat = 1;
@@ -1040,6 +1058,7 @@ void(entity enemy) Cortex_Bot_Attack =
     local float fire_delay;
 
     if (!enemy) return;
+    if (time < cortex_bot_respawn_grace_until) return;
     dist = vlen(enemy.origin - self.origin);
     if (dist > 900) return;
 
@@ -1401,9 +1420,12 @@ void() Cortex_BotSpawn =
     cortex_bot_visible_enemies = 0;
     cortex_bot_tactic_mode = 2;
     cortex_bot_respawn_at = 0;
+    cortex_bot_respawn_grace_until = 0;
     cortex_bot_idle_since = time;
     cortex_bot_idle_until = 0;
     cortex_bot_idle_dir = '1 0 0';
+    cortex_bot_wall_sign = 1;
+    cortex_bot_wall_until = 0;
 
     cortex_mem_last_state = 0;
     cortex_mem_last_mcts_action = CX_MCTS_ACT_WALK;
@@ -1578,11 +1600,16 @@ void(entity targ, entity attacker) Cortex_BotOnObituary =
 
 void() Cortex_BotOnRespawn =
 {
+    local float grace;
+
     if (!cortex_bot) return;
     if (self != cortex_bot) return;
     if (!cvar("cortex_bot_enable")) return;
 
     cortex_bot_respawn_at = 0;
+    grace = cvar("cortex_bot_respawn_grace");
+    if (grace < 0) grace = 0;
+    cortex_bot_respawn_grace_until = time + grace;
     Cortex_Bot_HookClient();
 };
 
