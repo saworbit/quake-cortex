@@ -25,10 +25,20 @@ development, the root causes, workarounds, and current status.
 
 - Movement binds or speed cvars are not being applied for `-game cortex_pure`
   in some FTEQW setups.
+- Some builds load a global config (user dir) and skip mod-specific configs,
+  especially with portable/nohome setups.
 
 #### Workaround
 
-- In the console:
+- Ensure `Game/cortex_pure/autoexec.cfg` contains WASD binds and speed cvars
+  (this repo ships one).
+- Force execution on launch:
+  - `+exec autoexec.cfg` (already set in `scripts/run_pure_qc.bat` and
+    `scripts/run_pure_debug.bat`).
+- If binds still don't stick, create or copy a config for the mod:
+  - Copy `Game/id1/config.cfg` to `Game/cortex_pure/config.cfg`, or
+  - In-game: set binds, then `writeconfig` while `-game cortex_pure` is active.
+- Manual console fix (temporary):
   - `exec autoexec.cfg`
   - `bind w +forward`
   - `bind a +moveleft`
