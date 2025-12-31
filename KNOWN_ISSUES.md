@@ -84,47 +84,6 @@ development, the root causes, workarounds, and current status.
 
 ---
 
-### 4. FTEQW File I/O Access Requires Enabling Progs File Access
-
-**Status**: OPEN (engine/security behavior varies by build)  
-**Priority**: P0 - Can block telemetry entirely  
-**First Observed**: December 29, 2025
-
-#### Symptoms (File Access)
-
-- Quake prints Cortex init messages, but telemetry never appears in Python
-- `Game/cortex/data/cortex_telemetry.txt` is not created or never grows
-- Quake console may show `fopen` failures (when `developer 1` is enabled)
-
-#### Root Cause (File Access)
-
-- FTEQW restricts QuakeC progs from reading/writing files unless explicitly
-  allowed.
-- Project Cortex uses the `FRIK_FILE` extension (`checkextension("FRIK_FILE")`) and
-  `fopen`/`fputs` for file-based IPC.
-
-#### Workaround (File Access)
-
-- Prefer config-based setup (persistent):
-  - `Game/cortex/autoexec.cfg` sets `sv_progsaccess 2`, `pr_checkextension 1`,
-    and `developer 1`.
-  - `Game/cortex/default.cfg` provides minimal keybinds so the mod is playable.
-- If file access is still blocked, set it manually in the Quake console before
-  starting a map:
-  - `sv_progsaccess 2`
-- If you don't see debug output, enable:
-  - `developer 1`
-  - `pr_checkextension 1`
-
-#### Notes (Command Line)
-
-- Some FTEQW builds treat `+sv_progsaccess 2` as a *command* (and log
-  `Unknown command "sv_progsaccess"`).
-- When supported, prefer `+set sv_progsaccess 2` over `+sv_progsaccess 2`.
-- Manual console entry may still be required on some builds.
-
----
-
 ## Medium Priority Issues
 
 ### 3. No Telemetry Until a Map Is Loaded
@@ -304,6 +263,47 @@ development, the root causes, workarounds, and current status.
 - Prefer `ws://127.0.0.1:26000/` (default in `scripts\\run_quake_tcp.bat`) to avoid TLS negotiation entirely.
 - If your build is doing TLS on `tcp://`, Cortex cannot reliably override the engine's cert verification; upgrade FTEQW (where `tcp://` is plain TCP and TLS is only used with `tls://`).
 - If you want to investigate anyway: the TCP brain can generate a local dev cert under `.cortex\\tls\\` via `scripts\\generate_cortex_tls_cert.ps1`, but some builds will still reject it as `unknown ca`.
+
+---
+
+### A2. FTEQW File I/O Access Requires Enabling Progs File Access
+
+**Status**: ARCHIVED (file IPC not in active use while focusing on pure QuakeC bot)  
+**Priority**: P0 - Can block telemetry entirely  
+**First Observed**: December 29, 2025
+
+#### Symptoms (File Access)
+
+- Quake prints Cortex init messages, but telemetry never appears in Python
+- `Game/cortex/data/cortex_telemetry.txt` is not created or never grows
+- Quake console may show `fopen` failures (when `developer 1` is enabled)
+
+#### Root Cause (File Access)
+
+- FTEQW restricts QuakeC progs from reading/writing files unless explicitly
+  allowed.
+- Project Cortex uses the `FRIK_FILE` extension (`checkextension("FRIK_FILE")`) and
+  `fopen`/`fputs` for file-based IPC.
+
+#### Workaround (File Access)
+
+- Prefer config-based setup (persistent):
+  - `Game/cortex/autoexec.cfg` sets `sv_progsaccess 2`, `pr_checkextension 1`,
+    and `developer 1`.
+  - `Game/cortex/default.cfg` provides minimal keybinds so the mod is playable.
+- If file access is still blocked, set it manually in the Quake console before
+  starting a map:
+  - `sv_progsaccess 2`
+- If you don't see debug output, enable:
+  - `developer 1`
+  - `pr_checkextension 1`
+
+#### Notes (Command Line)
+
+- Some FTEQW builds treat `+sv_progsaccess 2` as a *command* (and log
+  `Unknown command "sv_progsaccess"`).
+- When supported, prefer `+set sv_progsaccess 2` over `+sv_progsaccess 2`.
+- Manual console entry may still be required on some builds.
 
 ---
 
