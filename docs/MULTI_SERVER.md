@@ -121,4 +121,3 @@ Recompile with `scripts/build_pure.bat` after editing.
 - **24/7 hosting**: run the dedicated BAT on a spare PC or VPS; `quake.by/tutorials` is a good external reference.
 
 Enjoy hosting multiplayer lobby matches where Cortex bots fill every slot—they start automatically, respond to server binds, and keep your friends honest!
-

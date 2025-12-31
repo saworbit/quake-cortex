@@ -16,19 +16,19 @@ development, the root causes, workarounds, and current status.
 **Priority**: P0 - Blocks basic testing  
 **First Observed**: December 31, 2025
 
-#### Symptoms
+#### Symptoms (Pure Mode Movement)
 
 - Mouse look and firing work, but W/A/S/D does nothing.
 - Repro in both `scripts\\run_pure_qc.bat` and `scripts\\run_pure_debug.bat`.
 
-#### Likely Cause
+#### Likely Cause (Pure Mode Movement)
 
 - Movement binds or speed cvars are not being applied for `-game cortex_pure`
   in some FTEQW setups.
 - Some builds load a global config (user dir) and skip mod-specific configs,
   especially with portable/nohome setups.
 
-#### Workaround
+#### Workaround (Pure Mode Movement)
 
 - Ensure `Game/cortex_pure/autoexec.cfg` contains WASD binds and speed cvars
   (this repo ships one).
@@ -57,12 +57,12 @@ development, the root causes, workarounds, and current status.
 **Priority**: P0 - Blocks AI validation  
 **First Observed**: December 31, 2025
 
-#### Symptoms
+#### Symptoms (Idle Bot)
 
 - Bot appears but remains in place or only jitters/jumps.
 - Logs show `MOVE` entries with `0 0 0` movement vectors.
 
-#### Suspected Cause
+#### Suspected Cause (Idle Bot)
 
 - Movement goal resolves to the bot's current position (target selection or
   navigation fallback), so the move vector stays `0 0 0`.
@@ -70,7 +70,7 @@ development, the root causes, workarounds, and current status.
   back to "nowhere to go."
 - AI state machine stuck in idle/oscillation and never commits to a move target.
 
-#### Workaround
+#### Workaround (Idle Bot)
 
 - No reliable workaround yet. Use debug logs to identify the active state,
   chosen goal, and nav/path status.
@@ -97,11 +97,11 @@ development, the root causes, workarounds, and current status.
 **Priority**: P1 - Visual regression  
 **First Observed**: December 31, 2025
 
-#### Symptoms
+#### Symptoms (Bot Death)
 
 - Bot dies but skips the death animation or floats briefly.
 
-#### Suspected Cause
+#### Suspected Cause (Bot Death)
 
 - Botclient respawn path may bypass or cut short the normal death animation
   frames (respawn occurs too quickly).
