@@ -38,6 +38,8 @@ lib/QuakeC-releases/progs/oldone.qc
 // Cortex helpers
 cortex/common/cortex_config.qc
 cortex/common/cortex_logging.qc
+cortex/common/cortex_debug.qc
+cortex/common/cortex_console.qc
 cortex/common/cortex_sensor.qc
 cortex/common/cortex_world.qc
 
