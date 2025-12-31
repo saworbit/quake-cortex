@@ -37,10 +37,12 @@ entity(entity bot, float radius) Cortex_Perception_FindNearestVisibleEnemy =
     local float best_dist;
     local float dist;
     local vector start;
-    local vector forward;
     local vector to;
     local float fov_deg;
-    local float min_dot;
+    local float half_fov;
+    local float bot_yaw;
+    local float yaw;
+    local float dyaw;
 
     if (!bot || bot == world) return world;
 
@@ -49,30 +51,28 @@ entity(entity bot, float radius) Cortex_Perception_FindNearestVisibleEnemy =
 
     fov_deg = cvar("cortex_bot_fov_deg");
     if (fov_deg <= 0 || fov_deg >= 360)
-        min_dot = -2;
+        half_fov = -1;
     else
-    {
-        if (bot.flags & FL_CLIENT)
-            makevectors(bot.v_angle);
-        else
-            makevectors(bot.angles);
-        forward = v_forward;
-        min_dot = cos((fov_deg * 0.5) * 0.0174532925);
-    }
+        half_fov = fov_deg * 0.5;
+
+    bot_yaw = (bot.flags & FL_CLIENT) ? bot.v_angle_y : bot.angles_y;
 
     head = findradius(bot.origin, radius);
     while (head)
     {
         if (head.classname == "player" && head != bot && head.health > 0)
         {
-            if (min_dot > -1)
+            if (half_fov >= 0)
             {
                 to = head.origin - bot.origin;
                 to_z = 0;
                 if (vlen(to) > 0.01)
                 {
-                    to = normalize(to);
-                    if ((forward * to) < min_dot)
+                    yaw = vectoyaw(to);
+                    dyaw = yaw - bot_yaw;
+                    if (dyaw > 180) dyaw = dyaw - 360;
+                    if (dyaw < -180) dyaw = dyaw + 360;
+                    if (fabs(dyaw) > half_fov)
                     {
                         head = head.chain;
                         continue;
@@ -103,10 +103,12 @@ float(entity bot, float radius) Cortex_Perception_CountVisibleEnemies =
     local entity head;
     local float count;
     local vector start;
-    local vector forward;
     local vector to;
     local float fov_deg;
-    local float min_dot;
+    local float half_fov;
+    local float bot_yaw;
+    local float yaw;
+    local float dyaw;
 
     if (!bot || bot == world) return 0;
 
@@ -115,30 +117,28 @@ float(entity bot, float radius) Cortex_Perception_CountVisibleEnemies =
 
     fov_deg = cvar("cortex_bot_fov_deg");
     if (fov_deg <= 0 || fov_deg >= 360)
-        min_dot = -2;
+        half_fov = -1;
     else
-    {
-        if (bot.flags & FL_CLIENT)
-            makevectors(bot.v_angle);
-        else
-            makevectors(bot.angles);
-        forward = v_forward;
-        min_dot = cos((fov_deg * 0.5) * 0.0174532925);
-    }
+        half_fov = fov_deg * 0.5;
+
+    bot_yaw = (bot.flags & FL_CLIENT) ? bot.v_angle_y : bot.angles_y;
 
     head = findradius(bot.origin, radius);
     while (head)
     {
         if (head.classname == "player" && head != bot && head.health > 0)
         {
-            if (min_dot > -1)
+            if (half_fov >= 0)
             {
                 to = head.origin - bot.origin;
                 to_z = 0;
                 if (vlen(to) > 0.01)
                 {
-                    to = normalize(to);
-                    if ((forward * to) < min_dot)
+                    yaw = vectoyaw(to);
+                    dyaw = yaw - bot_yaw;
+                    if (dyaw > 180) dyaw = dyaw - 360;
+                    if (dyaw < -180) dyaw = dyaw + 360;
+                    if (fabs(dyaw) > half_fov)
                     {
                         head = head.chain;
                         continue;

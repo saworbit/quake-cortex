@@ -99,6 +99,7 @@ void() Cortex_BotInitCvars =
     cvar_set("cortex_bot_fov_deg", "200");
     cvar_set("cortex_bot_enemy_memory", "2.5");
     cvar_set("cortex_bot_retaliate_time", "1.5");
+    cvar_set("cortex_bot_weapon_switch_cooldown", "0.35");
     cvar_set("cortex_bot_mcts_rollouts", "8");
     cvar_set("cortex_bot_react_min", "0.05");
     cvar_set("cortex_bot_react_max", "0.15");
@@ -202,6 +203,7 @@ float cortex_bot_recent_deaths;
 float cortex_bot_last_decay;
 float cortex_bot_next_attack;
 float cortex_bot_next_rocketjump;
+float cortex_bot_next_weapon_switch;
 vector cortex_bot_wander_goal;
 float cortex_bot_wander_until;
 vector cortex_bot_last_origin;
@@ -694,6 +696,100 @@ void(vector target, float speed) Cortex_Bot_MoveTo =
     Cortex_Bot_MoveDir(target - self.origin, speed);
 };
 
+float(float weapon) Cortex_Bot_WeaponHasAmmo =
+{
+    if (weapon == IT_AXE) return 1;
+    if (weapon == IT_SHOTGUN) return (self.ammo_shells >= 1);
+    if (weapon == IT_SUPER_SHOTGUN) return (self.ammo_shells >= 2);
+    if (weapon == IT_NAILGUN) return (self.ammo_nails >= 1);
+    if (weapon == IT_SUPER_NAILGUN) return (self.ammo_nails >= 2);
+    if (weapon == IT_GRENADE_LAUNCHER) return (self.ammo_rockets >= 1);
+    if (weapon == IT_ROCKET_LAUNCHER) return (self.ammo_rockets >= 1);
+    if (weapon == IT_LIGHTNING) return (self.ammo_cells >= 1);
+    return 0;
+};
+
+float(float weapon) Cortex_Bot_CanUseWeapon =
+{
+    if (!(self.items & weapon)) return 0;
+    return Cortex_Bot_WeaponHasAmmo(weapon);
+};
+
+float(entity enemy) Cortex_Bot_SelectWeapon =
+{
+    local float dist;
+
+    if (!enemy) return 0;
+    dist = vlen(enemy.origin - self.origin);
+
+    if (dist < 180)
+    {
+        if (Cortex_Bot_CanUseWeapon(IT_LIGHTNING)) return IT_LIGHTNING;
+        if (Cortex_Bot_CanUseWeapon(IT_SUPER_SHOTGUN)) return IT_SUPER_SHOTGUN;
+        if (Cortex_Bot_CanUseWeapon(IT_SHOTGUN)) return IT_SHOTGUN;
+        if (Cortex_Bot_CanUseWeapon(IT_SUPER_NAILGUN)) return IT_SUPER_NAILGUN;
+        if (Cortex_Bot_CanUseWeapon(IT_NAILGUN)) return IT_NAILGUN;
+        if (Cortex_Bot_CanUseWeapon(IT_ROCKET_LAUNCHER)) return IT_ROCKET_LAUNCHER;
+        if (Cortex_Bot_CanUseWeapon(IT_GRENADE_LAUNCHER)) return IT_GRENADE_LAUNCHER;
+        return IT_AXE;
+    }
+
+    if (dist < 600)
+    {
+        if (Cortex_Bot_CanUseWeapon(IT_ROCKET_LAUNCHER)) return IT_ROCKET_LAUNCHER;
+        if (Cortex_Bot_CanUseWeapon(IT_GRENADE_LAUNCHER)) return IT_GRENADE_LAUNCHER;
+        if (Cortex_Bot_CanUseWeapon(IT_SUPER_NAILGUN)) return IT_SUPER_NAILGUN;
+        if (Cortex_Bot_CanUseWeapon(IT_NAILGUN)) return IT_NAILGUN;
+        if (Cortex_Bot_CanUseWeapon(IT_SUPER_SHOTGUN)) return IT_SUPER_SHOTGUN;
+        if (Cortex_Bot_CanUseWeapon(IT_SHOTGUN)) return IT_SHOTGUN;
+        if (Cortex_Bot_CanUseWeapon(IT_LIGHTNING)) return IT_LIGHTNING;
+        return IT_AXE;
+    }
+
+    if (Cortex_Bot_CanUseWeapon(IT_ROCKET_LAUNCHER)) return IT_ROCKET_LAUNCHER;
+    if (Cortex_Bot_CanUseWeapon(IT_SUPER_NAILGUN)) return IT_SUPER_NAILGUN;
+    if (Cortex_Bot_CanUseWeapon(IT_NAILGUN)) return IT_NAILGUN;
+    if (Cortex_Bot_CanUseWeapon(IT_GRENADE_LAUNCHER)) return IT_GRENADE_LAUNCHER;
+    if (Cortex_Bot_CanUseWeapon(IT_SHOTGUN)) return IT_SHOTGUN;
+    return IT_AXE;
+};
+
+float(float weapon) Cortex_Bot_WeaponImpulse =
+{
+    if (weapon == IT_AXE) return 1;
+    if (weapon == IT_SHOTGUN) return 2;
+    if (weapon == IT_SUPER_SHOTGUN) return 3;
+    if (weapon == IT_NAILGUN) return 4;
+    if (weapon == IT_SUPER_NAILGUN) return 5;
+    if (weapon == IT_GRENADE_LAUNCHER) return 6;
+    if (weapon == IT_ROCKET_LAUNCHER) return 7;
+    if (weapon == IT_LIGHTNING) return 8;
+    return 0;
+};
+
+void(entity enemy) Cortex_Bot_MaybeSwitchWeapon =
+{
+    local float desired;
+    local float impulse;
+    local float cooldown;
+
+    if (!enemy) return;
+    if (!(self.flags & FL_CLIENT)) return;
+    if (time < cortex_bot_next_weapon_switch) return;
+
+    desired = Cortex_Bot_SelectWeapon(enemy);
+    if (!desired) desired = W_BestWeapon();
+    if (desired == self.weapon) return;
+
+    impulse = Cortex_Bot_WeaponImpulse(desired);
+    if (!impulse) return;
+
+    cooldown = cvar("cortex_bot_weapon_switch_cooldown");
+    if (cooldown < 0) cooldown = 0;
+    cortex_bot_next_weapon_switch = time + cooldown;
+    self.impulse = impulse;
+};
+
 void(float speed) Cortex_Bot_FallbackRoam =
 {
     local vector dir;
@@ -1022,6 +1118,9 @@ void() Cortex_Bot_RunAI =
     cortex_bot_visible_enemies = cortex_percept_visible_enemies;
     cortex_bot_tactic_mode = cortex_percept_tactic_mode;
 
+    if (bot_enemy && bot_enemy != world)
+        Cortex_Bot_MaybeSwitchWeapon(bot_enemy);
+
     CortexMem_LoadKey(CortexMem_KeyFor(mapname, bot_enemy));
     mem_state = CortexMem_State(self, bot_enemy, cortex_bot_visible_enemies);
 
@@ -1297,6 +1396,7 @@ void() Cortex_BotSpawn =
     cortex_bot_selected_action = CX_MCTS_ACT_WALK;
     cortex_bot_feint_until = 0;
     cortex_bot_next_taunt = time + 5;
+    cortex_bot_next_weapon_switch = 0;
     cortex_bot_fatigue = 0;
     cortex_bot_visible_enemies = 0;
     cortex_bot_tactic_mode = 2;
