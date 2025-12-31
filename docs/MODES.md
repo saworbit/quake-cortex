@@ -66,4 +66,3 @@ Docs:
 Code:
 - Python RCON loop: `python/streams/rcon/brain_rcon.py` (repo-root `cortex_rcon.py` is the entrypoint)
 - QuakeC bot entity: `quakec/cortex/bot/cortex_bot.qc`
-

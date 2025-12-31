@@ -21,6 +21,12 @@ env/
 quakec/lib/QuakeC-releases/.git/
 quakec/lib/QuakeC-releases/.vscode/
 quakec/fteqcc64.exe
+quakec/lib/Quake-master/
+quakec/lib/fteqw-master/
+Game/cortex/src/Quake-master/
+Game/cortex/src/fteqw-master/
+hybrids/*/Game/cortex/src/Quake-master/
+hybrids/*/Game/cortex/src/fteqw-master/
 
 # Compiled output
 Game/cortex/progs.dat

@@ -2,7 +2,7 @@ GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 
 Copyright (C) 2025 Project Cortex Contributors
-Copyright (C) 1996-1997 Id Software, Inc. (Quake Source Code)
+Copyright (C) 1996-1997 Id Software, Inc. (QuakeC Source Code)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,20 +24,20 @@ NOTE ON LICENSING:
 
 This project contains components under different licenses:
 
-1. Quake Source Code (Game/cortex/src/Quake-master/, quakec/lib/Quake-master/):
+1. QuakeC Source Code (quakec/lib/QuakeC-releases/progs/):
    - Licensed under GNU GPL v2 by id Software
    - Copyright (C) 1996-1997 Id Software, Inc.
 
-2. FTEQW Engine & Extensions (Game/cortex/src/fteqw-master/, quakec/lib/fteqw-master/):
+2. FTEQW QuakeC Extensions (quakec/lib/dpextensions.qc):
    - Licensed under GNU GPL v2
-   - See individual files for copyright notices
+   - See the file header for copyright notices
 
 3. Project Cortex Original Code (quakec/cortex/, python/):
    - Licensed under GNU GPL v2
    - Copyright (C) 2025 Project Cortex Contributors
 
 The entire combined work is distributed under GNU GPL v2 to comply with
-the licensing requirements of the Quake source code.
+the licensing requirements of the QuakeC source code.
 
 ---
 
