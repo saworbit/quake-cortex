@@ -809,7 +809,6 @@ float(float weapon) Cortex_Bot_WeaponImpulse =
 void(entity enemy) Cortex_Bot_MaybeSwitchWeapon =
 {
     local float desired;
-    local float impulse;
     local float cooldown;
 
     if (!enemy) return;
@@ -820,13 +819,11 @@ void(entity enemy) Cortex_Bot_MaybeSwitchWeapon =
     if (!desired) desired = W_BestWeapon();
     if (desired == self.weapon) return;
 
-    impulse = Cortex_Bot_WeaponImpulse(desired);
-    if (!impulse) return;
-
     cooldown = cvar("cortex_bot_weapon_switch_cooldown");
     if (cooldown < 0) cooldown = 0;
     cortex_bot_next_weapon_switch = time + cooldown;
-    self.impulse = impulse;
+    self.weapon = desired;
+    W_SetCurrentAmmo();
 };
 
 void(float speed) Cortex_Bot_FallbackRoam =
