@@ -51,8 +51,12 @@ if not exist %GAMEEXE% (
 set USER_CFG_FLAGS=
 if exist "cortex_pure\\autoexec.cfg" (
     set USER_CFG_FLAGS=+exec autoexec.cfg
+    echo NOTE: Using cortex_pure\\autoexec.cfg
+) else if exist "id1\\autoexec.cfg" (
+    set USER_CFG_FLAGS=+exec id1/autoexec.cfg
+    echo NOTE: Using id1\\autoexec.cfg
 ) else (
-    echo NOTE: No cortex_pure\\autoexec.cfg found; using engine/global config.
+    echo NOTE: No autoexec.cfg found in cortex_pure or id1.
     echo NOTE: Copy your autoexec.cfg into Game\\cortex_pure if movement keys are missing.
 )
 
