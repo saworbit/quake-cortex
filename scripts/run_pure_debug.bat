@@ -63,6 +63,14 @@ if not exist %GAMEEXE% (
     exit /b 1
 )
 
+set USER_CFG_FLAGS=
+if exist "cortex_pure\\autoexec.cfg" (
+    set USER_CFG_FLAGS=+exec autoexec.cfg
+) else (
+    echo NOTE: No cortex_pure\\autoexec.cfg found; using engine/global config.
+    echo NOTE: Copy your autoexec.cfg into Game\\cortex_pure if movement keys are missing.
+)
+
 echo.
 echo =======================================
 echo DEBUG MODE ACTIVE - Logs at: Game/cortex_pure/qconsole.log
@@ -75,7 +83,7 @@ echo.
   %PURE_FLAGS% ^
   %DEBUG_FLAGS% ^
   %EXTRA_ARGS% ^
-  +exec autoexec.cfg
+  %USER_CFG_FLAGS%
 set EXITCODE=%ERRORLEVEL%
 
 echo.

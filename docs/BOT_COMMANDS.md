@@ -69,7 +69,9 @@ bind m "impulse 202"     // M = List bots
 bind j "impulse 203"     // J = Status
 ```
 
-Add these to your `autoexec.cfg` to make them permanent.
+Add these to your `autoexec.cfg` to make them permanent. If your engine does
+not share `id1` configs with mods, copy your `autoexec.cfg` into
+`Game/cortex_pure` so the pure launcher can `exec` it.
 
 ## Debugging Bot Behavior
 

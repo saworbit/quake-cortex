@@ -30,14 +30,12 @@ development, the root causes, workarounds, and current status.
 
 #### Workaround (Pure Mode Movement)
 
-- Ensure `Game/cortex_pure/autoexec.cfg` contains WASD binds and speed cvars
-  (this repo ships one).
-- Force execution on launch:
-  - `+exec autoexec.cfg` (already set in `scripts/run_pure_qc.bat` and
-    `scripts/run_pure_debug.bat`).
-- If binds still don't stick, create or copy a config for the mod:
-  - Copy `Game/id1/config.cfg` to `Game/cortex_pure/config.cfg`, or
-  - In-game: set binds, then `writeconfig` while `-game cortex_pure` is active.
+- Copy your personal `autoexec.cfg` into `Game/cortex_pure` so the mod can
+  load your binds. The launch scripts will `exec autoexec.cfg` if it exists.
+- If you rely on `config.cfg` instead of `autoexec.cfg`, use `writeconfig`
+  while `-game cortex_pure` is active so the mod directory gets its own copy.
+- If binds still don't stick, check for portable/nohome configs that bypass
+  user-dir settings and only read mod-local configs.
 - Manual console fix (temporary):
   - `exec autoexec.cfg`
   - `bind w +forward`

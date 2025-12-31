@@ -48,13 +48,21 @@ if not exist %GAMEEXE% (
     exit /b 1
 )
 
+set USER_CFG_FLAGS=
+if exist "cortex_pure\\autoexec.cfg" (
+    set USER_CFG_FLAGS=+exec autoexec.cfg
+) else (
+    echo NOTE: No cortex_pure\\autoexec.cfg found; using engine/global config.
+    echo NOTE: Copy your autoexec.cfg into Game\\cortex_pure if movement keys are missing.
+)
+
 %GAMEEXE% -condebug -game cortex_pure ^
   +set developer 1 ^
   +set sv_public 0 ^
   +set cl_master "" ^
   %PURE_FLAGS% ^
   %EXTRA_ARGS% ^
-  +exec autoexec.cfg
+  %USER_CFG_FLAGS%
 set EXITCODE=%ERRORLEVEL%
 if errorlevel 1 (
     echo ERROR: Quake exited with code %EXITCODE%
