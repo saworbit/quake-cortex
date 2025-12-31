@@ -95,7 +95,7 @@ void() Cortex_BotInitCvars =
     cvar_set("cortex_bot_allow_rocketjump", "0");
     cvar_set("cortex_bot_start_with_rl", "0");   // 1 to spawn with RL+rockets (testing)
     cvar_set("cortex_bot_persist", "1");
-    cvar_set("cortex_bot_respawn_delay", "0.5");
+    cvar_set("cortex_bot_respawn_delay", "1.0");
     cvar_set("cortex_bot_mcts_rollouts", "8");
     cvar_set("cortex_bot_react_min", "0.05");
     cvar_set("cortex_bot_react_max", "0.15");
@@ -212,6 +212,9 @@ float cortex_bot_visible_enemies;
 float cortex_bot_tactic_mode; // 1=1v1, 2=balanced, 3=multi
 float cortex_bot_last_think_time;
 float cortex_bot_respawn_at;
+float cortex_bot_idle_since;
+float cortex_bot_idle_until;
+vector cortex_bot_idle_dir;
 
 float cortex_mem_last_state;
 float cortex_mem_last_mcts_action;
@@ -735,6 +738,28 @@ void(vector target, float speed) Cortex_Bot_MoveTo =
     Cortex_Bot_MoveDir(target - self.origin, speed);
 };
 
+void(float speed) Cortex_Bot_FallbackRoam =
+{
+    local vector dir;
+
+    if (time > cortex_bot_idle_until)
+    {
+        dir_x = crandom();
+        dir_y = crandom();
+        dir_z = 0;
+        if (vlen(dir) < 0.1)
+            dir = '1 0 0';
+        cortex_bot_idle_dir = normalize(dir);
+        cortex_bot_idle_until = time + 1.5 + random() * 1.5;
+    }
+
+    Cortex_Bot_MoveDir(cortex_bot_idle_dir, speed);
+    cortex_bot_last_action = CX_ACT_WALK;
+
+    if (cvar("cortex_debug"))
+        CortexLog(LOG_info, "MOVE", "Fallback roam applied");
+};
+
 vector(vector dir) Cortex_Bot_Perp2D =
 {
     local vector perp;
@@ -1010,6 +1035,7 @@ void() Cortex_Bot_RunAI =
     local float deny_r;
     local float bot_skill;
     local float style;
+    local float move_mag;
 
     interval = cvar("cortex_bot_think_interval");
     if (interval <= 0)
@@ -1267,6 +1293,22 @@ void() Cortex_Bot_RunAI =
         cortex_bot_last_action = CX_ACT_WALK;
     }
 
+    if (!bot_enemy && !pickup)
+    {
+        if (self.flags & FL_CLIENT)
+            move_mag = vlen(self.movement);
+        else
+            move_mag = vlen(self.velocity);
+
+        if (move_mag > 5)
+            cortex_bot_idle_since = time;
+        else if (time > cortex_bot_idle_since + 0.5)
+        {
+            Cortex_Bot_FallbackRoam(speed * 0.8);
+            cortex_bot_idle_since = time;
+        }
+    }
+
     Cortex_Bot_ForceJumpIfStuck();
 
     // Team coordination: small separation steering (only meaningful in teamplay modes).
@@ -1303,6 +1345,9 @@ void() Cortex_BotSpawn =
     cortex_bot_visible_enemies = 0;
     cortex_bot_tactic_mode = 2;
     cortex_bot_respawn_at = 0;
+    cortex_bot_idle_since = time;
+    cortex_bot_idle_until = 0;
+    cortex_bot_idle_dir = '1 0 0';
 
     cortex_mem_last_state = 0;
     cortex_mem_last_mcts_action = CX_MCTS_ACT_WALK;
@@ -1530,6 +1575,8 @@ void() Cortex_Bot_MaybeAutoRespawn =
     if (self != cortex_bot)
         return;
     if (!cvar("cortex_bot_enable"))
+        return;
+    if (self.deadflag < DEAD_DEAD)
         return;
     if (cortex_bot_respawn_at <= 0)
         return;
