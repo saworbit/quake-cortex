@@ -351,7 +351,8 @@ void() worldspawn =
     // 63 testing
     lightstyle(63, "a");
 
-    // CORTEX: Initialization happens in StartFrame so config files have run first.
+    // CORTEX: Show welcome message and initialize (actual bot spawning happens in StartFrame)
+    Cortex_ShowWelcome();
 };
 
 /*

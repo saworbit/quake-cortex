@@ -18,6 +18,8 @@ void() Cortex_BotSpawn;
 
 // Console commands (defined later in cortex/common/)
 void() Cortex_HandleImpulse;
+void() Cortex_ShowWelcome;
+void() Cortex_DumpState;
 
 // World management called by base Quake (defined later in cortex/common/cortex_world.qc)
 void(entity ent) CopyToBodyQueue;
