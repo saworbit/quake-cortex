@@ -39,10 +39,13 @@ if errorlevel 1 (
     exit /b 1
 )
 
-set GAMEEXE=fteqw64.exe
-if not exist %GAMEEXE% (
-    echo ERROR: %GAMEEXE% not found in Game directory.
+set GAMEEXE=
+if exist fteqw64.exe set GAMEEXE=fteqw64.exe
+if exist darkplaces.exe set GAMEEXE=darkplaces.exe
+if "%GAMEEXE%"=="" (
+    echo ERROR: No supported engine (fteqw64.exe or darkplaces.exe) found in Game directory.
     popd >nul 2>&1
+    pause
     exit /b 1
 )
 
