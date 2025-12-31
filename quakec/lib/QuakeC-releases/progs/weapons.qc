@@ -1378,6 +1378,11 @@ void() ImpulseCommands =
     {
         Cortex_DumpState();
     }
+    else if (self.impulse >= 200 && self.impulse <= 205)
+    {
+        Cortex_HandleImpulse();
+        return;  // Cortex_HandleImpulse clears impulse
+    }
     else if (self.impulse == 255)
     {
         QuadCheat();

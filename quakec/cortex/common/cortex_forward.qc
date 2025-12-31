@@ -14,6 +14,10 @@ entity cortex_bot;  // Primary Cortex bot entity reference
 void(entity bot, entity targ, entity attacker, float damage) Cortex_Opp_OnDamage;
 void() Cortex_BotOnRespawn;
 void(entity targ, entity attacker) Cortex_BotOnObituary;
+void() Cortex_BotSpawn;
+
+// Console commands (defined later in cortex/common/)
+void() Cortex_HandleImpulse;
 
 // World management called by base Quake (defined later in cortex/common/cortex_world.qc)
 void(entity ent) CopyToBodyQueue;

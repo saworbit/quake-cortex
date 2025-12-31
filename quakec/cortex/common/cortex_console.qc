@@ -149,7 +149,7 @@ void() Cortex_HandleImpulse =
     if (self.impulse == 200)
     {
         bprint("Spawning Cortex bot...\n");
-        // This will be called from the bot spawn code
+        Cortex_BotSpawn();
         self.impulse = 0;
         return;
     }
