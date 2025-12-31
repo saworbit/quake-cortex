@@ -1,0 +1,67 @@
+../../Game/cortex/progs.dat
+
+// Base single-player Quake definitions MUST come first
+../../quakec/lib/QuakeC-releases/progs/defs.qc
+
+// DarkPlaces extension definitions (also used by other engines via checkextension)
+../../quakec/lib/dpextensions.qc
+
+// Cortex common headers + engine feature probes
+// (Must come AFTER extension headers to override their strict mode)
+../../quakec/cortex/common/cortex_config.qc
+
+// Cortex structured logging (console black box)
+../../quakec/cortex/common/cortex_logging.qc
+
+// Cortex Hybrid IPC (FTEQW file + optional stream)
+cortex/hybrid/cortex_tcp.qc
+
+// Cortex Common Sensors + Hybrid Driver
+../../quakec/cortex/common/cortex_sensor.qc
+cortex/hybrid/cortex_bridge.qc
+
+// Cortex Pure-QuakeC Bot (AI stack)
+../../quakec/cortex/bot/cortex_pathfinding.qc
+../../quakec/cortex/bot/cortex_perception.qc
+../../quakec/cortex/bot/cortex_tactics.qc
+../../quakec/cortex/bot/cortex_combat.qc
+../../quakec/cortex/bot/cortex_resource.qc
+../../quakec/cortex/bot/cortex_team.qc
+../../quakec/cortex/bot/cortex_opponent_model.qc
+../../quakec/cortex/bot/cortex_memory.qc
+../../quakec/cortex/bot/cortex_mcts.qc
+../../quakec/cortex/bot/cortex_bot.qc
+
+// Base single-player Quake source files
+../../quakec/lib/QuakeC-releases/progs/subs.qc
+../../quakec/lib/QuakeC-releases/progs/fight.qc
+../../quakec/lib/QuakeC-releases/progs/ai.qc
+../../quakec/lib/QuakeC-releases/progs/combat.qc
+../../quakec/lib/QuakeC-releases/progs/items.qc
+../../quakec/lib/QuakeC-releases/progs/weapons.qc
+../../quakec/cortex/common/cortex_world.qc
+../../quakec/lib/QuakeC-releases/progs/client.qc
+../../quakec/lib/QuakeC-releases/progs/player.qc
+../../quakec/lib/QuakeC-releases/progs/monsters.qc
+../../quakec/lib/QuakeC-releases/progs/doors.qc
+../../quakec/lib/QuakeC-releases/progs/buttons.qc
+../../quakec/lib/QuakeC-releases/progs/triggers.qc
+../../quakec/lib/QuakeC-releases/progs/plats.qc
+../../quakec/lib/QuakeC-releases/progs/misc.qc
+
+// Monster AI (single-player only)
+../../quakec/lib/QuakeC-releases/progs/ogre.qc
+../../quakec/lib/QuakeC-releases/progs/demon.qc
+../../quakec/lib/QuakeC-releases/progs/shambler.qc
+../../quakec/lib/QuakeC-releases/progs/knight.qc
+../../quakec/lib/QuakeC-releases/progs/soldier.qc
+../../quakec/lib/QuakeC-releases/progs/wizard.qc
+../../quakec/lib/QuakeC-releases/progs/dog.qc
+../../quakec/lib/QuakeC-releases/progs/zombie.qc
+../../quakec/lib/QuakeC-releases/progs/boss.qc
+../../quakec/lib/QuakeC-releases/progs/tarbaby.qc
+../../quakec/lib/QuakeC-releases/progs/hknight.qc
+../../quakec/lib/QuakeC-releases/progs/fish.qc
+../../quakec/lib/QuakeC-releases/progs/shalrath.qc
+../../quakec/lib/QuakeC-releases/progs/enforcer.qc
+../../quakec/lib/QuakeC-releases/progs/oldone.qc

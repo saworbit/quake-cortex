@@ -1,48 +1,35 @@
 @echo off
 setlocal
 echo ========================================
-echo PROJECT CORTEX - Build Script
+echo PROJECT CORTEX - Build Pure QuakeC Bot
 echo ========================================
 echo.
-
-pushd "%~dp0\..\\quakec" >nul 2>&1
+pushd "%~dp0\.." >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: Unable to cd to repository quakec directory.
+    echo ERROR: Unable to cd to repo root.
     exit /b 1
 )
 
-echo [1/2] Checking for FTEQW compiler...
-if not exist fteqcc64.exe (
-    echo ERROR: fteqcc64.exe not found in quakec directory
-    echo.
+set FTEQC=quakec\fteqcc64.exe
+if exist "%FTEQC%" goto :FTEQCC_FOUND
+echo ERROR: fteqcc64.exe not found.
+echo Place it under quakec\fteqcc64.exe
+popd >nul 2>&1
+exit /b 1
+:FTEQCC_FOUND
+
+set OUTDIR=Game\cortex
+if exist "%OUTDIR%" goto :OUTDIR_READY
+mkdir "%OUTDIR%"
+:OUTDIR_READY
+
+call "%FTEQC%" quakec\progs.src
+if errorlevel 1 (
+    echo Build failed.
     popd >nul 2>&1
     exit /b 1
 )
 
-echo [2/2] Compiling QuakeC code...
-fteqcc64.exe
-set BUILD_ERRORLEVEL=%ERRORLEVEL%
+echo Build succeeded: %OUTDIR%\progs.dat
 popd >nul 2>&1
-
-if %BUILD_ERRORLEVEL% EQU 0 (
-    echo.
-    echo ========================================
-    echo BUILD SUCCESSFUL!
-    echo ========================================
-    echo.
-    echo Output: Game\cortex\progs.dat
-    echo.
-    echo To run:
-    echo 1. Start Python: scripts\run_brain.bat
-    echo 2. Launch Quake: scripts\run_quake.bat
-    echo.
-    exit /b 0
-) else (
-    echo.
-    echo ========================================
-    echo BUILD FAILED!
-    echo ========================================
-    echo.
-    echo Check the error messages above.
-    exit /b %BUILD_ERRORLEVEL%
-)
+exit /b 0

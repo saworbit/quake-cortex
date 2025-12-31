@@ -1,6 +1,6 @@
 # PROJECT CORTEX
 
-**AI Agent for Quake 1 using Reinforcement Learning**
+**Pure QuakeC Bot for Quake 1**
 
 *"Do not cheat. Perceive, Predict, Perform."*
 
@@ -8,188 +8,153 @@
 [![Documentation Check](https://github.com/saworbit/quake-cortex/actions/workflows/docs-check.yml/badge.svg?branch=main)](https://github.com/saworbit/quake-cortex/actions/workflows/docs-check.yml)
 [![Python Code Quality](https://github.com/saworbit/quake-cortex/actions/workflows/python-lint.yml/badge.svg?branch=main)](https://github.com/saworbit/quake-cortex/actions/workflows/python-lint.yml)
 
-## Quick Start (Pick a Mode)
+## Quick Start
 
 ```bash
-# 1) Build the QuakeC mod (all modes)
+# Build the pure QuakeC bot
 scripts\build.bat
+
+# Run the bot (requires FTEQW engine)
+scripts\run.bat
 ```
 
-### Pure QuakeC Bot (no Python)
+**Main Focus**: Pure QuakeC bot with zero external dependencies. All AI logic runs inside QuakeC.
 
-```bash
-scripts\run_pure_qc.bat  # builds the pure mod and launches it (requires FTEQW)
-```
+**Experimental**: Hybrid implementations (Python + QuakeC) are available in the `hybrids/` directory.
 
-### Hybrid FTEQW + Python (File IPC)
-
-```bash
-scripts\run_brain.bat
-scripts\run_quake.bat
-```
-
-### Hybrid FTEQW + Python (Stream + RL)
-
-```bash
-pip install -r python/requirements.txt
-scripts\run_quake_tcp.bat
-python train_cortex.py
-```
-
-### Hybrid DarkPlaces + Python (RCON)
-
-```bash
-scripts\run_darkplaces.bat
-scripts\run_brain_rcon.bat
-```
-
-Details: `docs/MODES.md`
-
-**Expected Result (File IPC)**: Quake console shows `CORTEX: Telemetry file opened!` and Python creates `.cortex\logs\cortex_brain_<timestamp>.log`.
-
-Telemetry format: newline-delimited JSON (NDJSON). The tools also accept the older `POS: 'x y z'` format.
-
-Engines: tested with **FTEQW** (`Game\fteqw64.exe`) and **DarkPlaces** (`Game\darkplaces.exe`). Stream mode is primarily FTEQW-focused; RCON mode is primarily DarkPlaces-focused.
-
-Entrypoints: `cortex_brain.py` / `cortex_visualizer.py` (File IPC), `train_cortex.py` (stream + RL), `cortex_rcon.py` (DarkPlaces RCON), `scripts\run_pure_qc.bat` (pure QuakeC bot).
+Details: `docs/BOTS_GUIDE.md`
 
 ## Project Structure
 
 ```text
-ProjectCortex/
-  cortex_brain.py              # File IPC brain entrypoint (wrapper)
-  cortex_visualizer.py         # File IPC visualizer entrypoint (wrapper)
-  cortex_env.py                # RL env entrypoint (wrapper)
-  cortex_rcon.py               # DarkPlaces RCON entrypoint (wrapper)
-  train_cortex.py              # RL training entrypoint (stream mode)
-  docs/                        # Mode docs + deep dives
-  python/                      # Python implementations (per mode)
-    streams/
-      file/                    # file-IPC brain + visualizer
-      tcp/                     # ws/tcp stream + Gym env
-      rcon/                    # DarkPlaces RCON loop
-  quakec/                      # QuakeC sources
+ProjectCortex/                 # Main - Pure QuakeC Bot
+  quakec/                      # QuakeC source code
     cortex/
-      common/                  # sensors + world integration
-      hybrid/                  # file/stream IPC driver
-      bot/                     # pure-QuakeC bot AI stack
-    progs.src
-  Game/                        # runtime (you provide engine + PAKs)
-  scripts/                     # build/run helpers per mode
+      common/                  # Sensors + world integration
+      bot/                     # Pure QuakeC bot AI (10 modules)
+    lib/                       # Base Quake source
+    progs.src                  # Main build manifest
+  scripts/                     # Build and run scripts
+    build.bat                  # Build pure bot
+    run.bat                    # Run pure bot
+  Game/cortex/                 # Compiled mod output
+  docs/                        # Documentation
+
+  hybrids/                     # Experimental hybrid implementations
+    quakec/                    # Shared hybrid QuakeC code
+      cortex/hybrid/           # Bridge + TCP IPC code
+      progs.src                # Hybrid build manifest
+    fteqw/                     # FTEQW hybrid (Python brain)
+      python/streams/          # File + TCP implementations
+      scripts/                 # FTEQW build/run scripts
+      Game/cortex/             # FTEQW output
+    darkplaces/                # DarkPlaces hybrid (RCON)
+      python/streams/rcon/     # RCON implementation
+      scripts/                 # DarkPlaces scripts
+      Game/cortex/             # DarkPlaces output
+    shared/                    # Shared Python utilities
 ```
 
-## Current Status: Phase 2 - Telemetry + Control Loop
+## Current Status
 
-**What Works:**
+**Pure QuakeC Bot:**
 - ✅ QuakeC code compiles successfully
-- ✅ Switched from QuakeWorld to single-player Quake source
-- ✅ NDJSON telemetry emitted (health/armor/ammo/pos/vel/lidar/enemies)
-- ✅ File IPC mode (default) + optional TCP stream mode (`pr_enable_uriget 1`)
-- ✅ Minimal Brain → Body control loop over TCP (`cortex_enable_controls 1`)
-- ✅ Gymnasium env wrapper + SB3 training entrypoint (`train_cortex.py`)
-- ✅ Automated test harness created
+- ✅ Based on single-player Quake source
+- ✅ 10-module bot AI stack (pathfinding, perception, tactics, combat, etc.)
+- ✅ Sensor suite (raycasts, proprioception, enemy detection)
+- ✅ World integration hooks
+- ✅ Runs on FTEQW engine
 
-**Current Blockers:**
-- ⚠️ Episode/reset semantics for RL training (Quake is not yet headless/episodic)
-- ⚠️ Protocol version + sequence IDs (robust sync)
-- ⚠️ Smoothing/rate limiting for more human-like movement
+**Experimental Hybrids** (see `hybrids/` directory):
+- ✅ FTEQW hybrid with File/TCP IPC
+- ✅ DarkPlaces hybrid with RCON control
+- ✅ Python brain implementations
+- ⚠️ Not the main focus
 
-**See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for detailed troubleshooting**
-
-**Next Steps:**
-- See the roadmap in [NEXT_STEPS.md](NEXT_STEPS.md)
-- Run `python test_cortex_connection.py` to validate the pipeline
-- If telemetry is missing, confirm the file exists at `Game/cortex/data/cortex_telemetry.txt`
-- Try TCP stream mode: `scripts\\run_quake_tcp.bat` + `python train_cortex.py`
+**See [docs/STATUS.md](docs/STATUS.md) for detailed roadmap**
 
 ## Development Workflow
 
 ### Building the Mod
 
 ```bash
-cd ProjectCortex
 scripts\build.bat
 ```
 
-This compiles `quakec/**/*.qc` → `Game/cortex/progs.dat`
+This compiles `quakec/progs.src` → `Game/cortex/progs.dat`
 
-### Running the System
+### Running the Bot
 
-**Option 1: Simple Logger**
 ```bash
-scripts\run_brain.bat      # Terminal 1
-scripts\run_quake.bat      # Terminal 2
+scripts\run.bat
 ```
 
-**Option 2: Visual Debugger**
-```bash
-scripts\run_visualizer.bat # Terminal 1 (requires `pip install -r python/requirements-visualizer.txt`; fallback: `python cortex_visualizer.py --text`)
-scripts\run_quake.bat      # Terminal 2
-```
+This builds the mod and launches FTEQW with the bot enabled.
 
 ### Editing Code
 
-**QuakeC (Game Logic)**:
-- Edit files in [quakec/cortex/](quakec/cortex/) (see `common/`, `hybrid/`, `bot/`)
+**QuakeC (Bot Logic)**:
+- Edit files in [quakec/cortex/](quakec/cortex/)
+  - `common/` - Sensors, logging, world hooks
+  - `bot/` - 10-module bot AI stack
 - Run [scripts/build.bat](scripts/build.bat) to recompile
 - Restart Quake to load new progs.dat
 
-**Python (AI Brain)**:
-- Edit files in [python/](python/)
-- Restart the Python script
-- No Quake restart needed
+**For Hybrid Modes** (experimental):
+- See [hybrids/README.md](hybrids/README.md)
 
 ## Architecture
 
+**Pure QuakeC Bot:**
+
 ```
-┌──────────────────┐         ┌──────────────────┐
-│   QUAKE CLIENT   │  FILE   │   PYTHON BRAIN   │
-│   (The Body)     │ ◄────►  │   (The Mind)     │
-│                  │  JSON   │                  │
-│  • Raycasts      │         │  • Neural Nets   │
-│  • Velocity      │         │  • Decision AI   │
-│  • Health/Ammo   │         │  • LLM Chat      │
-└──────────────────┘         └──────────────────┘
-     60 Hz updates              <1ms latency
+┌──────────────────────────────────┐
+│      QUAKE + CORTEX BOT          │
+│                                  │
+│  • Sensors (raycasts, etc.)      │
+│  • Pathfinding                   │
+│  • Perception                    │
+│  • Tactics & Combat              │
+│  • Team Coordination             │
+│  • Memory & Opponent Modeling    │
+│  • Monte Carlo Tree Search       │
+│                                  │
+│  All running in QuakeC           │
+└──────────────────────────────────┘
+     100% self-contained
 ```
 
-**Design Philosophy**: Cortex supports both:
-- a **pure QuakeC bot** (decisions inside QuakeC, zero external dependencies), and
-- **hybrid modes** where QuakeC acts as the ?body? (sensors + actuation) and Python is the ?brain? (decision-making, logging, RL training).
+**Design Philosophy**:
+- **Main focus**: Pure QuakeC bot with all AI logic inside QuakeC
+- **No external dependencies**: Zero Python, zero IPC, zero networking
+- **Experimental hybrids**: Available in `hybrids/` for those who want Python integration
 
 ## Key Files
 
 | File | Purpose | Lines |
 | --- | --- | --- |
-| [cortex_brain.py](cortex_brain.py) | File IPC brain entrypoint | ~20 |
-| [python/streams/file/brain.py](python/streams/file/brain.py) | File IPC implementation | ~200 |
-| [cortex_visualizer.py](cortex_visualizer.py) | File IPC visualizer entrypoint | ~20 |
-| [python/streams/file/visualizer.py](python/streams/file/visualizer.py) | File IPC visualizer implementation | ~200 |
-| [python/streams/tcp/env.py](python/streams/tcp/env.py) | RL env (stream mode) | ~250 |
-| [python/streams/tcp/brain_tcp.py](python/streams/tcp/brain_tcp.py) | Stream logger (debug) | ~350 |
-| [python/streams/rcon/brain_rcon.py](python/streams/rcon/brain_rcon.py) | DarkPlaces RCON loop | ~200 |
-| [quakec/cortex/common/cortex_sensor.qc](quakec/cortex/common/cortex_sensor.qc) | Sensor suite | ~200 |
-| [quakec/cortex/hybrid/cortex_bridge.qc](quakec/cortex/hybrid/cortex_bridge.qc) | Hybrid telemetry/control driver | ~200 |
-| [quakec/cortex/bot/cortex_bot.qc](quakec/cortex/bot/cortex_bot.qc) | Pure QuakeC bot AI | ~1400 |
-| [quakec/progs.src](quakec/progs.src) | Build manifest | ~35 |
+| [quakec/cortex/bot/cortex_bot.qc](quakec/cortex/bot/cortex_bot.qc) | Main bot AI logic | ~1,400 |
+| [quakec/cortex/bot/cortex_pathfinding.qc](quakec/cortex/bot/cortex_pathfinding.qc) | Navigation & pathfinding | ~200 |
+| [quakec/cortex/bot/cortex_perception.qc](quakec/cortex/bot/cortex_perception.qc) | Environmental awareness | ~150 |
+| [quakec/cortex/bot/cortex_tactics.qc](quakec/cortex/bot/cortex_tactics.qc) | Tactical decision-making | ~200 |
+| [quakec/cortex/bot/cortex_combat.qc](quakec/cortex/bot/cortex_combat.qc) | Combat behavior | ~250 |
+| [quakec/cortex/bot/cortex_mcts.qc](quakec/cortex/bot/cortex_mcts.qc) | Monte Carlo Tree Search | ~300 |
+| [quakec/cortex/common/cortex_sensor.qc](quakec/cortex/common/cortex_sensor.qc) | Sensor suite | ~290 |
+| [quakec/cortex/common/cortex_world.qc](quakec/cortex/common/cortex_world.qc) | World integration hooks | ~425 |
+| [quakec/progs.src](quakec/progs.src) | Build manifest | ~58 |
+| [hybrids/README.md](hybrids/README.md) | Experimental hybrids info | - |
 
 ## Documentation
 
-- **[docs/MULTI_SERVER.md](docs/MULTI_SERVER.md)** - Multiplayer server hosting primer
-- **[docs/ARENA.md](docs/ARENA.md)** - Bot-vs-bot arena + spectator system
-- **[docs/MODES.md](docs/MODES.md)** - Choose a mode + repo layout
+- **[docs/BOTS_GUIDE.md](docs/BOTS_GUIDE.md)** - Pure QuakeC bot guide
 - **[docs/README.md](docs/README.md)** - Full technical documentation
-- **[docs/QUICKSTART.md](docs/QUICKSTART.md)** - 30-second setup guide
 - **[docs/STATUS.md](docs/STATUS.md)** - Implementation status & roadmap
+- **[hybrids/README.md](hybrids/README.md)** - Experimental hybrid implementations
 
 ## Requirements
 
 **QuakeC Compilation**:
 - FTEQW compiler (✅ included: `quakec/fteqcc64.exe`)
-
-**Python**:
-- Core telemetry/brain scripts: Python 3.11+ recommended (no dependencies for basic mode)
-- Optional: `pygame` for visual debugger (install via `python/requirements-visualizer.txt`; use Python 3.11/3.12 on Windows if wheels are missing)
 
 **Quake Runtime** (⚠️ **YOU MUST PROVIDE**):
 - **FTEQW Engine**: Download from [https://fte.triptohell.info/](https://fte.triptohell.info/)
@@ -204,36 +169,27 @@ scripts\run_quake.bat      # Terminal 2
 
 ## Troubleshooting
 
-**Quake shows `CORTEX: Telemetry disabled...`**
-- Open console and run `sv_progsaccess 2` (some builds don't honor cfg/`+set`)
-- Look for `CORTEX: Engine reports DP_QC_FS` or `CORTEX: Engine reports FRIK_FILE` (if it says NO DP_QC_FS/FRIK_FILE, file I/O won't work)
-
-**Build fails with "error" messages**
-- Check that `quakec/lib/Quake-master/` exists
+**Build fails**:
+- Check that `quakec/lib/QuakeC-releases/` exists
 - Verify `quakec/fteqcc64.exe` is present
 - See full error output in console
 
-**No sensor data in Python**
-- QuakeC (and telemetry) only runs once a map is loaded (menus won’t emit telemetry)
-- Make sure you're IN a map (not in menu): `map start` or `map e1m1`
-- Try moving around in-game
-- Confirm the telemetry file exists and is growing: `Game/cortex/data/cortex_telemetry.txt`
-
-## Cortex Black Box Logs
-
-- Brain (Python): `.cortex\logs\cortex_brain_<timestamp>.log` (File IPC) / `.cortex\logs\cortex_brain_tcp_<timestamp>.log` (Stream)
-- Body (Quake): `Game\\cortex\\qconsole.log` (some builds write `Game\\qconsole.log`; enabled via `-condebug`, already set in `scripts\\run_quake.bat`)
-- Guide: `docs/LOGGING.md`
+**Bot doesn't spawn**:
+- Make sure you're in a map (not menu): `map start` or `map e1m1`
+- Check console for bot spawn messages
+- Verify `cortex_bot_enable 1` is set
 
 ## Contributing
 
 This is an experimental research project. The codebase is organized for clarity:
 
+**Pure QuakeC Bot:**
 - **Add new sensors**: Edit [quakec/cortex/common/cortex_sensor.qc](quakec/cortex/common/cortex_sensor.qc)
-- **Modify hybrid IPC**: Edit [quakec/cortex/hybrid/cortex_bridge.qc](quakec/cortex/hybrid/cortex_bridge.qc) and [python/streams/file/brain.py](python/streams/file/brain.py)
-- **Hack the pure bot AI**: Edit [quakec/cortex/bot/cortex_bot.qc](quakec/cortex/bot/cortex_bot.qc)
-- **Add AI features**: Edit [cortex_brain.py](cortex_brain.py)
+- **Improve bot AI**: Edit [quakec/cortex/bot/cortex_bot.qc](quakec/cortex/bot/cortex_bot.qc) and related modules
 - **Update build process**: Edit [scripts/build.bat](scripts/build.bat)
+
+**Experimental Hybrids:**
+- See [hybrids/README.md](hybrids/README.md)
 
 ## License
 
@@ -243,6 +199,6 @@ This is an experimental research project. The codebase is organized for clarity:
 
 ---
 
-**Status**: Phase 2 - Telemetry + Control Loop (File IPC + optional TCP)
-**Last Updated**: 2025-12-30
-**Version**: 0.1.0
+**Status**: Pure QuakeC bot with 10-module AI stack
+**Last Updated**: 2025-12-31
+**Version**: 0.2.0

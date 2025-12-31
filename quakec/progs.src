@@ -1,45 +1,16 @@
 ../Game/cortex/progs.dat
 
-// Base single-player Quake definitions MUST come first
+// Core Quake definitions
 lib/QuakeC-releases/progs/defs.qc
-
-// DarkPlaces extension definitions (also used by other engines via checkextension)
 lib/dpextensions.qc
 
-// Cortex common headers + engine feature probes
-// (Must come AFTER extension headers to override their strict mode)
-cortex/common/cortex_config.qc
-
-// Cortex structured logging (console black box)
-cortex/common/cortex_logging.qc
-
-// Cortex Hybrid IPC (FTEQW file + optional stream)
-cortex/hybrid/cortex_tcp.qc
-
-// Cortex Common Sensors + Hybrid Driver
-cortex/common/cortex_sensor.qc
-cortex/hybrid/cortex_bridge.qc
-
-// Cortex Pure-QuakeC Bot (AI stack)
-cortex/bot/cortex_pathfinding.qc
-cortex/bot/cortex_perception.qc
-cortex/bot/cortex_tactics.qc
-cortex/bot/cortex_combat.qc
-cortex/bot/cortex_resource.qc
-cortex/bot/cortex_team.qc
-cortex/bot/cortex_opponent_model.qc
-cortex/bot/cortex_memory.qc
-cortex/bot/cortex_mcts.qc
-cortex/bot/cortex_bot.qc
-
-// Base single-player Quake source files
+// Base Quake source
 lib/QuakeC-releases/progs/subs.qc
 lib/QuakeC-releases/progs/fight.qc
 lib/QuakeC-releases/progs/ai.qc
 lib/QuakeC-releases/progs/combat.qc
 lib/QuakeC-releases/progs/items.qc
 lib/QuakeC-releases/progs/weapons.qc
-cortex/common/cortex_world.qc
 lib/QuakeC-releases/progs/client.qc
 lib/QuakeC-releases/progs/player.qc
 lib/QuakeC-releases/progs/monsters.qc
@@ -48,8 +19,6 @@ lib/QuakeC-releases/progs/buttons.qc
 lib/QuakeC-releases/progs/triggers.qc
 lib/QuakeC-releases/progs/plats.qc
 lib/QuakeC-releases/progs/misc.qc
-
-// Monster AI (single-player only)
 lib/QuakeC-releases/progs/ogre.qc
 lib/QuakeC-releases/progs/demon.qc
 lib/QuakeC-releases/progs/shambler.qc
@@ -65,3 +34,21 @@ lib/QuakeC-releases/progs/fish.qc
 lib/QuakeC-releases/progs/shalrath.qc
 lib/QuakeC-releases/progs/enforcer.qc
 lib/QuakeC-releases/progs/oldone.qc
+
+// Cortex helpers
+cortex/common/cortex_config.qc
+cortex/common/cortex_logging.qc
+cortex/common/cortex_sensor.qc
+cortex/common/cortex_world.qc
+
+// Pure QuakeC bot
+cortex/bot/cortex_pathfinding.qc
+cortex/bot/cortex_perception.qc
+cortex/bot/cortex_tactics.qc
+cortex/bot/cortex_combat.qc
+cortex/bot/cortex_resource.qc
+cortex/bot/cortex_team.qc
+cortex/bot/cortex_opponent_model.qc
+cortex/bot/cortex_memory.qc
+cortex/bot/cortex_mcts.qc
+cortex/bot/cortex_bot.qc

@@ -8,6 +8,8 @@
 // Forward declarations
 void() InitBodyQueue;
 void() W_Precache;
+void() Cortex_BotInitCvars;
+void() Cortex_BotEnsureSpawned;
 
 // Global variables
 entity lastspawn;
@@ -361,14 +363,21 @@ Runs every frame and handles telemetry updates.
 */
 void() StartFrame =
 {
-    // Call base StartFrame logic from single-player Quake
+    // Call base StartFrame logic from single-player Quake.
     teamplay = cvar("teamplay");
     skill = cvar("skill");
     framecount = framecount + 1;
 
-    // CORTEX: Emit telemetry (safe to call every frame; internally throttled).
-    if (!cvar("cortex_pure_mode"))
+    if (cvar("cortex_pure_mode"))
+    {
+        Cortex_BotInitCvars();
+        Cortex_BotEnsureSpawned();
+    }
+    else
+    {
+        // CORTEX: Emit telemetry (safe to call every frame; internally throttled).
         Cortex_Frame();
+    }
 };
 
 /*
