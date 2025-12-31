@@ -18,7 +18,7 @@ popd >nul 2>&1
 exit /b 1
 :FTEQCC_FOUND
 
-set OUTDIR=Game\cortex
+set OUTDIR=Game\cortex_pure
 if exist "%OUTDIR%" goto :OUTDIR_READY
 mkdir "%OUTDIR%"
 :OUTDIR_READY

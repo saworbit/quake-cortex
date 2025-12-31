@@ -39,7 +39,7 @@ jobs:
       - name: Verify output
         shell: pwsh
         run: |
-          $out = "Game/cortex/progs.dat"
+          $out = "Game/cortex_pure/progs.dat"
           if (!(Test-Path $out)) {
             throw "Build failed - progs.dat not found at $out"
           }
@@ -55,5 +55,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: progs-dat
-          path: Game/cortex/progs.dat
+          path: Game/cortex_pure/progs.dat
           retention-days: 30
