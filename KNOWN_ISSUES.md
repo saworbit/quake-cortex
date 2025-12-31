@@ -84,28 +84,6 @@ development, the root causes, workarounds, and current status.
 
 ---
 
-## Medium Priority Issues
-
-### 3. No Telemetry Until a Map Is Loaded
-
-**Status**: EXPECTED (engine behavior)  
-**Priority**: P2 - Confusing during first setup
-
-#### Symptoms (Menus)
-
-- Python prints `waiting_for_quake` while Quake is on the title
-  screen / main menus.
-
-#### Root Cause (Menus)
-
-- QuakeC `StartFrame` only runs once a server is active (i.e., a map is loaded).
-
-#### Solution (Menus)
-
-- Load a map: `map start` or `map e1m1`.
-
----
-
 ## Resolved Issues
 
 ### 3. Telemetry File Location Mismatch (`data/` Folder)
@@ -304,6 +282,26 @@ development, the root causes, workarounds, and current status.
   `Unknown command "sv_progsaccess"`).
 - When supported, prefer `+set sv_progsaccess 2` over `+sv_progsaccess 2`.
 - Manual console entry may still be required on some builds.
+
+---
+
+### A3. No Telemetry Until a Map Is Loaded
+
+**Status**: ARCHIVED (file IPC flow not in active use while focusing on pure QuakeC bot)  
+**Priority**: P2 - Confusing during first setup
+
+#### Symptoms (Menus)
+
+- Python prints `waiting_for_quake` while Quake is on the title
+  screen / main menus.
+
+#### Root Cause (Menus)
+
+- QuakeC `StartFrame` only runs once a server is active (i.e., a map is loaded).
+
+#### Solution (Menus)
+
+- Load a map: `map start` or `map e1m1`.
 
 ---
 
