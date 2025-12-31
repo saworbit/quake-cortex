@@ -125,6 +125,13 @@ void(entity bot, entity targ, entity attacker, float damage) Cortex_Opp_OnDamage
     {
         o = Cortex_Opp_Get(attacker);
         if (o) o.cx_opp_damage_to_bot = o.cx_opp_damage_to_bot + damage;
+
+        // Immediate retarget when taking damage.
+        if (cvar("cortex_bot_retaliate_time") > 0)
+        {
+            cortex_percept_forced_enemy = attacker;
+            cortex_percept_forced_until = time + cvar("cortex_bot_retaliate_time");
+        }
     }
 
     if (attacker == bot && targ.classname == "player")

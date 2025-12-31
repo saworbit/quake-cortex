@@ -14,6 +14,14 @@ entity cortex_percept_enemy;
 float cortex_percept_visible_enemies;
 float cortex_percept_tactic_mode; // 1=1v1, 2=balanced, 3=multi
 
+// Last seen enemy memory.
+entity cortex_percept_last_visible_enemy;
+float cortex_percept_last_visible_time;
+
+// Forced retaliation target (set on damage).
+entity cortex_percept_forced_enemy;
+float cortex_percept_forced_until;
+
 // Inferred "heard mega" timer (seconds).
 float cortex_percept_enemy_mega_heard_until;
 
@@ -29,17 +37,49 @@ entity(entity bot, float radius) Cortex_Perception_FindNearestVisibleEnemy =
     local float best_dist;
     local float dist;
     local vector start;
+    local vector forward;
+    local vector to;
+    local float fov_deg;
+    local float min_dot;
 
     if (!bot || bot == world) return world;
 
     best_dist = 999999;
     start = bot.origin + '0 0 16';
 
+    fov_deg = cvar("cortex_bot_fov_deg");
+    if (fov_deg <= 0 || fov_deg >= 360)
+        min_dot = -2;
+    else
+    {
+        if (bot.flags & FL_CLIENT)
+            makevectors(bot.v_angle);
+        else
+            makevectors(bot.angles);
+        forward = v_forward;
+        min_dot = cos((fov_deg * 0.5) * 0.0174532925);
+    }
+
     head = findradius(bot.origin, radius);
     while (head)
     {
         if (head.classname == "player" && head != bot && head.health > 0)
         {
+            if (min_dot > -1)
+            {
+                to = head.origin - bot.origin;
+                to_z = 0;
+                if (vlen(to) > 0.01)
+                {
+                    to = normalize(to);
+                    if ((forward * to) < min_dot)
+                    {
+                        head = head.chain;
+                        continue;
+                    }
+                }
+            }
+
             traceline(start, head.origin + '0 0 16', TRUE, bot);
             if (trace_fraction == 1)
             {
@@ -63,17 +103,49 @@ float(entity bot, float radius) Cortex_Perception_CountVisibleEnemies =
     local entity head;
     local float count;
     local vector start;
+    local vector forward;
+    local vector to;
+    local float fov_deg;
+    local float min_dot;
 
     if (!bot || bot == world) return 0;
 
     count = 0;
     start = bot.origin + '0 0 16';
 
+    fov_deg = cvar("cortex_bot_fov_deg");
+    if (fov_deg <= 0 || fov_deg >= 360)
+        min_dot = -2;
+    else
+    {
+        if (bot.flags & FL_CLIENT)
+            makevectors(bot.v_angle);
+        else
+            makevectors(bot.angles);
+        forward = v_forward;
+        min_dot = cos((fov_deg * 0.5) * 0.0174532925);
+    }
+
     head = findradius(bot.origin, radius);
     while (head)
     {
         if (head.classname == "player" && head != bot && head.health > 0)
         {
+            if (min_dot > -1)
+            {
+                to = head.origin - bot.origin;
+                to_z = 0;
+                if (vlen(to) > 0.01)
+                {
+                    to = normalize(to);
+                    if ((forward * to) < min_dot)
+                    {
+                        head = head.chain;
+                        continue;
+                    }
+                }
+            }
+
             traceline(start, head.origin + '0 0 16', TRUE, bot);
             if (trace_fraction == 1)
                 count = count + 1;
@@ -120,10 +192,50 @@ void(entity bot, entity enemy) Cortex_Perception_MonitorEvents =
 
 void(entity bot) Cortex_Perception_Update =
 {
+    local entity visible;
+    local entity forced;
+    local float memory;
+
     if (!bot || bot == world)
         return;
 
-    cortex_percept_enemy = Cortex_Perception_FindNearestVisibleEnemy(bot, 1200);
+    visible = Cortex_Perception_FindNearestVisibleEnemy(bot, 1200);
+    if (visible && visible != world)
+    {
+        cortex_percept_last_visible_enemy = visible;
+        cortex_percept_last_visible_time = time;
+    }
+
+    forced = cortex_percept_forced_enemy;
+    if (forced && forced != world && forced.health > 0 && time <= cortex_percept_forced_until)
+    {
+        cortex_percept_enemy = forced;
+    }
+    else
+    {
+        cortex_percept_forced_enemy = world;
+        cortex_percept_forced_until = 0;
+
+        if (visible && visible != world)
+        {
+            cortex_percept_enemy = visible;
+        }
+        else
+        {
+            memory = cvar("cortex_bot_enemy_memory");
+            if (memory < 0) memory = 0;
+            if (cortex_percept_last_visible_enemy && cortex_percept_last_visible_enemy != world &&
+                cortex_percept_last_visible_enemy.health > 0 &&
+                (time - cortex_percept_last_visible_time) <= memory)
+            {
+                cortex_percept_enemy = cortex_percept_last_visible_enemy;
+            }
+            else
+            {
+                cortex_percept_enemy = world;
+            }
+        }
+    }
     cortex_percept_visible_enemies = Cortex_Perception_CountVisibleEnemies(bot, 900);
 
     if (cortex_percept_visible_enemies <= 1) cortex_percept_tactic_mode = 1;

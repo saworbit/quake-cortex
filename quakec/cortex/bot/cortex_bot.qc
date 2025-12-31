@@ -96,6 +96,9 @@ void() Cortex_BotInitCvars =
     cvar_set("cortex_bot_start_with_rl", "0");   // 1 to spawn with RL+rockets (testing)
     cvar_set("cortex_bot_persist", "1");
     cvar_set("cortex_bot_respawn_delay", "1.0");
+    cvar_set("cortex_bot_fov_deg", "200");
+    cvar_set("cortex_bot_enemy_memory", "2.5");
+    cvar_set("cortex_bot_retaliate_time", "1.5");
     cvar_set("cortex_bot_mcts_rollouts", "8");
     cvar_set("cortex_bot_react_min", "0.05");
     cvar_set("cortex_bot_react_max", "0.15");
@@ -389,59 +392,12 @@ void(float action, float reward) Cortex_Bot_QUpdate =
 
 entity(float radius) Cortex_Bot_FindNearestVisibleEnemy =
 {
-    local entity head;
-    local entity best;
-    local float best_dist;
-    local float dist;
-    local vector start;
-
-    best_dist = 999999;
-    start = self.origin + '0 0 16';
-
-    head = findradius(self.origin, radius);
-    while (head)
-    {
-        if (head.classname == "player" && head != self && head.health > 0)
-        {
-            traceline(start, head.origin + '0 0 16', TRUE, self);
-            if (trace_fraction == 1)
-            {
-                dist = vlen(head.origin - self.origin);
-                if (dist < best_dist)
-                {
-                    best = head;
-                    best_dist = dist;
-                }
-            }
-        }
-        head = head.chain;
-    }
-
-    return best;
+    return Cortex_Perception_FindNearestVisibleEnemy(self, radius);
 };
 
 float(float radius) Cortex_Bot_CountVisibleEnemies =
 {
-    local entity head;
-    local float count;
-    local vector start;
-
-    count = 0;
-    start = self.origin + '0 0 16';
-
-    head = findradius(self.origin, radius);
-    while (head)
-    {
-        if (head.classname == "player" && head != self && head.health > 0)
-        {
-            traceline(start, head.origin + '0 0 16', TRUE, self);
-            if (trace_fraction == 1)
-                count = count + 1;
-        }
-        head = head.chain;
-    }
-
-    return count;
+    return Cortex_Perception_CountVisibleEnemies(self, radius);
 };
 
 // Mega/event inference now lives in `cortex_perception.qc`.
@@ -1357,6 +1313,10 @@ void() Cortex_BotSpawn =
     cortex_percept_visible_enemies = 0;
     cortex_percept_tactic_mode = 2;
     cortex_percept_enemy_mega_heard_until = 0;
+    cortex_percept_last_visible_enemy = world;
+    cortex_percept_last_visible_time = 0;
+    cortex_percept_forced_enemy = world;
+    cortex_percept_forced_until = 0;
     cortex_percept_last_enemy = world;
     cortex_percept_last_enemy_health = 0;
     cortex_percept_last_enemy_health_time = -9999;
