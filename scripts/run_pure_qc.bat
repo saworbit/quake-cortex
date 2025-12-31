@@ -22,6 +22,7 @@ echo [1/2] Building pure Cortex mod...
 call scripts\build_pure.bat
 if errorlevel 1 (
     echo ERROR: Pure build failed.
+    pause
     popd >nul 2>&1
     exit /b 1
 )
@@ -55,5 +56,9 @@ if not exist %GAMEEXE% (
   %PURE_FLAGS% ^
   %EXTRA_ARGS%
 set EXITCODE=%ERRORLEVEL%
+if errorlevel 1 (
+    echo ERROR: Quake exited with code %EXITCODE%
+    pause
+)
 popd >nul 2>&1
 exit /b %EXITCODE%
