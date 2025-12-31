@@ -4,14 +4,6 @@
     Provides easy-to-use console commands and in-game menu for bot management.
 */
 
-// Console command handlers
-void() Cortex_Cmd_Spawn;
-void() Cortex_Cmd_KillBots;
-void() Cortex_Cmd_ListBots;
-void() Cortex_Cmd_Help;
-void() Cortex_Cmd_Status;
-void() Cortex_Cmd_Debug;
-
 // Register all Cortex console commands
 void() Cortex_RegisterCommands =
 {
@@ -45,6 +37,7 @@ void() Cortex_KillAllBots =
 {
     local entity e, next;
     local float count;
+    local string msg;
 
     count = 0;
     e = find(world, classname, "cortex_bot");
@@ -57,7 +50,10 @@ void() Cortex_KillAllBots =
     }
 
     if (count > 0)
-        bprint("Removed ", ftos(count), " Cortex bot(s)\n");
+    {
+        msg = strcat("Removed ", ftos(count), " Cortex bot(s)\n");
+        bprint(msg);
+    }
     else
         bprint("No Cortex bots to remove\n");
 };
@@ -80,14 +76,18 @@ void() Cortex_ListAllBots =
         info = strcat(info, " | Health: ", ftos(e.health));
         info = strcat(info, " | Armor: ", ftos(e.armorvalue));
         info = strcat(info, " | Frags: ", ftos(e.frags));
-        bprint(info, "\n");
+        info = strcat(info, "\n");
+        bprint(info);
         e = find(e, classname, "cortex_bot");
     }
 
     if (count == 0)
         bprint("No Cortex bots active\n");
     else
-        bprint(ftos(count), " bot(s) total\n");
+    {
+        info = strcat(ftos(count), " bot(s) total\n");
+        bprint(info);
+    }
 };
 
 // Helper: Print help

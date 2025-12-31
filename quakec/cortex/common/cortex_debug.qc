@@ -83,26 +83,48 @@ void(entity bot) Cortex_DumpBotState =
 {
     local string data;
     local string enemy_info;
+    local string msg;
 
     if (!cvar("developer") && !cvar("cortex_debug"))
         return;
 
     bprint("\n=== BOT STATE DUMP ===\n");
-    bprint("Time: ", ftos(time), "s\n");
-    bprint("Position: ", vtos(bot.origin), "\n");
-    bprint("Velocity: ", vtos(bot.velocity), "\n");
-    bprint("Angles: ", vtos(bot.angles), "\n");
-    bprint("Health: ", ftos(bot.health), "\n");
-    bprint("Armor: ", ftos(bot.armorvalue), "\n");
-    bprint("Weapon: ", ftos(bot.weapon), "\n");
-    bprint("Ammo: ", ftos(bot.currentammo), "\n");
-    bprint("Frags: ", ftos(bot.frags), "\n");
+
+    msg = strcat("Time: ", ftos(time), "s\n");
+    bprint(msg);
+
+    msg = strcat("Position: ", vtos(bot.origin), "\n");
+    bprint(msg);
+
+    msg = strcat("Velocity: ", vtos(bot.velocity), "\n");
+    bprint(msg);
+
+    msg = strcat("Angles: ", vtos(bot.angles), "\n");
+    bprint(msg);
+
+    msg = strcat("Health: ", ftos(bot.health), "\n");
+    bprint(msg);
+
+    msg = strcat("Armor: ", ftos(bot.armorvalue), "\n");
+    bprint(msg);
+
+    msg = strcat("Weapon: ", ftos(bot.weapon), "\n");
+    bprint(msg);
+
+    msg = strcat("Ammo: ", ftos(bot.currentammo), "\n");
+    bprint(msg);
+
+    msg = strcat("Frags: ", ftos(bot.frags), "\n");
+    bprint(msg);
 
     if (bot.enemy)
     {
         enemy_info = strcat(bot.enemy.classname, " @ ", vtos(bot.enemy.origin));
-        bprint("Enemy: ", enemy_info, "\n");
-        bprint("Enemy health: ", ftos(bot.enemy.health), "\n");
+        msg = strcat("Enemy: ", enemy_info, "\n");
+        bprint(msg);
+
+        msg = strcat("Enemy health: ", ftos(bot.enemy.health), "\n");
+        bprint(msg);
     }
     else
     {
@@ -111,7 +133,9 @@ void(entity bot) Cortex_DumpBotState =
 
     if (bot.goalentity)
     {
-        bprint("Goal: ", bot.goalentity.classname, " @ ", vtos(bot.goalentity.origin), "\n");
+        msg = strcat("Goal: ", bot.goalentity.classname);
+        msg = strcat(msg, " @ ", vtos(bot.goalentity.origin), "\n");
+        bprint(msg);
     }
     else
     {
@@ -163,7 +187,9 @@ void(string error_msg, string context) Cortex_ReportError =
     local string full_msg;
     full_msg = strcat(error_msg, " | Context: ", context);
     CortexLog(LOG_error, "BOT_ERROR", full_msg);
-    bprint("!!! CORTEX ERROR: ", error_msg, "\n");
+
+    full_msg = strcat("!!! CORTEX ERROR: ", error_msg, "\n");
+    bprint(full_msg);
 };
 
 // Warning with suggestion

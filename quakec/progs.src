@@ -4,6 +4,9 @@
 lib/QuakeC-releases/progs/defs.qc
 lib/dpextensions.qc
 
+// Cortex forward declarations (MUST come before base Quake source)
+cortex/common/cortex_forward.qc
+
 // Base Quake source
 lib/QuakeC-releases/progs/subs.qc
 lib/QuakeC-releases/progs/fight.qc

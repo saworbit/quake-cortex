@@ -368,16 +368,9 @@ void() StartFrame =
     skill = cvar("skill");
     framecount = framecount + 1;
 
-    if (cvar("cortex_pure_mode"))
-    {
-        Cortex_BotInitCvars();
-        Cortex_BotEnsureSpawned();
-    }
-    else
-    {
-        // CORTEX: Emit telemetry (safe to call every frame; internally throttled).
-        Cortex_Frame();
-    }
+    // Pure QuakeC bot - initialize and ensure bots are spawned
+    Cortex_BotInitCvars();
+    Cortex_BotEnsureSpawned();
 };
 
 /*
