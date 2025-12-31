@@ -1331,6 +1331,9 @@ void() Cortex_BotThink =
     if (interval <= 0)
         interval = 0.02;
 
+    // Schedule next think FIRST so we don't forget
+    self.nextthink = time + interval;
+
     // Pure QuakeC AI mode.
     if (cvar("cortex_bot_enable"))
     {
@@ -1366,8 +1369,6 @@ void() Cortex_BotThink =
         // Player jump impulse is ~270 in id1.
         self.velocity_z = 270;
     }
-
-    self.nextthink = time + interval;
 };
 
 void(entity targ, entity attacker) Cortex_BotOnObituary =
