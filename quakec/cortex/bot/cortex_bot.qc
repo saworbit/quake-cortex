@@ -70,13 +70,13 @@ void() Cortex_BotInitCvars =
 
     cvar_set("cortex_bot_cvars_initialized", "1");
 
-    // Bot lifecycle
-    cvar_set("cortex_spawn_bot", "0");           // 1 to spawn a controllable bot entity
+    // Bot lifecycle (defaults for pure QuakeC mode)
+    cvar_set("cortex_spawn_bot", "1");           // 1 to spawn a controllable bot entity
     cvar_set("cortex_track_bot", "0");           // 1 to emit telemetry for cortex_bot (file/tcp modes)
     cvar_set("cortex_bot_think_interval", "0.02"); // seconds
 
-    // Pure QuakeC bot logic (pre-hybrid baseline).
-    cvar_set("cortex_bot_enable", "0");          // 1 to enable internal U-FSM AI (also spawns bot)
+    // Pure QuakeC bot logic
+    cvar_set("cortex_bot_enable", "1");          // 1 to enable internal AI (also spawns bot)
     cvar_set("cortex_bot_aggression", "1.0");    // base aggression multiplier (0.5..2)
     cvar_set("cortex_bot_debug", "0");           // 1 to print occasional state/target info
     cvar_set("cortex_skill", "0.7");             // 0=newbie, 1=pro (scales reaction + aim jitter)
