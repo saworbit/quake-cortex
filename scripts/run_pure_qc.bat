@@ -51,7 +51,6 @@ if not exist %GAMEEXE% (
 
 %GAMEEXE% -condebug -game cortex_pure ^
   +set developer 1 ^
-  +set sv_progsaccess 2 ^
   +set sv_public 0 ^
   +set cl_master "" ^
   %PURE_FLAGS% ^

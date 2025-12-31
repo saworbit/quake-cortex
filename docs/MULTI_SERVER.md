@@ -3,7 +3,7 @@
 Host a listen or dedicated server so friends can join your Cortex-powered deathmatches. Works with **FTEQW** (default) or **DarkPlaces** (recommended for better bots/netcode). Bots auto-spawn on launch; no QuakeC hacking required unless you drop in the optional snippet at the end.
 
 ## Assumptions
-- `Game/cortex/progs.dat` exists (run `scripts/build.bat` first).
+- `Game/cortex_pure/progs.dat` exists (run `scripts/build_pure.bat` first).
 - Quake data present in `Game/id1/`.
 - Ports open: UDP 26000 in your router/firewall.
 
@@ -111,7 +111,7 @@ Inside `Cortex_BotThink`, wrap target selection:
 if (cvar("teamplay") && target.team == self.team) return;
 ```
 
-Recompile with `scripts/build.bat` after editing.
+Recompile with `scripts/build_pure.bat` after editing.
 
 ## Troubleshooting
 - **No connection**: double-check firewall/port forward, use `connect 127.0.0.1:26000` for local.

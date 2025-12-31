@@ -93,7 +93,7 @@ development, the root causes, workarounds, and current status.
 
 #### Symptoms (Telemetry Path)
 
-- Python watches `Game/cortex/cortex_telemetry.txt` but nothing appears.
+- Python watches `hybrids/archived/Game/cortex/cortex_telemetry.txt` but nothing appears.
 
 #### Root Cause (Telemetry Path)
 
@@ -101,7 +101,7 @@ development, the root causes, workarounds, and current status.
 
 #### Solution (Telemetry Path)
 
-- Canonical telemetry path is `Game/cortex/data/cortex_telemetry.txt`.
+- Canonical telemetry path is `hybrids/archived/Game/cortex/data/cortex_telemetry.txt`.
 - Repo-root `cortex_brain.py` and `cortex_visualizer.py` default to that path.
 
 ### 4. Wrong Python Entrypoint (Legacy TCP Prototype)
@@ -115,8 +115,8 @@ development, the root causes, workarounds, and current status.
 
 #### Solution (Entrypoint)
 
-- `scripts/run_brain.bat` launches the repo-root `cortex_brain.py`.
-- `scripts/run_visualizer.bat` launches the repo-root `cortex_visualizer.py`.
+- `hybrids/archived/scripts/run_brain.bat` launches the repo-root `cortex_brain.py`.
+- `hybrids/archived/scripts/run_visualizer.bat` launches the repo-root `cortex_visualizer.py`.
 
 ### 5. Telemetry Emission Disabled / Not Called Every Frame
 
@@ -146,7 +146,7 @@ development, the root causes, workarounds, and current status.
 
 #### Solution (Keybinds)
 
-- `Game/cortex/default.cfg` includes minimal WASD + mouse binds.
+- `hybrids/archived/Game/cortex/default.cfg` includes minimal WASD + mouse binds.
 
 ### 8. Pure Botclient Ignores Movement Input Without Player Physics Hook
 
@@ -182,9 +182,9 @@ development, the root causes, workarounds, and current status.
 
 #### Solution (Pure Mode)
 
-- `Game/cortex/autoexec.cfg` forces `cortex_pure_mode 1`, `cortex_use_tcp 0`,
-  `cortex_enable_controls 0`, and `cortex_track_bot 0`.
-- `scripts/run_pure_debug.bat` also enforces those cvars for debug runs.
+- `hybrids/archived/Game/cortex/autoexec.cfg` forced `cortex_pure_mode 1`,
+  `cortex_use_tcp 0`, `cortex_enable_controls 0`, and `cortex_track_bot 0`.
+- Pure launchers no longer set hybrid cvars.
 
 ### 7. QuakeC Compilation Failed (Missing `defs.qc` in CI / Fresh Checkout)
 
@@ -224,8 +224,8 @@ development, the root causes, workarounds, and current status.
 
 #### Workaround (TCP Mode)
 
-- Use `scripts\\run_quake_tcp.bat` (it sets `pr_enable_uriget 1` and switches Cortex to TCP mode).
-- If a build hard-disables URI streams, use File IPC mode (`scripts\\run_quake.bat`) instead.
+- Use `hybrids\\archived\\scripts\\run_quake_tcp.bat` (it sets `pr_enable_uriget 1` and switches Cortex to TCP mode).
+- If a build hard-disables URI streams, use File IPC mode (`hybrids\\archived\\scripts\\run_quake.bat`) instead.
 
 #### Related: Some Builds Use TLS on `tcp://`
 
@@ -238,9 +238,9 @@ development, the root causes, workarounds, and current status.
 - Some FTE builds initiate a TLS handshake even when the URI is `tcp://...`.
 
 **Fix**:
-- Prefer `ws://127.0.0.1:26000/` (default in `scripts\\run_quake_tcp.bat`) to avoid TLS negotiation entirely.
+- Prefer `ws://127.0.0.1:26000/` (default in `hybrids\\archived\\scripts\\run_quake_tcp.bat`) to avoid TLS negotiation entirely.
 - If your build is doing TLS on `tcp://`, Cortex cannot reliably override the engine's cert verification; upgrade FTEQW (where `tcp://` is plain TCP and TLS is only used with `tls://`).
-- If you want to investigate anyway: the TCP brain can generate a local dev cert under `.cortex\\tls\\` via `scripts\\generate_cortex_tls_cert.ps1`, but some builds will still reject it as `unknown ca`.
+- If you want to investigate anyway: the TCP brain can generate a local dev cert under `.cortex\\tls\\` via `hybrids\\archived\\scripts\\generate_cortex_tls_cert.ps1`, but some builds will still reject it as `unknown ca`.
 
 ---
 
@@ -253,7 +253,7 @@ development, the root causes, workarounds, and current status.
 #### Symptoms (File Access)
 
 - Quake prints Cortex init messages, but telemetry never appears in Python
-- `Game/cortex/data/cortex_telemetry.txt` is not created or never grows
+- `hybrids/archived/Game/cortex/data/cortex_telemetry.txt` is not created or never grows
 - Quake console may show `fopen` failures (when `developer 1` is enabled)
 
 #### Root Cause (File Access)
@@ -266,9 +266,9 @@ development, the root causes, workarounds, and current status.
 #### Workaround (File Access)
 
 - Prefer config-based setup (persistent):
-  - `Game/cortex/autoexec.cfg` sets `sv_progsaccess 2`, `pr_checkextension 1`,
+  - `hybrids/archived/Game/cortex/autoexec.cfg` sets `sv_progsaccess 2`, `pr_checkextension 1`,
     and `developer 1`.
-  - `Game/cortex/default.cfg` provides minimal keybinds so the mod is playable.
+  - `hybrids/archived/Game/cortex/default.cfg` provides minimal keybinds so the mod is playable.
 - If file access is still blocked, set it manually in the Quake console before
   starting a map:
   - `sv_progsaccess 2`
@@ -309,27 +309,22 @@ development, the root causes, workarounds, and current status.
 
 ### Pre-Launch Checks (Local)
 
-- [ ] `Game/cortex/progs.dat` exists and is >100KB (or run `scripts\\build.bat`)
+- [ ] `Game/cortex_pure/progs.dat` exists and is >100KB (or run `scripts\\build_pure.bat`)
 - [ ] `Game/id1/PAK0.PAK` exists (legal Quake game data)
 - [ ] `Game/fteqw64.exe` exists (FTEQW engine binary)
-- [ ] Python is installed (3.11+ recommended)
 
 ### Launch Sequence (End-to-End)
 
-- [ ] Start Python: `scripts\\run_brain.bat`
-- [ ] Start Quake: `scripts\\run_quake.bat`
-- [ ] Load a map: `map start` or `map e1m1`
-- [ ] If needed, enable file access: `sv_progsaccess 2`
-- [ ] Verify Quake prints: `CORTEX: Telemetry file opened!`
-- [ ] Verify Python prints: `[POS] X=... Y=... Z=...` and values change when
-      moving
+- [ ] Start Quake: `scripts\\run_pure_qc.bat` (or `scripts\\run_pure_debug.bat`)
+- [ ] Load a map: `map dm3` or `map start`
+- [ ] Verify bot spawn messages in the console
+- [ ] Verify the bot moves (use `impulse 200` if needed)
 
 ### Troubleshooting (Quick)
 
-- [ ] Confirm telemetry file grows: `Game/cortex/data/cortex_telemetry.txt`
-- [ ] Enable debug prints: `developer 1`
-- [ ] Confirm extension support: `pr_checkextension 1` then watch for
-      `FRIK_FILE` messages in the Quake console
+- [ ] Check `Game/cortex_pure/qconsole.log`
+- [ ] Ensure `cortex_bot_enable 1`
+- [ ] Ensure `pr_no_playerphysics 0`
 
 ---
 

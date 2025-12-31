@@ -1,32 +1,33 @@
 # PROJECT CORTEX
 
-Project Cortex is an experimental AI sandbox for Quake 1.
+Project Cortex is a pure QuakeC bot for Quake 1. Hybrid Python/IPC experiments are archived and not the current focus.
 
-It supports three tracks (all share the same QuakeC mod):
-- **Pure QuakeC bot**: decisions inside QuakeC (no Python)
-- **Hybrid FTEQW + Python**: file IPC (default) or stream mode (experimental)
-- **Hybrid DarkPlaces + Python**: UDP RCON control loop (experimental)
-
-Start here: `docs/MODES.md`
+Start here: `docs/QUICKSTART.md`
 
 ## Primary Docs
 
-- `docs/MULTI_SERVER.md` - Multiplayer server hosting primer
+- `docs/QUICKSTART.md` - Pure bot quick start
+- `docs/BOTS_GUIDE.md` - Bot spawning and control cheatsheet
+- `docs/DEBUGGING_PURE_BOT.md` - Pure bot debugging workflow
+- `docs/STATUS.md` - Current status and gaps
+- `docs/MODES.md` - Pure mode overview
 - `docs/ARENA.md` - Bot-vs-bot spectator arena
-- `docs/QUICKSTART.md` - fast start (hybrid + experimental modes)
-- `docs/DEBUGGING_PURE_BOT.md` - pure-bot debug workflow + log triage
-- `docs/TCP_MODE.md` - FTEQW stream mode (ws:// / tcp://)
+- `docs/MULTI_SERVER.md` - Multiplayer hosting primer
+
+## Archived / Hybrid Docs (Not Current Focus)
+
+- `hybrids/README.md` - Legacy hybrid implementations
+- `hybrids/archived/README.md` - Legacy hybrid scripts/configs moved from root
+- `docs/TCP_MODE.md` - FTEQW stream mode
 - `docs/DARKPLACES_PIVOT.md` - DarkPlaces RCON mode
-- `docs/LOGGING.md` - logs and debugging
-- `docs/COMPATIBILITY.md` - engine quirks / compatibility notes
+- `docs/LOGGING.md` - Brain/Body logging notes
+- `docs/COMPATIBILITY.md` - QuakeC/Python interface notes
 
 ## Code Locations
 
 - QuakeC:
   - `quakec/cortex/common/` (sensors + world integration)
-  - `quakec/cortex/hybrid/` (file/stream IPC driver)
-  - `quakec/cortex/bot/` (pure-QuakeC bot AI stack)
-- Python:
-  - `python/streams/file/` (file tail + visualizer)
-  - `python/streams/tcp/` (ws/tcp stream + Gymnasium env)
-  - `python/streams/rcon/` (DarkPlaces RCON loop)
+  - `quakec/cortex/bot/` (pure bot AI stack)
+- Archived hybrid code:
+  - `hybrids/`
+  - `python/`

@@ -1,7 +1,7 @@
 /*
     cortex_world.qc - Cortex World Integration
 
-    Replaces world.qc with Cortex telemetry hooks integrated.
+    Replaces world.qc with Cortex bot hooks integrated.
     Based on id Software's original world.qc with minimal modifications.
 */
 
@@ -359,7 +359,7 @@ void() worldspawn =
 =================
 StartFrame
 
-Runs every frame and handles telemetry updates.
+Runs every frame and handles bot updates.
 =================
 */
 void() StartFrame =

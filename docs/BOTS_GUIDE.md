@@ -18,7 +18,7 @@ Copy-paste this into a terminal that is already in `Game/`:
 
 ### FTEQW (current default)
 ```
-fteqw64.exe -game cortex +map dm3 +deathmatch 1 +sv_cheats 1 +skill 3
+fteqw64.exe -game cortex_pure +map dm3 +deathmatch 1 +sv_cheats 1 +skill 3
 ```
 
 Pure bot shortcut:
@@ -33,19 +33,12 @@ Set `pr_no_playerphysics 0` so `SV_PlayerPhysics` can apply movement. Both
 `scripts\run_pure_qc.bat` and `scripts\run_pure_debug.bat` now force this
 automatically.
 
-### DarkPlaces (recommended pivot)
-```
-darkplaces.exe -game cortex +map dm3 +deathmatch 1 +sv_cheats 1 +skill 3 +rcon_password cortex_secret
-```
-
-`dm3` is the default deathmatch map; swap to `dm4`, `start`, etc. Save either command as `scripts/run_cortex_bots.bat` for one-click launches.
-
 ## Step 2: Auto-setup keybinds & help menu (one-time)
 In the Quake console (`~`), execute:
 ```
 exec cortex_bots.cfg
 ```
-If the file does not exist yet, create it under `Game/cortex/` using the snippet below. The console printouts confirm bot controls are loaded.
+If the file does not exist yet, create it under `Game/cortex_pure/` using the snippet below. The console printouts confirm bot controls are loaded.
 
 ## Step 3: Core console commands
 All commands begin with `cortex_` and print `DONE!` or an error when you run them:
@@ -71,7 +64,7 @@ cortex_bot_list
 Output: `6 Cortex bots spawned! Skill: 70% | Bot1: 5 frags | Bot2: Alive...` or a helpful error (e.g., “Max bots reached!”).
 
 ## Step 4: The auto-config file
-Create `Game/cortex/cortex_bots.cfg` with this content:
+Create `Game/cortex_pure/cortex_bots.cfg` with this content:
 
 ```
 // Idiot-Proof Cortex Bot Controls
@@ -181,10 +174,10 @@ void() cortex_toggle_bots =
 };
 ```
 
-Recompile with `scripts/build.bat` after adding the snippet.
+Recompile with `scripts/build_pure.bat` after adding the snippet.
 
 ## Step 6: Bonus tips
-- `cortex_spawn_bot` and `cortex_add_bots` do not require Python—just make sure `cortex_bot_enable 1` (for pure QuakeC) or `cortex_spawn_bot 1` (for RCON) is set.
+- `cortex_spawn_bot` and `cortex_add_bots` do not require Python; just make sure `cortex_bot_enable 1` is set.
 - Keep `cortex_bot_count` under 16 to avoid hitting engine limits.
 - Use `cortex_bot_list` to monitor performance (frags, HP, skill).
 

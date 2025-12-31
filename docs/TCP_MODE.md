@@ -1,5 +1,9 @@
 # Stream Mode (Experimental)
 
+**ARCHIVED**: Hybrid/Python track. Not current focus.
+
+Legacy launchers are under `hybrids/archived/scripts/`.
+
 Stream mode replaces File IPC with a local stream so the Brain can both:
 - receive telemetry (NDJSON), and
 - send control commands back to Quake.

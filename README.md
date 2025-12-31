@@ -6,7 +6,6 @@
 
 [![Build QuakeC](https://github.com/saworbit/quake-cortex/actions/workflows/build-quakec.yml/badge.svg?branch=main)](https://github.com/saworbit/quake-cortex/actions/workflows/build-quakec.yml)
 [![Documentation Check](https://github.com/saworbit/quake-cortex/actions/workflows/docs-check.yml/badge.svg?branch=main)](https://github.com/saworbit/quake-cortex/actions/workflows/docs-check.yml)
-[![Python Code Quality](https://github.com/saworbit/quake-cortex/actions/workflows/python-lint.yml/badge.svg?branch=main)](https://github.com/saworbit/quake-cortex/actions/workflows/python-lint.yml)
 
 ## Quick Start
 
@@ -23,7 +22,7 @@ scripts\run_pure_debug.bat
 
 **Main Focus**: Pure QuakeC bot with zero external dependencies. All AI logic runs inside QuakeC.
 
-**Experimental**: Hybrid implementations (Python + QuakeC) are available in the `hybrids/` directory.
+**Archived**: Hybrid prototypes (Python + QuakeC) live in `hybrids/` and are not the current focus.
 
 Details: `docs/BOTS_GUIDE.md`
 
@@ -38,58 +37,42 @@ ProjectCortex/                 # Main - Pure QuakeC Bot
     lib/                       # Base Quake source
     progs.src                  # Main build manifest
   scripts/                     # Build and run scripts
-    build.bat                  # Build pure bot
-    run.bat                    # Run pure bot
-  Game/cortex/                 # Compiled mod output
+    build_pure.bat             # Build pure bot
+    run_pure_qc.bat            # Run pure bot
+    run_pure_debug.bat         # Run pure bot with full logs
+  Game/cortex_pure/            # Compiled mod output
   docs/                        # Documentation
-
-  hybrids/                     # Experimental hybrid implementations
-    quakec/                    # Shared hybrid QuakeC code
-      cortex/hybrid/           # Bridge + TCP IPC code
-      progs.src                # Hybrid build manifest
-    fteqw/                     # FTEQW hybrid (Python brain)
-      python/streams/          # File + TCP implementations
-      scripts/                 # FTEQW build/run scripts
-      Game/cortex/             # FTEQW output
-    darkplaces/                # DarkPlaces hybrid (RCON)
-      python/streams/rcon/     # RCON implementation
-      scripts/                 # DarkPlaces scripts
-      Game/cortex/             # DarkPlaces output
-    shared/                    # Shared Python utilities
+  hybrids/                     # Archived hybrid experiments (not current focus)
 ```
 
 ## Current Status
 
 **Pure QuakeC Bot:**
-- ✅ QuakeC code compiles successfully
-- ✅ Based on single-player Quake source
-- ✅ 10-module bot AI stack (pathfinding, perception, tactics, combat, etc.)
-- ✅ Sensor suite (raycasts, proprioception, enemy detection)
-- ✅ World integration hooks
-- ✅ Runs on FTEQW engine
+- OK: QuakeC code compiles successfully
+- OK: Based on single-player Quake source
+- OK: 10-module bot AI stack (pathfinding, perception, tactics, combat, etc.)
+- OK: Sensor suite (raycasts, proprioception, enemy detection)
+- OK: World integration hooks
+- OK: Runs on FTEQW engine
 
-**Experimental Hybrids** (see `hybrids/` directory):
-- ✅ FTEQW hybrid with File/TCP IPC
-- ✅ DarkPlaces hybrid with RCON control
-- ✅ Python brain implementations
-- ⚠️ Not the main focus
+**Archived Hybrids**: See `hybrids/README.md` for legacy Python integration notes.
 
-**See [docs/STATUS.md](docs/STATUS.md) for detailed roadmap**
+**See [docs/STATUS.md](docs/STATUS.md) for detailed status**
 
 ## Development Workflow
 
 ### Building the Mod
 
 ```bash
-scripts\build.bat
+scripts\build_pure.bat
 ```
 
-This compiles `quakec/progs.src` → `Game/cortex/progs.dat`
+This compiles `quakec/progs.src` to `Game/cortex_pure/progs.dat`.
 
 ### Running the Bot
 
 ```bash
-scripts\run.bat
+scripts\run_pure_qc.bat
 ```
 
 This builds the mod and launches FTEQW with the bot enabled.
@@ -100,11 +83,8 @@ This builds the mod and launches FTEQW with the bot enabled.
 - Edit files in [quakec/cortex/](quakec/cortex/)
   - `common/` - Sensors, logging, world hooks
   - `bot/` - 10-module bot AI stack
-- Run [scripts/build.bat](scripts/build.bat) to recompile
+- Run [scripts/build_pure.bat](scripts/build_pure.bat) to recompile
 - Restart Quake to load new progs.dat
-
-**For Hybrid Modes** (experimental):
-- See [hybrids/README.md](hybrids/README.md)
 
 ## Architecture
 
@@ -130,7 +110,7 @@ This builds the mod and launches FTEQW with the bot enabled.
 **Design Philosophy**:
 - **Main focus**: Pure QuakeC bot with all AI logic inside QuakeC
 - **No external dependencies**: Zero Python, zero IPC, zero networking
-- **Experimental hybrids**: Available in `hybrids/` for those who want Python integration
+- **Archived hybrids**: Available in `hybrids/` for legacy Python integration
 
 ## Key Files
 
@@ -145,14 +125,14 @@ This builds the mod and launches FTEQW with the bot enabled.
 | [quakec/cortex/common/cortex_sensor.qc](quakec/cortex/common/cortex_sensor.qc) | Sensor suite | ~290 |
 | [quakec/cortex/common/cortex_world.qc](quakec/cortex/common/cortex_world.qc) | World integration hooks | ~425 |
 | [quakec/progs.src](quakec/progs.src) | Build manifest | ~58 |
-| [hybrids/README.md](hybrids/README.md) | Experimental hybrids info | - |
+| [hybrids/README.md](hybrids/README.md) | Archived hybrids info | - |
 
 ## Documentation
 
 - **[docs/BOTS_GUIDE.md](docs/BOTS_GUIDE.md)** - Pure QuakeC bot guide
 - **[docs/README.md](docs/README.md)** - Full technical documentation
 - **[docs/STATUS.md](docs/STATUS.md)** - Implementation status & roadmap
-- **[hybrids/README.md](hybrids/README.md)** - Experimental hybrid implementations
+- **[hybrids/README.md](hybrids/README.md)** - Archived hybrid prototypes
 
 ## Requirements
 
@@ -178,9 +158,13 @@ This builds the mod and launches FTEQW with the bot enabled.
 - See full error output in console
 
 **Bot doesn't spawn**:
-- Make sure you're in a map (not menu): `map start` or `map e1m1`
+- Make sure you're in a map (not menu): `map start` or `map dm3`
 - Check console for bot spawn messages
 - Verify `cortex_bot_enable 1` is set
+
+**Bot doesn't move**:
+- Ensure `pr_no_playerphysics 0` (the pure launchers set this)
+- Check `Game/cortex_pure/qconsole.log` for movement debug output
 
 ## Contributing
 
@@ -189,9 +173,9 @@ This is an experimental research project. The codebase is organized for clarity:
 **Pure QuakeC Bot:**
 - **Add new sensors**: Edit [quakec/cortex/common/cortex_sensor.qc](quakec/cortex/common/cortex_sensor.qc)
 - **Improve bot AI**: Edit [quakec/cortex/bot/cortex_bot.qc](quakec/cortex/bot/cortex_bot.qc) and related modules
-- **Update build process**: Edit [scripts/build.bat](scripts/build.bat)
+- **Update build process**: Edit [scripts/build_pure.bat](scripts/build_pure.bat)
 
-**Experimental Hybrids:**
+**Archived Hybrids:**
 - See [hybrids/README.md](hybrids/README.md)
 
 ## License
@@ -203,5 +187,5 @@ This is an experimental research project. The codebase is organized for clarity:
 ---
 
 **Status**: Pure QuakeC bot with 10-module AI stack
-**Last Updated**: 2025-12-31
+**Last Updated**: 2026-01-01
 **Version**: 0.2.0

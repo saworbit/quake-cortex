@@ -1,5 +1,9 @@
 # Cortex Black Box Logging
 
+**ARCHIVED**: Hybrid/Python track. Not current focus.
+
+Legacy launchers are under `hybrids/archived/scripts/`.
+
 Project Cortex produces two primary logs (Body + Brain) that you can hand to a human or an LLM to reconstruct *why* a bad outcome happened.
 
 ## Where Logs Land

@@ -2,7 +2,7 @@
 
 This directory contains **experimental** hybrid implementations where QuakeC acts as the "body" (sensors/actuators) and Python acts as the "brain" (decision-making).
 
-**Note:** The main Project Cortex is a pure QuakeC bot. These hybrids are secondary experiments.
+**Note:** The main Project Cortex is a pure QuakeC bot. These hybrids are archived experiments.
 
 ## Directory Structure
 
@@ -10,6 +10,7 @@ This directory contains **experimental** hybrid implementations where QuakeC act
 - **fteqw/** - FTEQW hybrid implementation (file IPC + TCP stream)
 - **darkplaces/** - DarkPlaces hybrid implementation (RCON control)
 - **shared/** - Shared Python utilities (visualizer, brain base)
+- **archived/** - Legacy root scripts/configs moved out of the main tree
 
 ## Quick Start
 

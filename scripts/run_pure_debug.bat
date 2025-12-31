@@ -44,7 +44,7 @@ if errorlevel 1 (
 set EXTRA_ARGS=%*
 if "%~1"=="" set EXTRA_ARGS=+set deathmatch 1 +map dm1
 
-set PURE_FLAGS=+set cortex_pure_mode 1 +set cortex_bot_enable 1 +set cortex_spawn_bot 1 +set pr_no_playerphysics 0 +exec autoexec.cfg +set cortex_use_tcp 0 +set cortex_enable_controls 0 +set cortex_track_bot 0
+set PURE_FLAGS=+set cortex_pure_mode 1 +set cortex_bot_enable 1 +set cortex_spawn_bot 1 +set pr_no_playerphysics 0 +exec autoexec.cfg
 set BIND_FLAGS=+bind w +forward +bind a +moveleft +bind s +back +bind d +moveright +bind SPACE +jump +bind SHIFT +speed +bind CTRL +attack +bind MOUSE1 +attack +bind MOUSE2 +mlook +set cl_forwardspeed 400 +set cl_backspeed 400 +set cl_sidespeed 400 +set cl_upspeed 200
 set DEBUG_FLAGS=+set cortex_debug 1 +set cortex_log_level 3 +set developer 1
 
@@ -71,7 +71,6 @@ echo =======================================
 echo.
 
 %GAMEEXE% -condebug -game cortex_pure ^
-  +set sv_progsaccess 2 ^
   +set sv_public 0 ^
   +set cl_master "" ^
   %PURE_FLAGS% ^

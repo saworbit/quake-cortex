@@ -259,8 +259,8 @@ string() Cortex_VisibleEnemies =
 =================
 Cortex_BuildSensorPacket
 
-Assembles all sensor data into a single JSON packet
-This is what gets sent to the Python brain every frame.
+Assembles all sensor data into a single JSON packet.
+This is for optional debug logging in pure mode.
 =================
 */
 string() Cortex_BuildSensorPacket =

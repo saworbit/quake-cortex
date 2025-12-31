@@ -1,68 +1,26 @@
-# Cortex Modes (Repo Organization)
+# Cortex Modes (Pure Focus)
 
-This repo contains three “tracks” that share the same QuakeC mod:
+Project Cortex currently focuses on a single mode: the pure QuakeC bot (no Python).
 
-1. **Pure QuakeC bot** (no Python): bot logic runs inside QuakeC.
-2. **Hybrid FTEQW + Python**: QuakeC emits telemetry and (optionally) accepts controls from Python.
-3. **Hybrid DarkPlaces + Python (RCON)**: Python drives a server-side `cortex_bot` via UDP RCON.
-
-## 1) Pure QuakeC Bot (no Python)
+## Pure QuakeC Bot (No Python)
 
 Run:
-- `scripts\\run_pure_qc.bat` (automatically rebuilds the pure mod)
-- `scripts\\run_pure_debug.bat` (full logs + rotation, defaults to dm1)
+- `scripts\run_pure_qc.bat` (builds and launches)
+- `scripts\run_pure_debug.bat` (full logs + rotation)
 
 Key cvars:
-- `cortex_bot_enable 1` (enable internal AI)
-- `cortex_spawn_bot 1` (spawn bot entity/client slot depending on engine support)
-- `cortex_pure_mode 1` (disables hybrid telemetry/controls)
+- `cortex_bot_enable 1`
+- `cortex_spawn_bot 1`
+- `cortex_pure_mode 1`
+- `pr_no_playerphysics 0`
 
-Code:
-- QuakeC AI: `quakec/cortex/bot/`
-- Sensors/world hooks: `quakec/cortex/common/`
+Code locations:
+- Bot AI: `quakec/cortex/bot/`
+- Sensors + world hooks: `quakec/cortex/common/`
 
-## 2) Hybrid FTEQW + Python
+## Archived Hybrid Experiments
 
-### A) File IPC (default)
-
-Run:
-- `scripts\\build.bat`
-- Terminal 1: `scripts\\run_brain.bat`
-- Terminal 2: `scripts\\run_quake.bat`
-
-Code:
-- QuakeC telemetry + integration: `quakec/cortex/hybrid/` + `quakec/cortex/common/`
-- Python file-tail brain: `python/streams/file/` (repo-root `cortex_brain.py` is a wrapper)
-
-### B) Stream mode (ws:// / tcp://) + RL (experimental)
-
-Run:
-- `pip install -r python/requirements.txt`
-- Terminal 1: `scripts\\run_quake_tcp.bat`
-- Terminal 2: `python train_cortex.py`
-
-Debug logger only (no training):
-- `scripts\\run_mode_b_debug.bat` (or `scripts\\run_brain_tcp.bat` + `scripts\\run_quake_tcp.bat`)
-
-Code:
-- Python stream logger: `python/streams/tcp/brain_tcp.py`
-- Gymnasium env: `python/streams/tcp/env.py`
-
-Key cvars (set by `scripts\\run_quake_tcp.bat`):
-- `pr_enable_uriget 1`
-- `cortex_use_tcp 1`
-- `cortex_enable_controls 1`
-
-## 3) Hybrid DarkPlaces + Python (RCON)
-
-Run:
-- `scripts\\build.bat`
-- Terminal 1: `scripts\\run_darkplaces.bat`
-- Terminal 2: `scripts\\run_brain_rcon.bat`
-
-Docs:
+Hybrid Python/IPC modes are archived and not the current focus. See:
+- `hybrids/README.md`
+- `docs/TCP_MODE.md`
 - `docs/DARKPLACES_PIVOT.md`
-
-Code:
-- Python RCON loop: `python/streams/rcon/brain_rcon.py` (repo-root `cortex_rcon.py` is the entrypoint)
-- QuakeC bot entity: `quakec/cortex/bot/cortex_bot.qc`

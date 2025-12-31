@@ -89,9 +89,9 @@ if exist "Game\id1\pak0.pak" (
 
 :: Check 5: Create output directory if needed
 echo [5/5] Checking output directory...
-if not exist "Game\cortex" (
-    echo %ARROW% Creating: Game\cortex\
-    mkdir "Game\cortex" 2>nul
+if not exist "Game\cortex_pure" (
+    echo %ARROW% Creating: Game\cortex_pure\
+    mkdir "Game\cortex_pure" 2>nul
 )
 echo %CHECK% Output directory ready
 
@@ -101,7 +101,7 @@ echo.
 
 :: Build the mod
 echo Building Cortex mod...
-call scripts\build.bat
+call scripts\build_pure.bat
 if errorlevel 1 (
     echo.
     echo %CROSS% BUILD FAILED!
@@ -119,8 +119,8 @@ if errorlevel 1 (
 echo %CHECK% Build successful!
 
 :: Verify output file was created
-if exist "Game\cortex\progs.dat" (
-    echo %CHECK% Generated: Game\cortex\progs.dat
+if exist "Game\cortex_pure\progs.dat" (
+    echo %CHECK% Generated: Game\cortex_pure\progs.dat
 ) else (
     echo %CROSS% ERROR: Build succeeded but progs.dat not found!
     pause
@@ -142,7 +142,7 @@ if "%~1"=="" (
 )
 
 :: Set Cortex-specific flags
-set PURE_FLAGS=+set cortex_pure_mode 1 +set cortex_bot_enable 1 +set cortex_spawn_bot 1 +set pr_no_playerphysics 0 +set cortex_debug 0 +set cortex_log_level 1
+set PURE_FLAGS=+set cortex_pure_mode 1 +set cortex_bot_enable 1 +set cortex_spawn_bot 1 +set pr_no_playerphysics 0 +exec autoexec.cfg +set cortex_debug 0 +set cortex_log_level 1
 
 echo %ARROW% Launching FTEQW with Cortex bot...
 echo.
@@ -162,9 +162,8 @@ if errorlevel 1 (
 )
 
 :: Launch the game
-fteqw64.exe -condebug -game cortex ^
+fteqw64.exe -condebug -game cortex_pure ^
   +set developer 1 ^
-  +set sv_progsaccess 2 ^
   +set sv_public 0 ^
   +set cl_master "" ^
   %PURE_FLAGS% ^
@@ -179,7 +178,7 @@ if %EXITCODE% EQU 0 (
     echo %CHECK% Quake exited normally
 ) else (
     echo %CROSS% Quake exited with code: %EXITCODE%
-    echo %ARROW% Console log saved to: Game\cortex\qconsole.log
+    echo %ARROW% Console log saved to: Game\cortex_pure\qconsole.log
     echo %ARROW% Check the log file for error details
     pause
 )

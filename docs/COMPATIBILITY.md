@@ -1,5 +1,7 @@
 # QuakeC ↔ Python Compatibility Notes
 
+**ARCHIVED**: Hybrid/Python track. Not current focus.
+
 This project bridges QuakeC (everything is a 32-bit float) with Python. Keep the interface boring and predictable.
 
 ## Numeric Limits

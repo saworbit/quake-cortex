@@ -176,7 +176,7 @@ void() cortex_arena_stats =
 };
 ```
 
-Rebuild (`scripts/build.bat`) and relaunch the arena server/spectator BATs. The ghost cam follows bots smoothly, cycles via console binds, and prints live follower info via `TAB`.
+Rebuild (`scripts/build_pure.bat`) and relaunch the arena server/spectator BATs. The ghost cam follows bots smoothly, cycles via console binds, and prints live follower info via `TAB`.
 
 ## Bonus
 - Subtle bobbing offset adds cinematic breathing motion.
@@ -327,4 +327,4 @@ void() director_stats =
 };
 ```
 
-Rebuild (`scripts/build.bat`) and relaunch. `F1` lets the director AI handle camera switches while `F2`/`F3` tune aggression/mode, `F4` forces a new featured bot, and `TAB` shows the director status.
+Rebuild (`scripts/build_pure.bat`) and relaunch. `F1` lets the director AI handle camera switches while `F2`/`F3` tune aggression/mode, `F4` forces a new featured bot, and `TAB` shows the director status.

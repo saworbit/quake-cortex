@@ -22,7 +22,7 @@ darkplaces.exe -game cortex +connect localhost:26000 +chase_active 1 +chase_back
 
 Bots auto respawn, fraglimit 50 / timelimit 15 → map list dm1->dm6 cycle. Spec slot is free; chase cam toggles via binds.
 
-## Step 2: Config files (create `Game/cortex/arena_server.cfg` & `spectator.cfg`)
+## Step 2: Config files (create `Game/cortex_pure/arena_server.cfg` & `spectator.cfg`)
 
 ### `arena_server.cfg`
 ```
@@ -121,7 +121,7 @@ void() cortex_pause_bots =
 ```
 In `Cortex_BotThink`, skip movement/fire when `cvar("cortex_pause_bots")` is `1`.
 
-Rebuild via `scripts/build.bat`. After adding the snippet, the arena commands are available console-wide.
+Rebuild via `scripts/build_pure.bat`. After adding the snippet, the arena commands are available console-wide.
 
 ## Step 5: Launch sequence
 1. Double-click `arena_server.bat` → console shows arena ready, fraglimit/timelimit enforced.

@@ -83,10 +83,7 @@ The debug script sets these cvars automatically:
 | `cortex_bot_enable` | 1 | Enables bot AI |
 | `cortex_spawn_bot` | 1 | Auto-spawns bot on map start |
 | `pr_no_playerphysics` | 0 | Allows `SV_PlayerPhysics` to drive botclient movement |
-| `cortex_pure_mode` | 1 | Disables hybrid telemetry/controls |
-| `cortex_use_tcp` | 0 | TCP stream off (pure mode) |
-| `cortex_enable_controls` | 0 | Brain control off (pure mode) |
-| `cortex_track_bot` | 0 | Telemetry tracking off (pure mode) |
+| `cortex_pure_mode` | 1 | Forces pure bot mode |
 
 You can also set these manually in-game via the console:
 ```
@@ -264,17 +261,10 @@ impulse 200
 
 ---
 
-### Issue: qcfopen Access Denied (Pure vs. Hybrid)
+### Issue: qcfopen Access Denied (Legacy Hybrid Warning)
 
-If you see `qcfopen("ws://..."): Access denied` in logs:
-
-- **Pure bot:** safe to ignore (no stream needed).
-- **Hybrid stream:** enable URI access and run the Python server.
-
-**Fix (console):**
-```
-pr_enable_uriget 1
-```
+If you see `qcfopen("ws://...")` in logs while running pure mode, it is legacy
+hybrid code and can be ignored. Pure mode does not use streams.
 
 ---
 
@@ -325,7 +315,6 @@ pr_enable_uriget 1
 | Mode | Log Path |
 |------|----------|
 | Pure QuakeC | `Game/cortex_pure/qconsole.log` |
-| Hybrid (legacy) | `Game/cortex/qconsole.log` |
 
 ### Log File Management
 

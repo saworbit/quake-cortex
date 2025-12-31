@@ -1,5 +1,9 @@
 # DarkPlaces Pivot (RCON IPC) - Detailed Spec
 
+**ARCHIVED**: Hybrid/Python track. Not current focus.
+
+Legacy launchers are under `hybrids/archived/scripts/`.
+
 Project CORTEX is a "sidecar" AI architecture for Quake 1:
 - QuakeC (the body) emits telemetry and applies control inputs.
 - Python (the brain) reads telemetry, decides actions, and sends control commands back.

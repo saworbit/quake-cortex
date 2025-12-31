@@ -81,8 +81,8 @@ set cortex_log_level 3
 ```
 
 ### View Console Log
-- Console log is automatically saved to: `Game/cortex/qconsole.log`
-- View it with: `condump mylog.txt` (saves to `Game/cortex/mylog.txt`)
+- Console log is automatically saved to: `Game/cortex_pure/qconsole.log`
+- View it with: `condump mylog.txt` (saves to `Game/cortex_pure/mylog.txt`)
 
 ### Debug Information Shown
 When `cortex_debug 1`, you'll see:
@@ -120,7 +120,7 @@ Create a detailed snapshot of bot status:
 
 ### Console log file missing
 - Ensure you launched with `-condebug` flag
-- Check both `Game/cortex/qconsole.log` and `Game/qconsole.log`
+- Check both `Game/cortex_pure/qconsole.log` and `Game/qconsole.log`
 - The launch script automatically enables `-condebug`
 
 ## Advanced Usage
@@ -133,7 +133,7 @@ set cortex_debug 1
 ```
 
 ### Custom Bot Configuration
-Create a file `Game/cortex/bot.cfg`:
+Create a file `Game/cortex_pure/bot.cfg`:
 ```
 // My custom bot settings
 set cortex_bot_skill 2

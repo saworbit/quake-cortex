@@ -1,69 +1,40 @@
 # Project Cortex - Implementation Status
 
-**Last Updated**: 2025-12-30
-**Current Phase**: Phase 2 - Telemetry + Control Loop (File IPC + optional TCP)
+**Last Updated**: 2026-01-01
+**Current Phase**: Pure bot stabilization (movement + behavior)
 
 ## What Works
 
 ### Pure QuakeC Bot
-- [x] Internal bot AI (utility + lightweight planning) behind `cortex_bot_enable 1`
+- [x] QuakeC compiles to `Game/cortex_pure/progs.dat`
+- [x] Internal bot AI stack behind `cortex_bot_enable 1`
+- [x] Sensor suite (raycasts, proprioception, enemy detection)
+- [x] World integration hooks
+- [x] Runs on FTEQW engine
 
-### Sidecar Architecture
-- [x] QuakeC emits telemetry to a file (FTEQW `FRIK_FILE` builtins)
-- [x] Python tails telemetry and writes structured logs (Brain timeline)
-- [x] Optional pygame visualizer (install via `python/requirements-visualizer.txt`)
+## Known Gaps (Active)
 
-### Sensor Suite (Current Output)
-- [x] NDJSON telemetry (`health/armor/ammo/pos/vel/lidar/enemies`) at configurable rate (`cortex_send_interval`)
+- [ ] Movement binds not applied in some pure mode setups
+- [ ] Bot movement target selection can resolve to zero vector
+- [ ] Death animation can be skipped on respawn
 
-### QuakeC Integration
-- [x] Initialization moved to StartFrame (avoids cfg timing issues)
-- [x] Automatic retry loop until file access is enabled
-- [x] Engine capability hints printed (`FRIK_FILE` / `pr_checkextension`)
-- [x] Optional TCP stream transport (`cortex_use_tcp 1`, requires `pr_enable_uriget 1`)
-- [x] Optional Brain -> Body controls over TCP (`cortex_enable_controls 1`)
-
-### Usability / Automation
-- [x] Default keybinds provided in `Game/cortex/default.cfg`
-- [x] `sv_progsaccess 2` re-asserted in `Game/cortex/autoexec.cfg` (may still require manual console entry depending on engine build)
-- [x] `scripts\\run_quake.bat` launches into `map start`
-- [x] `scripts\\run_quake_tcp.bat` launches TCP stream mode
-- [x] `scripts\\run_train.bat` runs a Stable-Baselines training loop
-
-## File Manifest (Current)
+## File Manifest (Pure)
 
 | Path | Purpose |
 | --- | --- |
-| `cortex_brain.py` | File telemetry brain (tail + parse) |
-| `cortex_visualizer.py` | File telemetry visualizer (pygame/text) |
-| `cortex_env.py` | Gymnasium environment wrapper (TCP server) |
-| `train_cortex.py` | PPO training entrypoint (SB3) |
-| `quakec/cortex/hybrid/cortex_bridge.qc` | Telemetry driver / init + retry |
-| `quakec/cortex/hybrid/cortex_tcp.qc` | File/TCP stream wrappers (FTE `fopen`) |
-| `quakec/cortex/common/cortex_sensor.qc` | Sensors (emits NDJSON) |
-| `quakec/cortex/common/cortex_world.qc` | Hooks StartFrame to emit telemetry |
-| `quakec/cortex/bot/cortex_bot.qc` | Pure QuakeC bot (optional) |
-| `Game/cortex/default.cfg` | Default binds + sv_progsaccess |
-| `Game/cortex/autoexec.cfg` | Post-config overrides (sv_progsaccess) |
-| `scripts/build.bat` | Compile QuakeC (`progs.dat`) |
-| `scripts/run_brain.bat` | Run `cortex_brain.py` |
-| `scripts/run_visualizer.bat` | Run `cortex_visualizer.py` |
-| `scripts/run_quake.bat` | Launch FTEQW with the mod |
-| `scripts/run_quake_tcp.bat` | Launch FTEQW in TCP stream mode |
-| `scripts/run_train.bat` | Run training loop |
-
-## Data Flow (Current)
-
-```
-QuakeC (StartFrame) ──fopen/fputs──▶ Game/cortex/data/cortex_telemetry.txt ──tail──▶ Python
-```
+| `quakec/cortex/bot/cortex_bot.qc` | Main bot AI logic |
+| `quakec/cortex/bot/cortex_pathfinding.qc` | Navigation + pathfinding |
+| `quakec/cortex/common/cortex_sensor.qc` | Sensors + world probes |
+| `quakec/cortex/common/cortex_world.qc` | World integration hooks |
+| `quakec/progs.src` | Build manifest |
+| `scripts/build_pure.bat` | Compile pure QuakeC mod |
+| `scripts/run_pure_qc.bat` | Launch pure bot |
+| `scripts/run_pure_debug.bat` | Launch pure bot with debug logs |
+| `Game/cortex_pure/default.cfg` | Default binds |
+| `docs/DEBUGGING_PURE_BOT.md` | Pure bot debugging guide |
 
 ## Next Steps
 
-- [ ] Add protocol version + sequence IDs for robust control/telemetry sync
-- [ ] Add smoothing / rate limiting for aim and movement (cerebellum)
-- [ ] Improve reward shaping + episode handling for training
-
-- [ ] Validate behavior across multiple FTEQW builds (sv_progsaccess behavior differs)
-- [ ] Re-enable richer telemetry (velocity/state/raycasts) once stable
-- [ ] Phase 2: Control input stream (Python → Quake)
+- Fix pure-mode binds and movement cvars across FTEQW builds
+- Improve bot goal selection + stuck recovery
+- Stabilize respawn timing so death animations can play

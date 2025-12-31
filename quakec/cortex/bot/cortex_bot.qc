@@ -1,10 +1,8 @@
 /*
-    cortex_bot.qc - Cortex Bot (Pure QuakeC Pre-Hybrid)
+    cortex_bot.qc - Cortex Bot (Pure QuakeC)
 
-    Two modes share the same spawned entity:
-    - External control (legacy): drive via cvars (bot_vel_*, bot_yaw/bot_pitch, bot_attack/bot_jump).
-    - Pure QuakeC AI: a lightweight utility-based FSM (U-FSM) that selects between
-      Explore / Collect / Chase / Attack / Flee based on simple needs and perception.
+    Pure QuakeC AI: a lightweight utility-based FSM (U-FSM) that selects between
+    Explore / Collect / Chase / Attack / Flee based on simple needs and perception.
 
     Notes/limits:
     - If DP_SV_BOTCLIENT is available, the bot uses a real client slot (spawnclient),
@@ -80,7 +78,6 @@ void() Cortex_BotInitCvars =
 
     // Bot lifecycle (defaults for pure QuakeC mode)
     cvar_set("cortex_spawn_bot", "1");           // 1 to spawn a controllable bot entity
-    cvar_set("cortex_track_bot", "0");           // 1 to emit telemetry for cortex_bot (file/tcp modes)
     cvar_set("cortex_bot_think_interval", "0.02"); // seconds
 
     // Pure QuakeC bot logic
@@ -108,16 +105,7 @@ void() Cortex_BotInitCvars =
     cvar_set("cortex_bot_item_deny_enable", "1");
     cvar_set("cortex_bot_deny_radius", "300");
     cvar_set("cortex_bot_mega_rush_window", "5");
-    if (cvar_string("cortex_pure_mode") == "") cvar_set("cortex_pure_mode", "0");   // 1 when running pure QuakeC bot mode
-
-    // Control inputs (set via RCON or local console)
-    cvar_set("bot_vel_x", "0");
-    cvar_set("bot_vel_y", "0");
-    cvar_set("bot_vel_z", "0");
-    cvar_set("bot_yaw", "0");     // degrees
-    cvar_set("bot_pitch", "0");   // degrees
-    cvar_set("bot_attack", "0");  // 0/1 (best-effort; server-side entity may not fire weapons)
-    cvar_set("bot_jump", "0");    // 0/1
+    if (cvar_string("cortex_pure_mode") == "") cvar_set("cortex_pure_mode", "1");   // 1 when running pure QuakeC bot mode
 };
 
 // ---------------------------------------------------------------------------
@@ -1415,10 +1403,6 @@ void() Cortex_BotEnsureSpawned =
 void() Cortex_BotThink =
 {
     local float interval;
-    local vector vel;
-    local float yaw;
-    local float pitch;
-    local float do_jump;
 
     interval = cvar("cortex_bot_think_interval");
     if (interval <= 0)
@@ -1431,58 +1415,14 @@ void() Cortex_BotThink =
         return;
     cortex_bot_last_think_time = time;
 
+    if (!cvar("cortex_bot_enable"))
+        return;
+
     // Debug: Log think activity
     if (cvar("cortex_debug"))
         CortexLog(LOG_info, "THINK", strcat("Bot think at time ", ftos(time)));
 
-    // Pure QuakeC AI mode.
-    if (cvar("cortex_bot_enable"))
-    {
-        if (cvar("cortex_debug"))
-            CortexLog(LOG_info, "AI", "Running AI");
-        Cortex_Bot_RunAI();
-        return;
-    }
-
-    // Control: direct world-space velocity (units/sec).
-    vel_x = cvar("bot_vel_x");
-    vel_y = cvar("bot_vel_y");
-    vel_z = cvar("bot_vel_z");
-
-    // Control: aim angles.
-    pitch = cvar("bot_pitch");
-    yaw = cvar("bot_yaw");
-
-    if (pitch > 80) pitch = 80;
-    if (pitch < -70) pitch = -70;
-
-    self.angles_x = pitch;
-    self.angles_y = yaw;
-    self.angles_z = 0;
-    self.v_angle = self.angles;
-
-    if (self.flags & FL_CLIENT)
-    {
-        makevectors(self.v_angle);
-        self.movement_x = vel * v_forward;
-        self.movement_y = vel * v_right;
-        self.movement_z = vel * v_up;
-    }
-    else
-    {
-        self.velocity = vel;
-    }
-
-    // Buttons (best-effort).
-    self.button0 = cvar("bot_attack") ? 1 : 0;
-
-    // Jump: apply an impulse if grounded.
-    do_jump = cvar("bot_jump");
-    if (do_jump && (self.flags & FL_ONGROUND))
-    {
-        // Player jump impulse is ~270 in id1.
-        self.velocity_z = 270;
-    }
+    Cortex_Bot_RunAI();
 };
 
 void(entity targ, entity attacker) Cortex_BotOnObituary =
