@@ -58,11 +58,23 @@ if "%NEED_AUTOEXEC%"=="1" (
     )
 )
 
+if exist "Game\\cortex_pure\\autoexec.cfg" (
+    findstr /I "toggleconsole" "Game\\cortex_pure\\autoexec.cfg" >nul || echo bind ` toggleconsole>>"Game\\cortex_pure\\autoexec.cfg"
+    findstr /I "togglemenu" "Game\\cortex_pure\\autoexec.cfg" >nul || echo bind ESCAPE togglemenu>>"Game\\cortex_pure\\autoexec.cfg"
+    findstr /I "+attack" "Game\\cortex_pure\\autoexec.cfg" >nul || echo bind MOUSE1 +attack>>"Game\\cortex_pure\\autoexec.cfg"
+    findstr /I "+forward" "Game\\cortex_pure\\autoexec.cfg" >nul || echo bind w +forward>>"Game\\cortex_pure\\autoexec.cfg"
+    findstr /I "+back" "Game\\cortex_pure\\autoexec.cfg" >nul || echo bind s +back>>"Game\\cortex_pure\\autoexec.cfg"
+    findstr /I "+moveleft" "Game\\cortex_pure\\autoexec.cfg" >nul || echo bind a +moveleft>>"Game\\cortex_pure\\autoexec.cfg"
+    findstr /I "+moveright" "Game\\cortex_pure\\autoexec.cfg" >nul || echo bind d +moveright>>"Game\\cortex_pure\\autoexec.cfg"
+    findstr /I "+jump" "Game\\cortex_pure\\autoexec.cfg" >nul || echo bind SPACE +jump>>"Game\\cortex_pure\\autoexec.cfg"
+    findstr /I "+mlook" "Game\\cortex_pure\\autoexec.cfg" >nul || echo +mlook>>"Game\\cortex_pure\\autoexec.cfg"
+)
+
 set EXTRA_ARGS=%*
 if "%~1"=="" set EXTRA_ARGS=+set deathmatch 1 +map dm1
 
 set PURE_FLAGS=+set cortex_pure_mode 1 +set cortex_bot_enable 1 +set cortex_spawn_bot 1 +set pr_no_playerphysics 0
-set DEBUG_FLAGS=+set cortex_debug 1 +set cortex_log_level 3 +set developer 1
+set DEBUG_FLAGS=+set cortex_debug 1 +set cortex_log_level 3 +set developer 1 +set cortex_input_debug 1
 
 echo [2/2] Launching pure Cortex client in DEBUG mode...
 pushd "%~dp0\\..\\Game" >nul 2>&1

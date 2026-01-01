@@ -49,9 +49,14 @@ conhistory.txt
 # Quake game data (NOT distributable - users must provide their own)
 Game/id1/*.PAK
 Game/id1/*.pak
+hybrids/*/Game/id1/*.PAK
+hybrids/*/Game/id1/*.pak
 Game/id1/maps/
 Game/id1/sound/
 Game/id1/progs/
+hybrids/*/Game/id1/maps/
+hybrids/*/Game/id1/sound/
+hybrids/*/Game/id1/progs/
 
 # Quake engine binaries (users should download from official sources)
 Game/*.exe

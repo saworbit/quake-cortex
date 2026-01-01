@@ -40,6 +40,9 @@ float input_buttons;
 float input_impulse;
 void(entity ent) runstandardplayerphysics = #347;
 
+float cortex_input_next_log;
+float cortex_input_seen;
+
 // Late-bound (defined in base progs later in progs.src)
 void() ClientConnect;
 void() PutClientInServer;
@@ -115,6 +118,7 @@ void() Cortex_BotInitCvars =
     cvar_set("cortex_bot_item_deny_enable", "1");
     cvar_set("cortex_bot_deny_radius", "300");
     cvar_set("cortex_bot_mega_rush_window", "5");
+    cvar_set("cortex_input_debug", "0");
     if (cvar_string("cortex_pure_mode") == "") cvar_set("cortex_pure_mode", "1");   // 1 when running pure QuakeC bot mode
 };
 
@@ -135,6 +139,13 @@ float() Cortex_Bot_HasDropClientSupport =
     if (!cvar("pr_checkextension"))
         return 0;
     return checkextension("DP_SV_DROPCLIENT");
+};
+
+float() Cortex_Bot_IsBotSelf =
+{
+    if (cortex_bot_is_botclient && Cortex_Bot_HasBotClientSupport())
+        return (clienttype(self) == CLIENTTYPE_BOT);
+    return (self == cortex_bot);
 };
 
 entity() Cortex_Bot_FindExistingBotclient =
@@ -1575,6 +1586,15 @@ void() Cortex_BotEnsureSpawned =
         return;
     }
 
+    if (cortex_bot_is_botclient && cortex_bot && cortex_bot.classname == "player" && Cortex_Bot_HasBotClientSupport())
+    {
+        if (clienttype(cortex_bot) != CLIENTTYPE_BOT)
+        {
+            cortex_bot = world;
+            cortex_bot_is_botclient = 0;
+        }
+    }
+
     // Already spawned and still valid.
     if (cortex_bot && ((cortex_bot.classname == "cortex_bot") || (cortex_bot.classname == "player")))
     {
@@ -1715,7 +1735,7 @@ void() Cortex_ApplyControls =
 {
     if (!cortex_bot_is_botclient)
         return;
-    if (self != cortex_bot)
+    if (!Cortex_Bot_IsBotSelf())
         return;
     if (!(self.flags & FL_CLIENT))
         return;
@@ -1732,7 +1752,7 @@ void() Cortex_Bot_MaybeAutoRespawn =
 {
     if (!cortex_bot_is_botclient)
         return;
-    if (self != cortex_bot)
+    if (!Cortex_Bot_IsBotSelf())
         return;
     if (!cvar("cortex_bot_enable"))
         return;
@@ -1749,13 +1769,42 @@ void() Cortex_Bot_MaybeAutoRespawn =
 
 void() SV_PlayerPhysics =
 {
-    if (cortex_bot_is_botclient && self == cortex_bot && cvar("cortex_bot_enable"))
+    local float is_bot;
+    local vector movevals;
+    local float buttons;
+
+    if (!cortex_input_seen)
+    {
+        cortex_input_seen = 1;
+        bprint("DEBUG: SV_PlayerPhysics active\n");
+    }
+
+    is_bot = cortex_bot_is_botclient && Cortex_Bot_IsBotSelf() && cvar("cortex_bot_enable");
+    if (cvar("cortex_input_debug") && time >= cortex_input_next_log)
+    {
+        local string msg;
+        cortex_input_next_log = time + 1;
+        msg = strcat("INPUT ", self.netname, " mov=", vtos(self.movement));
+        msg = strcat(msg, " btn=", ftos(self.button0), "/", ftos(self.button1), "/", ftos(self.button2));
+        msg = strcat(msg, " imp=", ftos(self.impulse), " vel=", vtos(self.velocity), "\n");
+        bprint(msg);
+    }
+
+    if (is_bot)
     {
         input_movevalues = self.movement;
         input_angles = self.v_angle;
         input_buttons = (self.button0 ? 1 : 0) + (self.button2 ? 2 : 0) + (self.button1 ? 4 : 0);
         input_impulse = 0;
         input_timelength = frametime;
+    }
+    else
+    {
+        movevals = input_movevalues;
+        if (vlen(movevals) < 0.1 && vlen(self.movement) > 0.1)
+            input_movevalues = self.movement;
+        if (input_timelength <= 0)
+            input_timelength = frametime;
     }
 
     runstandardplayerphysics(self);
